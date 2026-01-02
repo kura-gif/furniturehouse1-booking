@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app'
-import { getFirestore } from 'firebase/firestore'
+import { initializeFirestore } from 'firebase/firestore'
 import { getAuth } from 'firebase/auth'
 import { getStorage } from 'firebase/storage'
 import { VueFire, VueFireAuth } from 'vuefire'
@@ -45,8 +45,12 @@ export default defineNuxtPlugin((nuxtApp) => {
     // Firebaseアプリを初期化
     const firebaseApp = initializeApp(firebaseConfig)
 
-    // Firestoreとのコネクション
-    const db = getFirestore(firebaseApp)
+    // Firestoreとのコネクション（オフライン持続性を無効化）
+    const db = initializeFirestore(firebaseApp, {
+      localCache: {
+        kind: 'memory'
+      }
+    })
     const auth = getAuth(firebaseApp)
     const storage = getStorage(firebaseApp)
 
