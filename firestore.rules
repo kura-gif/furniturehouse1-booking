@@ -1,0 +1,264 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ユーザーコレクション
+    match /users/{userId} {
+      // 自分のユーザー情報は読み書き可能
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      // 新規ユーザー作成時（サインアップ時）
+      allow create: if request.auth != null && request.auth.uid == userId;
+      // 管理者は全ユーザーを読み取り可能
+      allow read: if request.auth != null &&
+                     exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // 予約コレクション
+    match /bookings/{bookingId} {
+      // ゲストユーザー（非ログイン）も予約を作成可能
+      // 必須フィールド: guestName, guestEmail, guestPhone, bookingReference, bookingToken
+      allow create: if request.resource.data.status == 'pending' &&
+                       request.resource.data.guestName is string &&
+                       request.resource.data.guestEmail is string &&
+                       request.resource.data.guestPhone is string &&
+                       request.resource.data.bookingReference is string &&
+                       request.resource.data.bookingToken is string;
+
+      // 認証済みユーザーは自分の予約を読み取り可能
+      allow read: if request.auth != null &&
+                     resource.data.userId == request.auth.uid;
+
+      // 認証済みユーザーは自分の予約をキャンセル可能（ステータス変更のみ）
+      allow update: if request.auth != null &&
+                       resource.data.userId == request.auth.uid &&
+                       request.resource.data.status == 'cancelled' &&
+                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt']);
+
+      // ゲスト予約へのuserID紐付けを許可（新規登録時）
+      // 条件: userIdがまだ設定されていない かつ guestEmailが一致
+      allow update: if request.auth != null &&
+                       !('userId' in resource.data) &&
+                       resource.data.guestEmail == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.email &&
+                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['userId', 'updatedAt']);
+
+      // 管理者は全予約を読み書き可能
+      allow read, write: if request.auth != null &&
+                            exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // クーポンコレクション
+    match /coupons/{couponId} {
+      // 全ユーザーが読み取り可能（クーポンコード検証のため）
+      allow read: if request.auth != null;
+
+      // 管理者のみ作成・更新・削除可能
+      allow write: if request.auth != null &&
+                      exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // 料金設定コレクション
+    match /pricing/{pricingId} {
+      // 全ユーザーが読み取り可能
+      allow read: if true;
+
+      // 管理者のみ更新可能
+      allow write: if request.auth != null &&
+                      exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // カレンダー設定コレクション
+    match /calendar/{dateId} {
+      // 全ユーザーが読み取り可能
+      allow read: if true;
+
+      // 管理者のみ更新可能
+      allow write: if request.auth != null &&
+                      exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // メールテンプレートコレクション
+    match /emailTemplates/{templateId} {
+      // 管理者のみアクセス可能
+      allow read, write: if request.auth != null &&
+                            exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // 施設サポーターコレクション
+    match /supporters/{supporterId} {
+      // 管理者は全アクセス可能
+      allow read, write: if request.auth != null &&
+                            exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+
+      // サポーター本人は自分の情報を読み取り可能
+      allow read: if request.auth != null &&
+                     request.auth.uid == supporterId;
+    }
+
+    // 施設サポートタスクコレクション
+    match /supportTasks/{taskId} {
+      // 管理者は全アクセス可能
+      allow read, write: if request.auth != null &&
+                            exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+
+      // 割り当てられたサポーターは読み取り・更新可能（ステータスと実績時間のみ）
+      allow read: if request.auth != null &&
+                     resource.data.supporterId == request.auth.uid;
+
+      allow update: if request.auth != null &&
+                       resource.data.supporterId == request.auth.uid &&
+                       request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['actualStartTime', 'actualEndTime', 'actualDuration', 'status', 'checklistCompleted', 'updatedAt']);
+    }
+
+    // サポーター利用可能スケジュールコレクション
+    match /supporterAvailability/{availabilityId} {
+      // 管理者は全アクセス可能
+      allow read, write: if request.auth != null &&
+                            exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+
+      // サポーター本人は自分のスケジュールを読み書き可能
+      allow read, write: if request.auth != null &&
+                            resource.data.supporterId == request.auth.uid;
+
+      // サポーター本人による新規作成
+      allow create: if request.auth != null &&
+                       request.resource.data.supporterId == request.auth.uid;
+    }
+
+    // サポートチャットメッセージコレクション
+    match /supportMessages/{messageId} {
+      // 管理者は全アクセス可能
+      allow read, write: if request.auth != null &&
+                            exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+
+      // メッセージの送信者または受信者は読み取り可能
+      allow read: if request.auth != null &&
+                     (resource.data.senderId == request.auth.uid ||
+                      resource.data.senderType == 'admin');
+
+      // 認証済みユーザーはメッセージを作成可能
+      allow create: if request.auth != null &&
+                       request.resource.data.senderId == request.auth.uid;
+
+      // 自分が送信したメッセージは更新可能（既読フラグのみ）
+      allow update: if request.auth != null &&
+                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isRead']);
+    }
+
+    // ゲストメッセージコレクション（予約ごとのチャット）
+    match /guestMessages/{messageId} {
+      // 管理者は全アクセス可能
+      allow read, write: if request.auth != null &&
+                            exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+
+      // ユーザーは自分の予約に関するメッセージのみ読み取り可能
+      allow read: if request.auth != null &&
+                     exists(/databases/$(database)/documents/bookings/$(resource.data.bookingId)) &&
+                     get(/databases/$(database)/documents/bookings/$(resource.data.bookingId)).data.userId == request.auth.uid;
+
+      // ユーザーは自分の予約に対してメッセージを送信可能
+      allow create: if request.auth != null &&
+                       exists(/databases/$(database)/documents/bookings/$(request.resource.data.bookingId)) &&
+                       get(/databases/$(database)/documents/bookings/$(request.resource.data.bookingId)).data.userId == request.auth.uid &&
+                       request.resource.data.senderId == request.auth.uid &&
+                       request.resource.data.senderType == 'guest';
+
+      // メッセージの既読更新は誰でも可能（既読フラグのみ）
+      allow update: if request.auth != null &&
+                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isRead']);
+    }
+
+    // 管理者招待コレクション
+    match /adminInvitations/{invitationId} {
+      // 管理者のみ作成・読み取り可能
+      allow create, read: if request.auth != null &&
+                             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+
+      // トークン検証用（認証なしでも読み取り可能、ただしトークンが一致する場合のみ）
+      allow get: if resource.data.token == request.query.token;
+
+      // 招待受諾時の更新（statusとacceptedAtのみ）
+      allow update: if resource.data.status == 'pending' &&
+                       request.resource.data.status == 'accepted' &&
+                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'acceptedAt', 'updatedAt']);
+
+      // 管理者による更新（再送信、取り消し）
+      allow update: if request.auth != null &&
+                       exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                       get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // メールスケジュールコレクション
+    match /emailSchedules/{scheduleId} {
+      // 管理者のみアクセス可能
+      allow read, write: if request.auth != null &&
+                            exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // 送信済みメールログコレクション
+    match /sentEmails/{emailId} {
+      // 管理者のみ読み取り可能
+      allow read: if request.auth != null &&
+                     exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+
+      // Cloud Functionsからの作成を許可（実際の運用ではサービスアカウントで実行）
+      allow create: if true;
+    }
+
+    // 写真コレクション（公開用）
+    match /photos/{photoId} {
+      // 全ユーザーが読み取り可能
+      allow read: if true;
+
+      // 管理者のみ作成・更新・削除可能
+      allow write: if request.auth != null &&
+                      exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // アメニティコレクション（公開用）
+    match /amenities/{amenityId} {
+      // 全ユーザーが読み取り可能
+      allow read: if true;
+
+      // 管理者のみ作成・更新・削除可能
+      allow write: if request.auth != null &&
+                      exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // レビューコレクション（公開用）
+    match /reviews/{reviewId} {
+      // 承認済みレビューは全ユーザーが読み取り可能
+      allow read: if resource.data.isApproved == true;
+
+      // ログインユーザーは自分のレビューを読み取り可能
+      allow read: if request.auth != null &&
+                     resource.data.userId == request.auth.uid;
+
+      // ログインユーザーはレビューを作成可能
+      allow create: if request.auth != null &&
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.isApproved == false;
+
+      // 管理者のみ全アクセス可能
+      allow read, write: if request.auth != null &&
+                            exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+  }
+}

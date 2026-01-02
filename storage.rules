@@ -1,0 +1,21 @@
+rules_version = '2';
+
+// Firebase Storage セキュリティルール
+service firebase.storage {
+  match /b/{bucket}/o {
+    // 写真フォルダへのアクセスルール
+    match /photos/{photoId} {
+      // 読み取りは誰でもOK（公開写真）
+      allow read: if true;
+
+      // 書き込み・削除は認証済みユーザーのみ
+      allow write, delete: if request.auth != null;
+    }
+
+    // その他のファイルへのアクセス
+    match /{allPaths=**} {
+      // デフォルトは認証済みユーザーのみアクセス可能
+      allow read, write: if request.auth != null;
+    }
+  }
+}

@@ -1,0 +1,390 @@
+<template>
+  <div class="min-h-screen bg-gray-50">
+    <AppHeader />
+
+    <div class="pt-24 pb-12">
+    <div class="container-responsive max-w-6xl">
+      <!-- ヘッダー -->
+      <div class="text-center mb-12">
+        <h1 class="text-4xl font-bold mb-4">宿泊予約</h1>
+        <p class="text-gray-600">1日1組限定の特別な建築体験をご予約ください</p>
+      </div>
+
+      <div class="grid lg:grid-cols-3 gap-8">
+        <!-- カレンダーセクション -->
+        <div class="lg:col-span-2">
+          <BookingCalendar
+            :booked-dates="bookedDates"
+            :unavailable-dates="unavailableDates"
+            @update:date-range="handleDateRangeUpdate"
+          />
+        </div>
+
+        <!-- 予約情報セクション -->
+        <div class="lg:col-span-1">
+          <div class="card sticky top-6">
+            <h3 class="text-2xl font-semibold mb-6">予約内容</h3>
+
+            <!-- 日付選択状態 -->
+            <div v-if="!dateRange.start" class="text-center py-8 text-gray-500">
+              <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <p>カレンダーから日付を選択してください</p>
+            </div>
+
+            <!-- 予約フォーム -->
+            <form v-else @submit.prevent="submitBooking" class="space-y-4">
+              <!-- エラーメッセージ -->
+              <div v-if="bookingError" class="p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p class="text-sm text-red-800">{{ bookingError }}</p>
+              </div>
+
+              <!-- 宿泊人数 -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  宿泊人数
+                </label>
+                <select
+                  v-model="bookingForm.guestCount"
+                  class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  required
+                >
+                  <option :value="1">1名</option>
+                  <option :value="2">2名</option>
+                  <option :value="3">3名</option>
+                  <option :value="4">4名</option>
+                </select>
+              </div>
+
+              <!-- お名前 -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  お名前
+                </label>
+                <input
+                  v-model="bookingForm.guestName"
+                  type="text"
+                  class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  required
+                />
+              </div>
+
+              <!-- メールアドレス -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  メールアドレス
+                </label>
+                <input
+                  v-model="bookingForm.guestEmail"
+                  type="email"
+                  class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  required
+                />
+              </div>
+
+              <!-- 電話番号 -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  電話番号
+                </label>
+                <input
+                  v-model="bookingForm.guestPhone"
+                  type="tel"
+                  class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  required
+                />
+              </div>
+
+              <!-- クーポンコード -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  クーポンコード（任意）
+                </label>
+                <div class="flex gap-2">
+                  <input
+                    v-model="bookingForm.couponCode"
+                    type="text"
+                    class="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    placeholder="コードを入力"
+                  />
+                  <button
+                    type="button"
+                    @click="applyCoupon"
+                    class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition-custom"
+                  >
+                    適用
+                  </button>
+                </div>
+                <p v-if="couponApplied && appliedCoupon" class="text-sm text-green-600 mt-1">
+                  ✓ クーポン適用: {{ appliedCoupon.discountType === 'percentage' ? `${appliedCoupon.discountValue}% OFF` : `¥${appliedCoupon.discountAmount?.toLocaleString()} OFF` }}
+                </p>
+                <p v-if="couponError" class="text-sm text-red-600 mt-1">
+                  {{ couponError }}
+                </p>
+              </div>
+
+              <!-- 備考 -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  ご要望・備考（任意）
+                </label>
+                <textarea
+                  v-model="bookingForm.notes"
+                  rows="3"
+                  class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="アレルギーや特別なリクエストなど"
+                ></textarea>
+              </div>
+
+              <!-- 料金詳細 -->
+              <div class="border-t pt-4 space-y-2">
+                <h4 class="text-sm font-semibold text-gray-700 mb-3">料金詳細</h4>
+
+                <!-- 宿泊情報サマリー -->
+                <div v-if="pricing.breakdown" class="bg-gray-50 p-3 rounded-lg text-sm space-y-1 mb-3">
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">宿泊数</span>
+                    <span class="font-medium">{{ pricing.breakdown.numberOfNights }}泊</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">宿泊者数</span>
+                    <span class="font-medium">{{ bookingForm.guestCount }}名</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">泊数カテゴリ</span>
+                    <span class="font-medium">
+                      {{ pricing.breakdown.nightCategory === '1night' ? '1泊' :
+                         pricing.breakdown.nightCategory === '2nights' ? '2泊' : '3泊以上' }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- 日別料金の詳細（折りたたみ可能） -->
+                <details v-if="pricing.breakdown && pricing.breakdown.nightlyBreakdown.length > 0" class="mb-3">
+                  <summary class="cursor-pointer text-sm text-purple-600 hover:text-purple-700 mb-2">
+                    日別料金の詳細を見る
+                  </summary>
+                  <div class="space-y-2 mt-2 pl-3 border-l-2 border-purple-200">
+                    <div
+                      v-for="(night, index) in pricing.breakdown.nightlyBreakdown"
+                      :key="index"
+                      class="text-xs space-y-1 pb-2 border-b border-gray-100 last:border-0"
+                    >
+                      <div class="font-medium text-gray-700">{{ night.date }}</div>
+                      <div class="text-gray-600">{{ night.description }}</div>
+                      <div class="text-right font-semibold text-purple-600">
+                        ¥{{ night.rate.toLocaleString() }}
+                      </div>
+                    </div>
+                  </div>
+                </details>
+
+                <!-- 料金サマリー -->
+                <div class="flex justify-between text-sm pt-2">
+                  <span class="text-gray-600">宿泊料金</span>
+                  <span>¥{{ pricing.baseAmount.toLocaleString() }}</span>
+                </div>
+                <div v-if="pricing.discountAmount > 0" class="flex justify-between text-sm text-green-600">
+                  <span>クーポン割引 (10%)</span>
+                  <span>-¥{{ pricing.discountAmount.toLocaleString() }}</span>
+                </div>
+                <div class="flex justify-between text-lg font-semibold pt-2 border-t">
+                  <span>合計</span>
+                  <span>¥{{ pricing.totalAmount.toLocaleString() }}</span>
+                </div>
+              </div>
+
+              <!-- 予約ボタン -->
+              <button
+                type="submit"
+                :disabled="isSubmitting"
+                class="w-full btn-primary py-3 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {{ isSubmitting ? '処理中...' : '予約を確定する' }}
+              </button>
+
+              <p class="text-xs text-gray-500 text-center">
+                予約確定後、決済ページに移動します
+              </p>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+
+    <AppFooter />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, reactive, computed, onMounted } from 'vue'
+import type { CreateBookingRequest, Coupon } from '~/types'
+
+definePageMeta({
+  layout: false
+})
+
+interface DateRange {
+  start: Date | null
+  end: Date | null
+}
+
+const { user } = useAuth()
+const { createBooking, getBookedDates } = useBookings()
+const router = useRouter()
+
+// Firebaseから予約済み日付を取得
+const bookedDates = ref<Date[]>([])
+const unavailableDates = ref<Date[]>([])
+const isLoadingDates = ref(false)
+
+const dateRange = ref<DateRange>({ start: null, end: null })
+const couponApplied = ref(false)
+const appliedCoupon = ref<(Coupon & { discountAmount?: number }) | null>(null)
+const couponError = ref<string | null>(null)
+const isSubmitting = ref(false)
+const bookingError = ref<string | null>(null)
+
+const bookingForm = reactive({
+  guestCount: 2,
+  guestName: '',
+  guestEmail: '',
+  guestPhone: '',
+  couponCode: '',
+  notes: ''
+})
+
+// 予約済み日付を取得
+const loadBookedDates = async () => {
+  isLoadingDates.value = true
+  try {
+    // 今月から3ヶ月後までの予約済み日付を取得
+    const startDate = new Date()
+    const endDate = new Date()
+    endDate.setMonth(endDate.getMonth() + 3)
+
+    bookedDates.value = await getBookedDates(startDate, endDate)
+  } catch (error) {
+    console.error('予約済み日付の取得エラー:', error)
+  } finally {
+    isLoadingDates.value = false
+  }
+}
+
+// マウント時に予約済み日付を読み込み
+onMounted(() => {
+  loadBookedDates()
+})
+
+// 料金計算（詳細版）
+const { calculatePrice } = usePricing()
+const { validateCoupon } = useCoupon()
+
+const pricing = computed(() => {
+  if (!dateRange.value.start || !dateRange.value.end) {
+    return { baseAmount: 0, discountAmount: 0, totalAmount: 0, breakdown: null }
+  }
+
+  const couponDiscountRate = appliedCoupon.value?.discountAmount
+    ? appliedCoupon.value.discountAmount / calculatePrice(dateRange.value.start, dateRange.value.end, bookingForm.guestCount, 0).baseAmount
+    : 0
+
+  return calculatePrice(
+    dateRange.value.start,
+    dateRange.value.end,
+    bookingForm.guestCount,
+    couponDiscountRate
+  )
+})
+
+function handleDateRangeUpdate(range: DateRange) {
+  dateRange.value = range
+}
+
+async function applyCoupon() {
+  couponError.value = null
+  couponApplied.value = false
+  appliedCoupon.value = null
+
+  if (!dateRange.value.start || !dateRange.value.end) {
+    couponError.value = '先に日付を選択してください'
+    return
+  }
+
+  if (!bookingForm.couponCode) {
+    couponError.value = 'クーポンコードを入力してください'
+    return
+  }
+
+  // 現在の料金を計算
+  const currentPricing = calculatePrice(
+    dateRange.value.start,
+    dateRange.value.end,
+    bookingForm.guestCount,
+    0
+  )
+
+  // クーポンを検証
+  const result = validateCoupon(bookingForm.couponCode, currentPricing.baseAmount)
+
+  if (result.isValid && result.coupon) {
+    couponApplied.value = true
+    appliedCoupon.value = {
+      ...result.coupon,
+      discountAmount: result.discountAmount
+    }
+  } else {
+    couponError.value = result.error || 'クーポンの適用に失敗しました'
+  }
+}
+
+async function submitBooking() {
+  if (!dateRange.value.start || !dateRange.value.end) return
+
+  // 認証チェック
+  if (!user.value) {
+    bookingError.value = 'ログインが必要です'
+    router.push('/login')
+    return
+  }
+
+  isSubmitting.value = true
+  bookingError.value = null
+
+  try {
+    const bookingData: CreateBookingRequest = {
+      type: 'stay',
+      startDate: dateRange.value.start,
+      endDate: dateRange.value.end,
+      guestCount: bookingForm.guestCount,
+      guestName: bookingForm.guestName,
+      guestEmail: bookingForm.guestEmail,
+      guestPhone: bookingForm.guestPhone,
+      totalAmount: pricing.value.totalAmount,
+      baseAmount: pricing.value.baseAmount,
+      discountAmount: pricing.value.discountAmount,
+      couponCode: bookingForm.couponCode || undefined,
+      notes: bookingForm.notes || undefined
+    }
+
+    // Firestoreに予約を作成
+    const bookingId = await createBooking(bookingData)
+    console.log('予約作成成功:', bookingId)
+
+    // 予約済み日付を再読み込み
+    await loadBookedDates()
+
+    // TODO: Stripe決済ページにリダイレクト
+    // 現在はマイページへリダイレクト
+    alert(`予約が作成されました！\n予約ID: ${bookingId}\n\n決済機能は今後実装予定です。`)
+    router.push('/mypage')
+  } catch (error: any) {
+    console.error('予約エラー:', error)
+    bookingError.value = error.message || '予約処理中にエラーが発生しました'
+  } finally {
+    isSubmitting.value = false
+  }
+}
+</script>

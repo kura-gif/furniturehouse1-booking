@@ -1,0 +1,38 @@
+# Nuxt
+.nuxt
+.output
+dist
+
+# Dependencies
+node_modules
+
+# Logs
+*.log
+logs
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Firebase
+.firebase
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+serviceAccountKey.json
+furniture-house-1-*.json
+*-base64.txt
+
+# Environment variables - 実際の認証情報を含むファイル
+.env
+.env.local
+.env.*.local
+.env.production
+.vercel
+.env*.local
