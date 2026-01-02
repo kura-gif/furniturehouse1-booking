@@ -11,9 +11,17 @@ export default defineNuxtPlugin((nuxtApp) => {
   // 環境変数が設定されていない場合、または開発モードの場合はFirebaseを初期化しない
   const apiKey = config.public.firebaseApiKey || ''
 
+  // 環境変数チェック
+  console.log('[Firebase] Config check:', {
+    hasApiKey: !!apiKey,
+    hasAuthDomain: !!config.public.firebaseAuthDomain,
+    hasProjectId: !!config.public.firebaseProjectId,
+    apiKeyPrefix: apiKey ? apiKey.substring(0, 10) + '...' : 'MISSING'
+  })
+
   // 開発モード判定（ダミー値の場合はスキップ）
   if (!apiKey || apiKey === 'dev-mode-no-firebase') {
-    console.log('[開発モード] Firebaseは初期化されていません。本番環境では.envファイルに実際のFirebase設定を追加してください。')
+    console.warn('[Firebase] Not initialized - missing API key or dev mode')
     return {
       provide: {
         firebase: null,

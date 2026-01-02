@@ -17,7 +17,10 @@ export const useAuth = () => {
   // 認証状態の監視
   const initAuth = () => {
     if (!$auth) {
+      console.warn('[Auth] Firebase Auth is not initialized')
       loading.value = false
+      user.value = null
+      appUser.value = null
       return
     }
 
@@ -25,14 +28,23 @@ export const useAuth = () => {
       user.value = firebaseUser
 
       if (firebaseUser && $db) {
-        // Firestoreからユーザー情報を取得
-        const userDoc = await getDoc(doc($db, 'users', firebaseUser.uid))
-        if (userDoc.exists()) {
-          appUser.value = {
-            id: userDoc.id,
-            uid: firebaseUser.uid,
-            ...userDoc.data()
-          } as AppUser
+        try {
+          // Firestoreからユーザー情報を取得
+          const userDoc = await getDoc(doc($db, 'users', firebaseUser.uid))
+          if (userDoc.exists()) {
+            appUser.value = {
+              id: userDoc.id,
+              uid: firebaseUser.uid,
+              ...userDoc.data()
+            } as AppUser
+            console.log('[Auth] User loaded:', appUser.value.email, 'Role:', appUser.value.role)
+          } else {
+            console.warn('[Auth] User document not found in Firestore:', firebaseUser.uid)
+            appUser.value = null
+          }
+        } catch (error) {
+          console.error('[Auth] Failed to load user from Firestore:', error)
+          appUser.value = null
         }
       } else {
         appUser.value = null
