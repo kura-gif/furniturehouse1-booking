@@ -5,23 +5,6 @@
 
     <!-- メインコンテンツ -->
     <div class="max-w-[1280px] mx-auto px-6 md:px-12 py-8">
-      <!-- パンくず & タイトル -->
-      <div class="mb-6">
-        <p class="text-sm text-gray-600 mb-3">
-          <NuxtLink to="https://furniturehouse1.com/" class="hover:underline">家具の家 No.1</NuxtLink>
-          <span class="mx-2">›</span>
-          <span>宿泊予約</span>
-        </p>
-        <div class="flex items-start justify-between gap-4">
-          <div class="flex-1">
-            <h1 class="text-3xl md:text-4xl font-medium mb-2" style="color: #231815; font-weight: 500; letter-spacing: 0.02em;">
-              家具の家 No.1
-            </h1>
-            <p class="text-base text-gray-600">坂茂建築設計 | 山梨県山中湖村</p>
-          </div>
-        </div>
-      </div>
-
       <!-- 画像ギャラリー -->
       <div class="mb-8">
         <div class="grid grid-cols-4 gap-2 h-[400px] md:h-[500px] rounded-lg overflow-hidden relative">
