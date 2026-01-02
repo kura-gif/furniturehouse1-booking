@@ -37,14 +37,14 @@
           </div>
           <!-- サブ画像 (右側4枚) -->
           <div
-            v-for="(photo, index) in displayPhotos.slice(1, 5)"
-            :key="photo.id || index"
+            v-for="(photo, index) in (displayPhotos.length > 0 ? displayPhotos.slice(1, 5) : images.gallery.slice(1, 5))"
+            :key="photo.id || photo.src || index"
             @click="openPhotoTour(index + 1)"
             class="hidden md:block col-span-1 relative group cursor-pointer overflow-hidden"
           >
             <div
               class="w-full h-full bg-cover bg-center transition-transform duration-300 group-hover:scale-105"
-              :style="`background-image: url('${photo.url}');`"
+              :style="`background-image: url('${photo.url || photo.src}');`"
             ></div>
           </div>
 
