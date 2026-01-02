@@ -47,6 +47,19 @@
 <script setup lang="ts">
 const { user, loading: authLoading, logout } = useAuth()
 
+// デバッグ用ログ
+onMounted(() => {
+  console.log('[AppHeader] Mounted. Auth loading:', authLoading.value, 'User:', user.value?.email || 'null')
+})
+
+watch(authLoading, (newVal) => {
+  console.log('[AppHeader] Auth loading changed:', newVal)
+})
+
+watch(user, (newVal) => {
+  console.log('[AppHeader] User changed:', newVal?.email || 'null')
+})
+
 const handleLogout = async () => {
   try {
     await logout()

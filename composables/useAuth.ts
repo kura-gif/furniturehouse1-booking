@@ -16,6 +16,8 @@ export const useAuth = () => {
 
   // 認証状態の監視
   const initAuth = () => {
+    console.log('[Auth] initAuth called. Has $auth:', !!$auth)
+
     if (!$auth) {
       console.warn('[Auth] Firebase Auth is not initialized')
       loading.value = false
@@ -24,7 +26,16 @@ export const useAuth = () => {
       return
     }
 
+    // タイムアウト設定（5秒後に強制的にloading = false）
+    const timeout = setTimeout(() => {
+      if (loading.value) {
+        console.warn('[Auth] Auth initialization timeout - forcing loading = false')
+        loading.value = false
+      }
+    }, 5000)
+
     onAuthStateChanged($auth, async (firebaseUser) => {
+      clearTimeout(timeout) // 正常に完了したらタイムアウトをクリア
       user.value = firebaseUser
 
       if (firebaseUser && $db) {

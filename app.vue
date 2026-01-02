@@ -6,12 +6,13 @@
 
 <script setup lang="ts">
 // アプリケーションのルートコンポーネント
-const { initAuth } = useAuth()
+const { initAuth, loading } = useAuth()
 
-// 認証状態の監視を開始
-onMounted(() => {
+// クライアントサイドでのみ認証を初期化
+if (import.meta.client) {
+  console.log('[App] Client-side: Initializing auth')
   initAuth()
-})
+}
 
 useHead({
   htmlAttrs: {
