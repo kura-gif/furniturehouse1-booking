@@ -81,6 +81,17 @@ service cloud.firestore {
                       get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
+    // ブロック期間コレクション
+    match /blockedDates/{blockedDateId} {
+      // 全ユーザーが読み取り可能（予約カレンダー表示のため）
+      allow read: if true;
+
+      // 管理者のみ作成・更新・削除可能
+      allow write: if request.auth != null &&
+                      exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
     // メールテンプレートコレクション
     match /emailTemplates/{templateId} {
       // 管理者のみアクセス可能
