@@ -706,13 +706,13 @@
           家具が家を支え、風が通り抜ける空間。<br />
           1日1組限定で、この唯一無二の建築体験をお楽しみいただけます。
         </p>
-        <NuxtLink
-          to="/booking"
-          class="inline-block py-4 px-12 text-white font-medium rounded-lg transition-all transform hover:-translate-y-1 hover:shadow-xl text-lg"
+        <button
+          @click="goToBooking"
+          class="inline-block py-4 px-12 text-white font-medium rounded-lg transition-all transform hover:-translate-y-1 hover:shadow-xl text-lg cursor-pointer"
           style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"
         >
           宿泊予約へ進む
-        </NuxtLink>
+        </button>
       </section>
     </div>
 
@@ -863,6 +863,7 @@ onMounted(() => {
   loadAmenities()
   loadPhotos()
   loadReviews()
+  loadBlockedDates()
 })
 
 // 写真ギャラリー管理
@@ -950,6 +951,27 @@ const sharePhoto = async () => {
   }
 }
 
+// 予約ページへ遷移（デフォルト値: 明日から1泊、大人1名）
+const goToBooking = () => {
+  const tomorrow = new Date()
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  const checkIn = tomorrow.toISOString().split('T')[0]
+
+  const dayAfter = new Date(tomorrow)
+  dayAfter.setDate(dayAfter.getDate() + 1)
+  const checkOut = dayAfter.toISOString().split('T')[0]
+
+  navigateTo({
+    path: '/booking/request',
+    query: {
+      checkIn,
+      checkOut,
+      adults: '1',
+      children: '0'
+    }
+  })
+}
+
 // 予約フォームの状態管理
 const checkInDate = ref('')
 const checkOutDate = ref('')
@@ -957,6 +979,9 @@ const adults = ref(1)
 const children = ref(0)
 const showGuestPicker = ref(false)
 const showCalendar = ref(false)
+
+// ブロック期間管理
+const { blockedDates, loadBlockedDates, isDateBlocked, isDateRangeBlocked } = useBlockedDates()
 
 // カレンダー表示用の月
 const currentMonth = ref(new Date())
@@ -1045,6 +1070,13 @@ const nextMonthDates = computed(() => {
 const selectDate = (dateObj: any) => {
   if (dateObj.disabled || dateObj.isEmpty) return
 
+  // ブロックされた日付かチェック
+  const selectedDate = new Date(dateObj.date)
+  if (isDateBlocked(selectedDate)) {
+    alert('この日付は予約できません（ブロック期間）')
+    return
+  }
+
   if (!checkInDate.value || (checkInDate.value && checkOutDate.value)) {
     // チェックイン日を設定（または両方リセットして新規設定）
     checkInDate.value = dateObj.date
@@ -1053,10 +1085,29 @@ const selectDate = (dateObj: any) => {
     // チェックアウト日を設定
     if (new Date(dateObj.date) > new Date(checkInDate.value)) {
       checkOutDate.value = dateObj.date
+
+      // チェックイン〜チェックアウトの期間がブロックされていないかチェック
+      const checkIn = new Date(checkInDate.value)
+      const checkOut = new Date(dateObj.date)
+      if (isDateRangeBlocked(checkIn, checkOut)) {
+        alert('選択された期間には予約できない日が含まれています')
+        checkOutDate.value = ''
+        return
+      }
     } else {
       // チェックインより前の日付を選んだ場合は入れ替え
       checkOutDate.value = checkInDate.value
       checkInDate.value = dateObj.date
+
+      // チェックイン〜チェックアウトの期間がブロックされていないかチェック
+      const checkIn = new Date(dateObj.date)
+      const checkOut = new Date(checkOutDate.value)
+      if (isDateRangeBlocked(checkIn, checkOut)) {
+        alert('選択された期間には予約できない日が含まれています')
+        checkInDate.value = ''
+        checkOutDate.value = ''
+        return
+      }
     }
   }
 }
@@ -1123,6 +1174,14 @@ const handleReservation = () => {
 
   if (totalGuests.value > 4) {
     alert('最大4名までご利用いただけます。')
+    return
+  }
+
+  // ブロック期間の最終チェック
+  const checkIn = new Date(checkInDate.value)
+  const checkOut = new Date(checkOutDate.value)
+  if (isDateRangeBlocked(checkIn, checkOut)) {
+    alert('選択された期間には予約できない日が含まれています。別の日程をお選びください。')
     return
   }
 

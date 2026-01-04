@@ -205,32 +205,132 @@
         </div>
       </div>
 
-      <!-- カレンダー管理タブ -->
-      <div v-if="currentTab === 'calendar'" class="card">
-        <h2 class="text-2xl font-semibold mb-6">カレンダー管理</h2>
+      <!-- 料金設定（拡張版）タブ -->
+      <div v-if="currentTab === 'pricing-enhanced'">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- 設定UI (2/3幅) -->
+          <div class="lg:col-span-2">
+            <AdminEnhancedPricingSettings />
+          </div>
 
-        <!-- カレンダー凡例 -->
-        <div class="mb-6 flex flex-wrap gap-4 text-sm">
-          <div class="flex items-center gap-2">
-            <span class="w-4 h-4 rounded bg-green-100 border border-green-300"></span>
-            <span>空室</span>
+          <!-- シミュレーター (1/3幅) -->
+          <div>
+            <AdminPricingSimulator />
           </div>
-          <div class="flex items-center gap-2">
-            <span class="w-4 h-4 rounded bg-purple-500"></span>
-            <span>予約済み（宿泊）</span>
+        </div>
+      </div>
+
+      <!-- カレンダー管理タブ -->
+      <div v-if="currentTab === 'calendar'" class="space-y-6">
+        <!-- ブロック期間追加フォーム -->
+        <div class="card">
+          <h3 class="text-lg font-semibold mb-4">ブロック期間を追加</h3>
+          <form @submit.prevent="handleAddBlockedDate" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  開始日 <span class="text-red-500">*</span>
+                </label>
+                <input
+                  v-model="blockForm.startDate"
+                  type="date"
+                  required
+                  class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  終了日 <span class="text-red-500">*</span>
+                </label>
+                <input
+                  v-model="blockForm.endDate"
+                  type="date"
+                  required
+                  class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  理由 <span class="text-red-500">*</span>
+                </label>
+                <input
+                  v-model="blockForm.reason"
+                  type="text"
+                  required
+                  placeholder="例: メンテナンス"
+                  class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+            </div>
+            <button
+              type="submit"
+              :disabled="isAddingBlock"
+              class="btn-primary"
+            >
+              {{ isAddingBlock ? '追加中...' : 'ブロック期間を追加' }}
+            </button>
+          </form>
+        </div>
+
+        <!-- ブロック期間一覧 -->
+        <div class="card">
+          <h3 class="text-lg font-semibold mb-4">登録済みブロック期間</h3>
+          <div v-if="blockedDates.length === 0" class="text-center text-gray-500 py-8">
+            ブロック期間は登録されていません
           </div>
-          <div class="flex items-center gap-2">
-            <span class="w-4 h-4 rounded bg-blue-500"></span>
-            <span>予約済み（WS）</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <span class="w-4 h-4 rounded bg-gray-300"></span>
-            <span>ブロック</span>
+          <div v-else class="space-y-2">
+            <div
+              v-for="blocked in blockedDates"
+              :key="blocked.id"
+              class="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+            >
+              <div>
+                <p class="font-semibold">{{ blocked.reason }}</p>
+                <p class="text-sm text-gray-600">
+                  {{ formatDate(blocked.startDate) }} 〜 {{ formatDate(blocked.endDate) }}
+                </p>
+              </div>
+              <button
+                @click="handleDeleteBlockedDate(blocked.id!)"
+                class="text-red-600 hover:text-red-800 text-sm font-medium"
+              >
+                削除
+              </button>
+            </div>
           </div>
         </div>
 
         <!-- カレンダー表示 -->
-        <AdminCalendarView :bookings="allBookings" />
+        <div class="card">
+          <h2 class="text-2xl font-semibold mb-6">カレンダー</h2>
+
+          <!-- カレンダー凡例 -->
+          <div class="mb-6 flex flex-wrap gap-4 text-sm">
+            <div class="flex items-center gap-2">
+              <span class="w-4 h-4 rounded bg-green-100 border border-green-300"></span>
+              <span>空室</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-4 h-4 rounded bg-purple-500"></span>
+              <span>予約済み（宿泊）</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-4 h-4 rounded bg-blue-500"></span>
+              <span>予約済み（WS）</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-4 h-4 rounded bg-gray-300"></span>
+              <span>ブロック</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-4 h-4 rounded border-2 border-red-500 text-red-600 flex items-center justify-center text-xs font-bold">祝</span>
+              <span>祝日</span>
+            </div>
+          </div>
+
+          <!-- カレンダー表示 -->
+          <AdminCalendarView :bookings="allBookings" />
+        </div>
       </div>
 
       <!-- メッセージタブ -->
@@ -1378,6 +1478,12 @@ const {
   sendMessage,
   markAllMessagesAsRead
 } = useMessaging()
+const {
+  blockedDates,
+  loadBlockedDates,
+  addBlockedDate,
+  deleteBlockedDate
+} = useBlockedDates()
 const router = useRouter()
 
 definePageMeta({
@@ -1451,10 +1557,12 @@ onMounted(() => {
   loadBookings()
   loadSupporters()
   loadSupportTasks()
+  loadBlockedDates()
 })
 
 const tabs = [
   { id: 'bookings', name: '予約管理' },
+  { id: 'pricing-enhanced', name: '料金設定' }, // 拡張版を「料金設定」に変更
   { id: 'calendar', name: 'カレンダー' },
   { id: 'messages', name: 'メッセージ' },
   { id: 'reports', name: 'レポート' },
@@ -1463,7 +1571,7 @@ const tabs = [
   { id: 'amenities', name: 'アメニティ管理' },
   { id: 'photos', name: '写真ギャラリー' },
   { id: 'reviews', name: 'レビュー' },
-  { id: 'pricing', name: '料金設定' },
+  // { id: 'pricing', name: '料金設定' }, // 旧料金設定は非表示化
   { id: 'coupons', name: 'クーポン' },
   { id: 'settings', name: '設定' }
 ]
@@ -1825,5 +1933,61 @@ function openMessage(booking: Booking) {
   // メッセージタブに移動
   currentTab.value = 'messages'
   selectedBooking.value = booking
+}
+
+// ブロック期間管理
+const blockForm = reactive({
+  startDate: '',
+  endDate: '',
+  reason: ''
+})
+const isAddingBlock = ref(false)
+
+async function handleAddBlockedDate() {
+  if (!blockForm.startDate || !blockForm.endDate || !blockForm.reason) {
+    alert('すべての項目を入力してください')
+    return
+  }
+
+  const startDate = new Date(blockForm.startDate)
+  const endDate = new Date(blockForm.endDate)
+
+  if (startDate > endDate) {
+    alert('終了日は開始日以降の日付を指定してください')
+    return
+  }
+
+  isAddingBlock.value = true
+  try {
+    await addBlockedDate({
+      startDate,
+      endDate,
+      reason: blockForm.reason
+    })
+    alert('ブロック期間を追加しました')
+    // フォームをリセット
+    blockForm.startDate = ''
+    blockForm.endDate = ''
+    blockForm.reason = ''
+  } catch (error) {
+    console.error('ブロック期間追加エラー:', error)
+    alert('ブロック期間の追加に失敗しました')
+  } finally {
+    isAddingBlock.value = false
+  }
+}
+
+async function handleDeleteBlockedDate(id: string) {
+  if (!confirm('このブロック期間を削除しますか？')) {
+    return
+  }
+
+  try {
+    await deleteBlockedDate(id)
+    alert('ブロック期間を削除しました')
+  } catch (error) {
+    console.error('ブロック期間削除エラー:', error)
+    alert('ブロック期間の削除に失敗しました')
+  }
 }
 </script>
