@@ -206,17 +206,20 @@
       </div>
 
       <!-- 料金設定（拡張版）タブ -->
-      <div v-if="currentTab === 'pricing-enhanced'">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <!-- 設定UI (2/3幅) -->
-          <div class="lg:col-span-2">
-            <AdminEnhancedPricingSettings />
-          </div>
+      <div v-if="currentTab === 'pricing-enhanced'" class="space-y-6">
+        <!-- 料金設定パネル -->
+        <AdminEnhancedPricingSettings />
 
-          <!-- シミュレーター (1/3幅) -->
-          <div>
-            <AdminPricingSimulator />
-          </div>
+        <!-- 料金シミュレーター -->
+        <AdminPricingSimulator />
+
+        <!-- 料金表示カレンダー -->
+        <div class="card">
+          <h2 class="text-2xl font-semibold mb-4">料金カレンダー</h2>
+          <p class="text-sm text-gray-600 mb-6">
+            各日の料金を確認できます。カレンダーに表示される金額は大人2名の基準料金です。
+          </p>
+          <PricingCalendar :adults="2" :children="0" />
         </div>
       </div>
 

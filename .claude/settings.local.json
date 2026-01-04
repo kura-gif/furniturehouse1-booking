@@ -58,7 +58,8 @@
       "Bash(git reset:*)",
       "Bash(git rm:*)",
       "Bash(git remote:*)",
-      "Bash(gh repo create:*)"
+      "Bash(gh repo create:*)",
+      "Bash(export FIREBASE_TOKEN=\"1//0ebdwMGcsHXNlCgYIARAAGA4SNgF-L9IrbRoPeEgZ9A8-uAk0e5i35Zmzt4iv_d5hCPlcycLVwK3Pzbe0Ypcq0I3RQQOtXF3f_w\")"
     ]
   }
 }
