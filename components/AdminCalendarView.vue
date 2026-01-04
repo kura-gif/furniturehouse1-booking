@@ -27,9 +27,12 @@
     <!-- 曜日ヘッダー -->
     <div class="grid grid-cols-7 gap-2 mb-2">
       <div
-        v-for="day in weekDays"
+        v-for="(day, index) in weekDays"
         :key="day"
-        class="text-center text-sm font-medium text-gray-600 py-2"
+        :class="[
+          'text-center text-sm font-medium py-2',
+          index === 0 ? 'text-red-600' : index === 6 ? 'text-blue-600' : 'text-gray-600'
+        ]"
       >
         {{ day }}
       </div>
@@ -55,8 +58,17 @@
         ]"
       >
         <!-- 日付 -->
-        <div class="text-sm font-medium mb-1" :class="date.isToday ? 'text-purple-600' : 'text-gray-700'">
+        <div
+          class="text-sm font-medium mb-1"
+          :class="{
+            'text-purple-600 font-bold': date.isToday,
+            'text-red-600': !date.isToday && (date.isHoliday || date.isSunday),
+            'text-blue-600': !date.isToday && !date.isHoliday && !date.isSunday && date.isSaturday,
+            'text-gray-700': !date.isToday && !date.isHoliday && !date.isSunday && !date.isSaturday
+          }"
+        >
           {{ date.day }}
+          <span v-if="date.holidayName" class="block text-xs truncate">{{ date.holidayName }}</span>
         </div>
 
         <!-- 予約情報 -->
@@ -73,8 +85,11 @@
         </div>
 
         <!-- ブロック表示 -->
-        <div v-if="date.isBlocked" class="text-xs text-gray-600">
-          ブロック
+        <div v-if="date.isBlocked && !date.booking" class="text-xs text-gray-600">
+          <div class="font-semibold">ブロック</div>
+          <div class="text-gray-500 truncate">
+            {{ getBlockedReason(date.date) }}
+          </div>
         </div>
       </div>
     </div>
@@ -208,8 +223,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import type { Booking, BookingStatus, PaymentStatus } from '~/types'
+import { isHoliday, getHolidayName, isSunday, isSaturday } from '~/utils/holidays'
 
 interface CalendarDate {
   date: Date
@@ -218,6 +234,10 @@ interface CalendarDate {
   isCurrentMonth: boolean
   isToday: boolean
   isBlocked: boolean
+  isSunday: boolean
+  isSaturday: boolean
+  isHoliday: boolean
+  holidayName: string | null
   booking?: Booking
 }
 
@@ -227,9 +247,16 @@ interface Props {
 
 const props = defineProps<Props>()
 
+const { blockedDates, loadBlockedDates, isDateBlocked, getBlockedReason } = useBlockedDates()
+
 const weekDays = ['日', '月', '火', '水', '木', '金', '土']
 const currentDate = ref(new Date())
 const selectedBooking = ref<Booking | null>(null)
+
+// ブロック期間を読み込み
+onMounted(() => {
+  loadBlockedDates()
+})
 
 const currentMonthYear = computed(() => {
   return `${currentDate.value.getFullYear()}年 ${currentDate.value.getMonth() + 1}月`
@@ -291,7 +318,11 @@ function createCalendarDate(date: Date, isCurrentMonth: boolean): CalendarDate {
     day: date.getDate(),
     isCurrentMonth,
     isToday,
-    isBlocked: false, // 将来的にブロック機能を追加
+    isBlocked: isDateBlocked(date),
+    isSunday: isSunday(date),
+    isSaturday: isSaturday(date),
+    isHoliday: isHoliday(date),
+    holidayName: getHolidayName(date),
     booking
   }
 }
