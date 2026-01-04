@@ -36,3 +36,4 @@ furniture-house-1-*.json
 .env.production
 .vercel
 .env*.local
+.claude/settings.local.json
