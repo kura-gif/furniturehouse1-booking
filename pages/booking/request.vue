@@ -2,15 +2,14 @@
   <div class="min-h-screen bg-gray-50">
     <AppHeader />
 
-    <div class="max-w-4xl mx-auto px-6 py-12 mt-16">
+    <!-- パンくずリスト -->
+    <div class="bg-white border-b border-gray-200 mt-16">
+      <Breadcrumb :items="breadcrumbItems" />
+    </div>
+
+    <div class="max-w-4xl mx-auto px-6 py-12">
       <!-- ヘッダー -->
       <div class="mb-8">
-        <button @click="$router.back()" class="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-          </svg>
-          戻る
-        </button>
         <h1 class="text-3xl font-semibold mb-6" style="color: #231815;">予約をリクエスト</h1>
 
         <!-- ステップインジケータ -->
@@ -56,12 +55,75 @@
         <div class="lg:col-span-2 space-y-8">
           <!-- ステップ1: 予約内容の確認 -->
           <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
-            <h2 class="text-xl font-semibold mb-4" style="color: #231815;">
-              1. 予約内容をご確認ください
-            </h2>
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-xl font-semibold" style="color: #231815;">
+                1. 予約内容をご確認ください
+              </h2>
+              <button
+                @click="showEditForm = !showEditForm"
+                class="px-4 py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition-colors flex items-center gap-2 shadow-md hover:shadow-lg"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                {{ showEditForm ? '閉じる' : '変更する' }}
+              </button>
+            </div>
 
             <div class="space-y-4">
-              <!-- 予約内容 -->
+              <!-- 編集フォーム -->
+              <div v-if="showEditForm" class="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">チェックイン</label>
+                  <input
+                    type="date"
+                    v-model="checkInDate"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">チェックアウト</label>
+                  <input
+                    type="date"
+                    v-model="checkOutDate"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">大人（人数）</label>
+                  <select
+                    v-model.number="adults"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  >
+                    <option :value="1">1人</option>
+                    <option :value="2">2人</option>
+                    <option :value="3">3人</option>
+                    <option :value="4">4人</option>
+                    <option :value="5">5人</option>
+                    <option :value="6">6人</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">乳幼児（人数）</label>
+                  <select
+                    v-model.number="children"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  >
+                    <option :value="0">0人</option>
+                    <option :value="1">1人</option>
+                    <option :value="2">2人</option>
+                    <option :value="3">3人</option>
+                  </select>
+                </div>
+                <button
+                  @click="showEditForm = false"
+                  class="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                >
+                  確定
+                </button>
+              </div>
+
+              <!-- 予約内容表示 -->
               <div class="border-b border-gray-200 pb-4">
                 <div class="space-y-2 text-sm">
                   <div class="flex justify-between">
@@ -80,19 +142,75 @@
               </div>
 
               <!-- 料金詳細 -->
-              <div class="space-y-2 text-sm">
-                <div class="flex justify-between">
-                  <span class="text-gray-600">¥{{ pricePerNight.toLocaleString() }} × {{ numberOfNights }}泊</span>
+              <div v-if="priceCalculation && priceCalculation.nightlyBreakdown" class="space-y-3 text-sm">
+                <!-- 基本情報 -->
+                <div class="flex justify-between text-xs text-gray-500">
+                  <span>大人{{ adults }}人 × {{ numberOfNights }}泊</span>
+                  <span>{{ adults <= 2 ? '基本料金' : '人数別料金適用' }}</span>
+                </div>
+
+                <!-- 泊別内訳 -->
+                <div v-for="(night, index) in priceCalculation.nightlyBreakdown" :key="index" class="border-l-2 border-purple-200 pl-3 py-1">
+                  <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                      <div class="font-medium text-gray-700">{{ index + 1 }}泊目 ({{ formatShortDate(night.date) }})</div>
+                      <div class="text-xs text-gray-500 mt-0.5">
+                        {{ night.seasonType === 'high' ? 'ハイ' : night.seasonType === 'off' ? 'オフ' : '通常' }}シーズン
+                        ・{{ night.dayType === 'weekend' ? '休日前日' : '平日' }}
+                        {{ night.nightRateDescription }}
+                      </div>
+                    </div>
+                    <span class="text-gray-900 ml-2">¥{{ night.nightTotal.toLocaleString() }}</span>
+                  </div>
+                </div>
+
+                <!-- 小計（宿泊料金） -->
+                <div class="flex justify-between pt-2 border-t border-gray-200">
+                  <span class="text-gray-600">宿泊料金</span>
                   <span class="text-gray-900">¥{{ subtotal.toLocaleString() }}</span>
                 </div>
+
+                <!-- 清掃料金 -->
                 <div class="flex justify-between">
-                  <span class="text-gray-600">税金</span>
-                  <span class="text-gray-900">¥{{ taxAmount.toLocaleString() }}</span>
+                  <span class="text-gray-600">清掃料金</span>
+                  <span class="text-gray-900">¥{{ cleaningFee.toLocaleString() }}</span>
                 </div>
-                <div class="flex justify-between pt-2 border-t border-gray-200 font-semibold text-base">
-                  <span>合計（JPY）</span>
+
+                <!-- 税抜合計 -->
+                <div class="flex justify-between text-xs text-gray-500">
+                  <span>小計（税抜）</span>
+                  <span>¥{{ subtotalBeforeTax.toLocaleString() }}</span>
+                </div>
+
+                <!-- 消費税 -->
+                <div class="flex justify-between">
+                  <span class="text-gray-600">消費税 ({{ taxRatePercent }}%)</span>
+                  <span class="text-gray-900">¥{{ tax.toLocaleString() }}</span>
+                </div>
+
+                <!-- 合計（税込） -->
+                <div class="flex justify-between pt-2 border-t-2 border-gray-300 font-semibold text-base">
+                  <span>合計（税込）</span>
                   <span>¥{{ totalAmount.toLocaleString() }}</span>
                 </div>
+
+                <!-- 料金サマリー -->
+                <div v-if="priceCalculation.summary" class="text-xs text-gray-500 pt-2 border-t border-gray-100">
+                  <div class="flex justify-between">
+                    <span>1泊あたり平均</span>
+                    <span>¥{{ priceCalculation.summary.averagePricePerNight.toLocaleString() }}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>1人あたり平均</span>
+                    <span>¥{{ priceCalculation.summary.averagePricePerPerson.toLocaleString() }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 読み込み中 -->
+              <div v-else class="space-y-2 text-sm text-gray-500 text-center py-4">
+                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600 mx-auto"></div>
+                <p>料金を計算しています...</p>
               </div>
 
               <!-- キャンセルポリシー -->
@@ -341,6 +459,13 @@ const route = useRoute()
 const router = useRouter()
 const { createBooking } = useBookings()
 const { createPaymentIntent, initializeElements, confirmCardPayment } = useStripePayment()
+const { calculatePrice, pricingSetting, loadFromFirestore } = useEnhancedPricing()
+
+// パンくずリスト
+const breadcrumbItems = [
+  { label: '家具の家 No.1 予約サイト', path: '/' },
+  { label: '予約をリクエスト' }
+]
 
 // クエリパラメータから予約情報を取得
 const checkInDate = ref(route.query.checkIn as string || '')
@@ -348,22 +473,47 @@ const checkOutDate = ref(route.query.checkOut as string || '')
 const adults = ref(parseInt(route.query.adults as string) || 1)
 const children = ref(parseInt(route.query.children as string) || 0)
 
-// 料金設定
-const pricePerNight = 16782
-const cleaningFee = 0
-const taxRate = 0.123 // 12.3%
-
-// 計算
-const numberOfNights = computed(() => {
-  if (!checkInDate.value || !checkOutDate.value) return 0
-  const start = new Date(checkInDate.value)
-  const end = new Date(checkOutDate.value)
-  return Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
+// 料金設定を読み込み
+onMounted(async () => {
+  await loadFromFirestore()
 })
 
-const subtotal = computed(() => pricePerNight * numberOfNights.value)
-const taxAmount = computed(() => Math.round(subtotal.value * taxRate))
-const totalAmount = computed(() => subtotal.value + cleaningFee + taxAmount.value)
+// 料金計算（拡張版）
+const priceCalculation = computed(() => {
+  if (!checkInDate.value || !checkOutDate.value) {
+    return null
+  }
+
+  const checkIn = new Date(checkInDate.value)
+  const checkOut = new Date(checkOutDate.value)
+
+  return calculatePrice(
+    checkIn,
+    checkOut,
+    adults.value,
+    [], // 子供の年齢リスト（現状は未対応）
+    0   // クーポン割引率
+  )
+})
+
+// 料金の詳細項目
+const numberOfNights = computed(() => priceCalculation.value?.numberOfNights || 0)
+const subtotal = computed(() => priceCalculation.value?.subtotal || 0)
+const cleaningFee = computed(() => priceCalculation.value?.cleaningFee || 0)
+const subtotalBeforeTax = computed(() => priceCalculation.value?.subtotalBeforeTax || 0)
+const tax = computed(() => priceCalculation.value?.tax || 0)
+const taxAmount = computed(() => priceCalculation.value?.tax || 0)
+const taxRatePercent = computed(() => {
+  const rate = pricingSetting.value?.taxRate || 0.1
+  return Math.round(rate * 100)
+})
+const totalAmount = computed(() => priceCalculation.value?.totalAmount || 0)
+
+// 1泊あたりの平均料金（料金サマリーカードに表示用）
+const pricePerNight = computed(() => {
+  if (!priceCalculation.value || numberOfNights.value === 0) return 0
+  return Math.floor(subtotal.value / numberOfNights.value)
+})
 
 // ゲスト情報
 const guestName = ref('')
@@ -382,6 +532,7 @@ const isSubmitting = ref(false)
 // モーダル・ローディング
 const showConfirmation = ref(false)
 const isProcessing = ref(false)
+const showEditForm = ref(false)
 
 const cancellationDeadline = computed(() => {
   if (!checkInDate.value) return ''
@@ -395,6 +546,12 @@ const formatDisplayDate = (dateStr: string): string => {
   if (!dateStr) return ''
   const date = new Date(dateStr)
   return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`
+}
+
+const formatShortDate = (dateStr: string): string => {
+  if (!dateStr) return ''
+  const date = new Date(dateStr)
+  return `${date.getMonth() + 1}/${date.getDate()}`
 }
 
 // 初期化処理
