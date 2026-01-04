@@ -53,7 +53,7 @@ export default defineNuxtConfig({
     routeRules: {
       '/**': {
         headers: {
-          'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://m.stripe.com https://accounts.google.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https://api.stripe.com https://m.stripe.com https://merchant-ui-api.stripe.com https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://accounts.google.com; frame-src https://js.stripe.com https://hooks.stripe.com https://accounts.google.com; worker-src 'self' blob:;"
+          'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://m.stripe.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https://api.stripe.com https://m.stripe.com https://merchant-ui-api.stripe.com https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com; frame-src https://js.stripe.com https://hooks.stripe.com; worker-src 'self' blob:;"
         }
       }
     }
