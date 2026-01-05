@@ -45,11 +45,9 @@ export default defineNuxtPlugin((nuxtApp) => {
     // Firebaseアプリを初期化
     const firebaseApp = initializeApp(firebaseConfig)
 
-    // Firestoreとのコネクション（オフライン持続性を無効化）
+    // Firestoreとのコネクション（Long Pollingを強制有効化 - WebSocket問題回避）
     const db = initializeFirestore(firebaseApp, {
-      localCache: {
-        kind: 'memory'
-      }
+      experimentalForceLongPolling: true
     })
     const auth = getAuth(firebaseApp)
     const storage = getStorage(firebaseApp)

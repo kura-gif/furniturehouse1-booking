@@ -21,13 +21,13 @@
           <!-- サブ画像 (右側4枚) -->
           <div
             v-for="(photo, index) in (displayPhotos.length > 0 ? displayPhotos.slice(1, 5) : images.gallery.slice(1, 5))"
-            :key="photo.id || photo.src || index"
+            :key="(photo as any).id || (photo as any).src || index"
             @click="openPhotoTour(index + 1)"
             class="hidden md:block col-span-1 relative group cursor-pointer overflow-hidden"
           >
             <div
               class="w-full h-full bg-cover bg-center transition-transform duration-300 group-hover:scale-105"
-              :style="`background-image: url('${photo.url || photo.src}');`"
+              :style="`background-image: url('${(photo as any).url || (photo as any).src}');`"
             ></div>
           </div>
 
@@ -155,7 +155,7 @@
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
-                <span>最大4名</span>
+                <span>最大6名</span>
               </div>
               <div class="flex items-center gap-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -555,7 +555,7 @@
                       </div>
                     </div>
 
-                    <p class="text-xs text-gray-500">最大4名まで</p>
+                    <p class="text-xs text-gray-500">最大6名まで</p>
                   </div>
                 </div>
               </div>
@@ -664,12 +664,12 @@
           <div>
             <h3 class="text-base font-medium mb-4" style="color: #231815;">キャンセルポリシー</h3>
             <div class="space-y-3 text-sm text-gray-700">
-              <p>チェックイン日の<strong>7日前</strong>までのキャンセル：全額返金</p>
-              <p>チェックイン日の<strong>7日前〜3日前</strong>：50%返金</p>
-              <p>チェックイン日の<strong>3日前以降</strong>：返金なし</p>
-              <button class="text-sm font-medium underline hover:text-gray-600 mt-4 transition-colors">
+              <p>利用日の<strong>3日前まで</strong>：無料キャンセル</p>
+              <p>利用日の<strong>2日前〜当日</strong>：100%</p>
+              <p><strong>無断キャンセル</strong>：100%</p>
+              <NuxtLink to="/cancellation-policy" class="text-sm font-medium underline hover:text-gray-600 mt-4 transition-colors inline-block">
                 詳細を見る
-              </button>
+              </NuxtLink>
             </div>
           </div>
 
@@ -677,29 +677,28 @@
           <div>
             <h3 class="text-base font-medium mb-4" style="color: #231815;">ハウスルール</h3>
             <div class="space-y-3 text-sm text-gray-700">
-              <p>チェックイン：15:00〜18:00</p>
-              <p>チェックアウト：11:00まで</p>
-              <p>最大宿泊人数：4名</p>
+              <p>チェックイン：{{ facilitySettings.checkInTime }}〜</p>
+              <p>チェックアウト：{{ facilitySettings.checkOutTime }}まで</p>
+              <p>最大宿泊人数：{{ facilitySettings.maxGuests }}名</p>
               <p>ペット同伴不可</p>
               <p>喫煙不可</p>
-              <button class="text-sm font-medium underline hover:text-gray-600 mt-4 transition-colors">
+              <NuxtLink to="/house-rules" class="text-sm font-medium underline hover:text-gray-600 mt-4 transition-colors inline-block">
                 詳細を見る
-              </button>
+              </NuxtLink>
             </div>
           </div>
 
-          <!-- 安全・設備 -->
+          <!-- 周辺情報・おすすめスポット -->
           <div>
-            <h3 class="text-base font-medium mb-4" style="color: #231815;">安全・設備</h3>
+            <h3 class="text-base font-medium mb-4" style="color: #231815;">周辺情報・おすすめスポット</h3>
             <div class="space-y-3 text-sm text-gray-700">
-              <p>一酸化炭素警報器</p>
-              <p>煙感知器</p>
-              <p>消火器完備</p>
-              <p>救急セット常備</p>
-              <p>セキュリティカメラ（屋外のみ）</p>
-              <button class="text-sm font-medium underline hover:text-gray-600 mt-4 transition-colors">
+              <p>レストラン・飲食店</p>
+              <p>観光スポット</p>
+              <p>コンビニ・スーパー</p>
+              <p>アクセス情報</p>
+              <NuxtLink to="/neighborhood" class="text-sm font-medium underline hover:text-gray-600 mt-4 transition-colors inline-block">
                 詳細を見る
-              </button>
+              </NuxtLink>
             </div>
           </div>
         </div>
@@ -716,10 +715,7 @@
             に同意したものとみなされます。
           </p>
           <p>
-            この宿泊施設は文化財建築物であり、特別な保護を必要とします。ご利用の際は建築物の保全にご協力いただきますようお願いいたします。
-          </p>
-          <p>
-            料金は税込価格です。別途、宿泊税が適用される場合があります。お支払い方法：クレジットカード（VISA、Mastercard、JCB、American Express）、銀行振込。
+            この宿泊施設は貴重な建築物であり、特別な保護を必要とします。ご利用の際は建築物の保全にご協力いただきますようお願いいたします。
           </p>
         </div>
       </section>
@@ -793,6 +789,29 @@ const { user } = useAuth()
 // レビュー管理
 const approvedReviews = ref<any[]>([])
 const averageRating = ref(0)
+
+// 施設設定（知っておきたいこと用）
+const facilitySettings = ref({
+  checkInTime: '15:00',
+  checkOutTime: '11:00',
+  houseRules: '',
+  maxGuests: 6
+})
+
+// 施設設定を読み込み
+const loadFacilitySettings = async () => {
+  try {
+    const response = await fetch('/api/public/settings')
+    if (response.ok) {
+      const data = await response.json()
+      if (data.success && data.settings) {
+        facilitySettings.value = data.settings
+      }
+    }
+  } catch (error) {
+    console.error('施設設定の取得に失敗:', error)
+  }
+}
 
 // レビューデータを読み込み
 const loadReviews = async () => {
@@ -885,12 +904,13 @@ const loadAmenities = async () => {
   }
 }
 
-// マウント時にアメニティ、写真、レビューを読み込み
+// マウント時にアメニティ、写真、レビュー、施設設定を読み込み
 onMounted(() => {
   loadAmenities()
   loadPhotos()
   loadReviews()
   loadBlockedDates()
+  loadFacilitySettings()
 })
 
 // 写真ギャラリー管理
@@ -1184,8 +1204,8 @@ const handleReservation = () => {
     return
   }
 
-  if (totalGuests.value > 4) {
-    alert('最大4名までご利用いただけます。')
+  if (totalGuests.value > 6) {
+    alert('最大6名までご利用いただけます。')
     return
   }
 

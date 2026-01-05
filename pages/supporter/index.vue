@@ -426,6 +426,15 @@ watch([loading, appUser], ([isLoading, currentUser]) => {
   }
 }, { immediate: true })
 
+// Timestamp型からDateに変換するヘルパー
+const toDate = (timestamp: any): Date => {
+  if (!timestamp) return new Date()
+  if (timestamp.toDate && typeof timestamp.toDate === 'function') {
+    return timestamp.toDate()
+  }
+  return new Date(timestamp)
+}
+
 // 本日のタスク
 const todayTasks = computed(() => {
   const today = new Date()
@@ -433,7 +442,7 @@ const todayTasks = computed(() => {
 
   return tasks.value.filter(task => {
     if (!task.scheduledDate) return false
-    const taskDate = task.scheduledDate.toDate ? task.scheduledDate.toDate() : new Date(task.scheduledDate)
+    const taskDate = toDate(task.scheduledDate)
     taskDate.setHours(0, 0, 0, 0)
     return taskDate.getTime() === today.getTime()
   })
@@ -459,7 +468,7 @@ const monthlyCompletedCount = computed(() => {
 
   return completedTasks.value.filter(task => {
     if (!task.completedAt) return false
-    const completedDate = task.completedAt.toDate ? task.completedAt.toDate() : new Date(task.completedAt)
+    const completedDate = toDate(task.completedAt)
     return completedDate.getMonth() === currentMonth && completedDate.getFullYear() === currentYear
   }).length
 })
@@ -473,7 +482,7 @@ const monthlyEarnings = computed(() => {
   return completedTasks.value
     .filter(task => {
       if (!task.completedAt) return false
-      const completedDate = task.completedAt.toDate ? task.completedAt.toDate() : new Date(task.completedAt)
+      const completedDate = toDate(task.completedAt)
       return completedDate.getMonth() === currentMonth && completedDate.getFullYear() === currentYear
     })
     .reduce((sum, task) => sum + (task.compensation?.totalAmount || 0), 0)
@@ -488,7 +497,7 @@ const monthlyHours = computed(() => {
   const totalMinutes = completedTasks.value
     .filter(task => {
       if (!task.completedAt) return false
-      const completedDate = task.completedAt.toDate ? task.completedAt.toDate() : new Date(task.completedAt)
+      const completedDate = toDate(task.completedAt)
       return completedDate.getMonth() === currentMonth && completedDate.getFullYear() === currentYear
     })
     .reduce((sum, task) => sum + (task.actualDuration || 0), 0)
@@ -530,12 +539,13 @@ const startTask = async () => {
   if (!selectedTask.value) return
 
   try {
+    const now = new Date()
     await updateTask(selectedTask.value.id, {
       status: 'in_progress',
-      startTime: new Date()
+      startTime: now as any
     })
     selectedTask.value.status = 'in_progress'
-    selectedTask.value.startTime = { toDate: () => new Date() } as any
+    selectedTask.value.startTime = { toDate: () => now } as any
     await loadTasks()
   } catch (error) {
     console.error('作業開始エラー:', error)
@@ -547,7 +557,7 @@ const startTask = async () => {
 const endTask = async () => {
   if (!selectedTask.value || !selectedTask.value.startTime) return
 
-  const startTime = selectedTask.value.startTime.toDate ? selectedTask.value.startTime.toDate() : new Date(selectedTask.value.startTime)
+  const startTime = toDate(selectedTask.value.startTime)
   const endTime = new Date()
   const duration = Math.round((endTime.getTime() - startTime.getTime()) / 60000) // 分単位
 
@@ -560,9 +570,9 @@ const endTask = async () => {
   try {
     await updateTask(selectedTask.value.id, {
       status: 'completed',
-      endTime,
+      endTime: endTime as any,
       actualDuration: duration,
-      completedAt: endTime,
+      completedAt: endTime as any,
       notes: taskNotes.value,
       suppliesUsed: usedSupplies.value.filter(s => s.name),
       compensation: {

@@ -80,7 +80,7 @@ export type CreatePaymentIntentInput = z.infer<typeof createPaymentIntentSchema>
  */
 export const updatePaymentIntentSchema = z.object({
   paymentIntentId: z.string().min(1, 'Payment Intent IDが必要です'),
-  metadata: z.record(z.string()).optional(),
+  metadata: z.record(z.string(), z.string()).optional(),
 })
 
 export type UpdatePaymentIntentInput = z.infer<typeof updatePaymentIntentSchema>
@@ -89,10 +89,10 @@ export type UpdatePaymentIntentInput = z.infer<typeof updatePaymentIntentSchema>
  * バリデーションエラーをフォーマット
  */
 export const formatValidationError = (error: z.ZodError): string => {
-  if (!error.errors || !Array.isArray(error.errors)) {
+  if (!error.issues || !Array.isArray(error.issues)) {
     return 'バリデーションエラーが発生しました'
   }
-  return error.errors.map(err => `${err.path.join('.')}: ${err.message}`).join(', ')
+  return error.issues.map(err => `${err.path.join('.')}: ${err.message}`).join(', ')
 }
 
 /**

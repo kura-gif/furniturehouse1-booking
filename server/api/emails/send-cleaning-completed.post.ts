@@ -18,8 +18,8 @@ export default defineEventHandler(async (event) => {
     }
   })
 
-  const senderEmail = config.emailUser || process.env.EMAIL_USER || 'noreply@furniturehouse1.com'
-  const adminEmail = config.adminEmail || process.env.ADMIN_EMAIL || senderEmail
+  const senderEmail = String(config.emailUser || process.env.EMAIL_USER || 'noreply@furniturehouse1.com')
+  const adminEmail = String(config.adminEmail || process.env.ADMIN_EMAIL || senderEmail)
 
   const taskTypeLabel = taskType === 'pre_checkin' ? 'チェックイン前清掃' : 'チェックアウト後清掃'
 

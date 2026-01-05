@@ -285,7 +285,10 @@ async function submitBooking() {
       guestEmail: bookingForm.guestEmail,
       guestPhone: bookingForm.guestPhone,
       couponCode: bookingForm.couponCode || undefined,
-      notes: `${selectedTimeSlot.value.name}（${selectedTimeSlot.value.time}）\n\n${bookingForm.notes}`
+      notes: `${selectedTimeSlot.value.name}（${selectedTimeSlot.value.time}）\n\n${bookingForm.notes}`,
+      totalAmount: 0, // ワークショップは無料（仮）
+      baseAmount: 0,
+      discountAmount: 0
     }
 
     console.log('ワークショップ予約データ:', bookingData)

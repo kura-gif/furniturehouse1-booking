@@ -15,7 +15,8 @@ import type { Coupon } from '~/types'
  * クーポンの管理と検証（Firestore対応版）
  */
 export const useCoupon = () => {
-  const { $firestore } = useNuxtApp()
+  const { $db } = useNuxtApp()
+  const $firestore = $db as ReturnType<typeof import('firebase/firestore').getFirestore>
   const error = ref<string | null>(null)
   const isLoading = ref(false)
 

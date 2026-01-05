@@ -1,7 +1,7 @@
 # 家具の家 No.1 予約システム 全体仕様書
 
-**バージョン**: 2.1
-**最終更新日**: 2025年1月5日
+**バージョン**: 2.5
+**最終更新日**: 2026年1月5日
 **プロジェクト**: 民泊予約・清掃管理統合システム
 
 ---
@@ -46,6 +46,16 @@
 | メール | 予約確認メール自動送信 | ✅ 完了 |
 | メール | タスク割り当て通知 | ✅ 完了 |
 | メール | 審査結果通知（承認/却下） | ✅ 完了 |
+| レビュー | ゲストレビュー投稿・管理 | ✅ 完了 |
+| レビュー | 公開レビュー一覧表示 | ✅ 完了 |
+| メッセージ | ゲスト・管理者間メッセージング | ✅ 完了 |
+| キャンセル | ゲストによるキャンセル・返金 | ✅ 完了 |
+| キャンセル | キャンセルポリシー管理 | ✅ 完了 |
+| 会員 | ユーザー登録・マイページ | ✅ 完了 |
+| ページ | 利用規約・プライバシーポリシー | ✅ 完了 |
+| ページ | キャンセルポリシー | ✅ 完了 |
+| ページ | ハウスルール | ✅ 完了 |
+| ページ | 周辺情報 | ✅ 完了 |
 
 ---
 
@@ -53,44 +63,92 @@
 
 ### 2.1 ディレクトリ構成
 
-```
+```text
 furniturehouse1/
 ├── pages/                    # ページコンポーネント
 │   ├── index.vue             # トップページ
+│   ├── login.vue             # ログイン
+│   ├── signup.vue            # ユーザー登録
+│   ├── mypage.vue            # マイページ
+│   ├── terms.vue             # 利用規約
+│   ├── privacy.vue           # プライバシーポリシー
+│   ├── cancellation-policy.vue # キャンセルポリシー
+│   ├── house-rules.vue       # ハウスルール
+│   ├── neighborhood.vue      # 周辺情報
+│   ├── workshop.vue          # ワークショップ
 │   ├── booking/              # 予約関連
 │   │   ├── index.vue         # 予約カレンダー
 │   │   ├── request.vue       # 予約リクエスト
-│   │   └── view.vue          # 予約確認
+│   │   ├── view.vue          # 予約確認
+│   │   └── complete.vue      # 予約完了
+│   ├── reviews/              # レビュー関連
+│   │   ├── index.vue         # レビュー一覧（公開）
+│   │   └── new.vue           # レビュー投稿
+│   ├── messages/             # メッセージ関連
+│   │   └── [id].vue          # メッセージ詳細
 │   ├── admin/                # 管理者画面
 │   │   ├── index.vue         # ダッシュボード
+│   │   ├── setup.vue         # 初期設定
 │   │   ├── supporters.vue    # サポーター管理
 │   │   ├── cleaning-tasks.vue # 清掃タスク管理
-│   │   └── compensation-report.vue # 報酬レポート
+│   │   ├── compensation-report.vue # 報酬レポート
+│   │   ├── reviews.vue       # レビュー管理
+│   │   └── messages/         # メッセージ管理
+│   │       ├── index.vue     # メッセージ一覧
+│   │       └── [id].vue      # メッセージ詳細
 │   └── supporter/            # サポーター画面
 │       ├── index.vue         # ダッシュボード
 │       └── task/[id].vue     # タスク詳細
 ├── components/               # 再利用コンポーネント
 │   ├── AppHeader.vue         # ヘッダー
+│   ├── AppFooter.vue         # フッター
+│   ├── Breadcrumb.vue        # パンくずリスト
+│   ├── BookingCalendar.vue   # 予約カレンダー
 │   ├── PricingCalendar.vue   # 料金カレンダー
+│   ├── PricingBreakdown.vue  # 料金内訳表示
+│   ├── GuestSelector.vue     # ゲスト人数選択
+│   ├── StatusBadge.vue       # ステータスバッジ
+│   ├── PaymentStatusBadge.vue # 支払いステータスバッジ
+│   ├── FeatureCard.vue       # 機能カード
+│   ├── TaskCard.vue          # タスクカード
 │   ├── AdminCalendarView.vue # 管理者カレンダー
 │   ├── AdminEnhancedPricingSettings.vue # 料金設定
-│   └── TaskCard.vue          # タスクカード
+│   ├── AdminPricingSettings.vue # 料金設定（旧）
+│   ├── AdminPricingSimulator.vue # 料金シミュレーター
+│   ├── AdminCouponManagement.vue # クーポン管理
+│   ├── AdminCancellationPolicySettings.vue # キャンセルポリシー設定
+│   ├── AdminAmenityManagement.vue # アメニティ管理
+│   └── AdminPhotoManagement.vue # 写真管理
 ├── composables/              # ロジック
 │   ├── useAuth.ts            # 認証
 │   ├── useBookings.ts        # 予約管理
 │   ├── useBlockedDates.ts    # ブロック日
 │   ├── useEnhancedPricing.ts # 料金計算
+│   ├── usePricing.ts         # 料金計算（基本）
+│   ├── usePricingSettings.ts # 料金設定
 │   ├── useCleaningTasks.ts   # 清掃タスク
 │   ├── useEmail.ts           # メール送信
-│   └── usePricingSettings.ts # 料金設定
+│   ├── useStripePayment.ts   # Stripe決済
+│   ├── useCoupon.ts          # クーポン
+│   ├── useCancellationPolicy.ts # キャンセルポリシー
+│   ├── useReviews.ts         # レビュー
+│   ├── useMessaging.ts       # メッセージング
+│   ├── useConversations.ts   # 会話管理
+│   ├── useAmenities.ts       # アメニティ
+│   ├── usePhotos.ts          # 写真管理
+│   └── useSupport.ts         # サポート
 ├── middleware/               # ミドルウェア
+│   ├── auth.ts               # 認証
 │   ├── admin.ts              # 管理者認証
 │   └── supporter.ts          # サポーター認証
 ├── server/api/               # APIエンドポイント
 │   ├── bookings/             # 予約API
 │   ├── stripe/               # 決済API
 │   ├── emails/               # メールAPI
-│   └── admin/                # 管理者API
+│   ├── admin/                # 管理者API
+│   ├── auth/                 # 認証API
+│   ├── public/               # 公開API
+│   └── test/                 # テストAPI
 ├── plugins/                  # プラグイン
 │   └── firebase.client.ts    # Firebase初期化
 ├── types/                    # 型定義
@@ -103,7 +161,7 @@ furniturehouse1/
 
 ### 2.2 Firestoreコレクション構成
 
-```
+```text
 firestore/
 ├── bookings/          # 予約データ
 ├── users/             # ユーザーデータ（全ロール）
@@ -113,10 +171,15 @@ firestore/
 ├── enhancedPricingSettings/ # 料金設定
 ├── coupons/           # クーポン
 ├── reviewLogs/        # 審査ログ
+├── reviews/           # ゲストレビュー
+├── conversations/     # メッセージ会話
+├── messages/          # メッセージ内容
+├── cancellationPolicies/ # キャンセルポリシー
 ├── emailTemplates/    # メールテンプレート
 ├── emailSchedules/    # メールスケジュール
 ├── sentEmails/        # 送信済みメール
-└── adminInvitations/  # 管理者招待
+├── adminInvitations/  # 管理者招待
+└── settings/          # システム設定
 ```
 
 ---
@@ -131,16 +194,32 @@ firestore/
 | `/booking` | 予約カレンダー | 日程選択・料金確認 |
 | `/booking/request` | 予約リクエスト | ゲスト情報入力・決済 |
 | `/booking/view` | 予約確認 | 予約詳細表示 |
+| `/booking/complete` | 予約完了 | 予約完了画面 |
 | `/login` | ログイン | Firebase Auth |
+| `/signup` | ユーザー登録 | 新規ユーザー登録 |
+| `/mypage` | マイページ | 予約履歴・プロフィール |
+| `/reviews` | レビュー一覧 | 公開レビュー表示 |
+| `/reviews/new` | レビュー投稿 | 宿泊後レビュー作成 |
+| `/messages/[id]` | メッセージ | 管理者とのやり取り |
+| `/workshop` | ワークショップ | ワークショップ予約 |
+| `/terms` | 利用規約 | サービス利用規約 |
+| `/privacy` | プライバシーポリシー | 個人情報保護方針 |
+| `/cancellation-policy` | キャンセルポリシー | キャンセル・返金規定 |
+| `/house-rules` | ハウスルール | 施設利用規則 |
+| `/neighborhood` | 周辺情報 | 周辺施設・アクセス案内 |
 
 ### 3.2 管理者画面
 
 | パス | 画面名 | 説明 |
 | ---- | ------ | ---- |
 | `/admin` | ダッシュボード | 予約一覧・カレンダー・統計 |
+| `/admin/setup` | 初期設定 | システム初期設定 |
 | `/admin/supporters` | サポーター管理 | 登録・編集・有効/無効 |
 | `/admin/cleaning-tasks` | 清掃タスク管理 | タスク一覧・割り当て |
 | `/admin/compensation-report` | 報酬レポート | 月次集計・CSV出力 |
+| `/admin/reviews` | レビュー管理 | レビュー承認・削除 |
+| `/admin/messages` | メッセージ管理 | ゲストメッセージ一覧 |
+| `/admin/messages/[id]` | メッセージ詳細 | 個別メッセージやり取り |
 
 ### 3.3 サポーター画面
 
@@ -274,6 +353,8 @@ interface EnhancedPricingSetting {
 | POST | `/api/bookings/create-secure` | 予約作成（セキュア版） |
 | POST | `/api/bookings/approve` | 予約承認（決済確定） |
 | POST | `/api/bookings/reject` | 予約却下（与信解放） |
+| POST | `/api/bookings/calculate-refund` | 返金額計算 |
+| POST | `/api/bookings/guest-cancel` | ゲストによるキャンセル |
 | GET | `/api/bookings/[id]` | 予約取得 |
 
 ### 5.2 決済API
@@ -281,6 +362,7 @@ interface EnhancedPricingSetting {
 | メソッド | パス | 説明 |
 | -------- | ---- | ---- |
 | POST | `/api/stripe/create-payment-intent-secure` | 決済Intent作成（与信確保） |
+| POST | `/api/stripe/update-payment-intent` | 決済Intent更新 |
 | POST | `/api/stripe/create-refund` | 返金処理 |
 | POST | `/api/stripe/webhook` | Stripeウェブフック |
 
@@ -301,6 +383,44 @@ interface EnhancedPricingSetting {
 | メソッド | パス | 説明 |
 | -------- | ---- | ---- |
 | POST | `/api/admin/create-supporter` | サポーター作成 |
+| POST | `/api/admin/invite` | 管理者招待 |
+| POST | `/api/admin/accept-invitation` | 招待承諾 |
+| GET | `/api/admin/invitations` | 招待一覧 |
+| POST | `/api/admin/invitations/[id]/resend` | 招待再送 |
+| DELETE | `/api/admin/invitations/[id]/revoke` | 招待取消 |
+| GET | `/api/admin/users` | ユーザー一覧 |
+| GET | `/api/admin/settings` | 設定取得 |
+| PUT | `/api/admin/settings` | 設定更新 |
+| GET | `/api/admin/email-templates` | メールテンプレート一覧 |
+| POST | `/api/admin/email-templates` | メールテンプレート作成 |
+| GET | `/api/admin/email-templates/[id]` | メールテンプレート取得 |
+| PUT | `/api/admin/email-templates/[id]` | メールテンプレート更新 |
+| DELETE | `/api/admin/email-templates/[id]` | メールテンプレート削除 |
+| GET | `/api/admin/email-schedules` | メールスケジュール一覧 |
+| POST | `/api/admin/email-schedules` | メールスケジュール作成 |
+| GET | `/api/admin/email-schedules/[id]` | メールスケジュール取得 |
+| PUT | `/api/admin/email-schedules/[id]` | メールスケジュール更新 |
+| DELETE | `/api/admin/email-schedules/[id]` | メールスケジュール削除 |
+
+### 5.5 認証API
+
+| メソッド | パス | 説明 |
+| -------- | ---- | ---- |
+| GET | `/api/auth/user` | 現在のユーザー情報取得 |
+
+### 5.6 公開API
+
+| メソッド | パス | 説明 |
+| -------- | ---- | ---- |
+| GET | `/api/public/settings` | 公開設定取得 |
+
+### 5.7 テストAPI
+
+| メソッド | パス | 説明 |
+| -------- | ---- | ---- |
+| GET | `/api/test/health` | ヘルスチェック |
+| POST | `/api/test/calculate-price` | 料金計算テスト |
+| POST | `/api/test/create-payment-intent-mock` | 決済モック |
 
 ---
 
@@ -380,7 +500,7 @@ frame-src https://js.stripe.com https://hooks.stripe.com;
 
 ### 8.1 予約フロー（審査あり）
 
-```
+```text
 [ゲスト] カレンダーで日程選択
     ↓
 [ゲスト] ゲスト情報入力
@@ -435,7 +555,7 @@ frame-src https://js.stripe.com https://hooks.stripe.com;
 
 ### 8.2 清掃タスクフロー
 
-```
+```text
 [管理者] サポーター割り当て（status: assigned）
     ↓
 [システム] 割り当て通知メール送信
@@ -453,7 +573,7 @@ frame-src https://js.stripe.com https://hooks.stripe.com;
 
 ### 8.3 報酬計算フロー
 
-```
+```text
 [管理者] 月次レポート画面で期間選択
     ↓
 [システム] 完了タスク集計
@@ -461,6 +581,40 @@ frame-src https://js.stripe.com https://hooks.stripe.com;
 [システム] 報酬計算（時給×時間＋交通費）
     ↓
 [管理者] CSV出力 or 支払い済みマーク
+```
+
+### 8.4 ゲストキャンセルフロー
+
+```text
+[ゲスト] 予約確認画面でキャンセルボタン
+    ↓
+[システム] キャンセルポリシーに基づく返金額計算
+    ↓
+[ゲスト] 返金額・キャンセル料確認
+    ↓
+[ゲスト] キャンセル確定
+    ↓
+[システム] Stripe返金処理
+    ↓
+[システム] 予約ステータス更新（status: cancelled）
+    ↓
+[システム] キャンセル確認メール送信
+    ↓
+[システム] 清掃タスクキャンセル（該当する場合）
+```
+
+### 8.5 レビュー投稿フロー
+
+```text
+[ゲスト] チェックアウト後にレビューリンク受信
+    ↓
+[ゲスト] レビュー投稿ページでレビュー作成
+    ↓
+[システム] レビュー保存（status: pending）
+    ↓
+[管理者] レビュー確認・承認
+    ↓
+[システム] レビュー公開（status: published）
 ```
 
 ---
@@ -500,12 +654,14 @@ frame-src https://js.stripe.com https://hooks.stripe.com;
 
 ## 11. 今後の拡張予定
 
-### Phase 2
+### Phase 2（一部完了）
 
 1. **多言語対応** - 英語・中国語
-2. **レビュー・評価機能** - ゲストからのレビュー投稿
-3. **会員制度** - リピーター向け割引
-4. **ワークショップ予約** - 日帰り利用機能
+2. ~~**レビュー・評価機能**~~ - ✅ 完了（ゲストレビュー投稿・管理）
+3. ~~**会員制度**~~ - ✅ 完了（ユーザー登録・マイページ）
+4. ~~**ワークショップ予約**~~ - ✅ 完了（日帰り利用機能）
+5. ~~**ゲストキャンセル機能**~~ - ✅ 完了（キャンセルポリシー管理・自動返金）
+6. ~~**メッセージング機能**~~ - ✅ 完了（ゲスト・管理者間メッセージ）
 
 ### Phase 3
 
@@ -513,6 +669,7 @@ frame-src https://js.stripe.com https://hooks.stripe.com;
 2. **AI写真分析** - 清掃品質チェック
 3. **自動スケジューリング** - サポーター空き状況による自動割り当て
 4. **備品在庫連携** - 使用備品からの自動減算
+5. **多言語対応** - 英語・中国語サポート
 
 ---
 
@@ -520,6 +677,10 @@ frame-src https://js.stripe.com https://hooks.stripe.com;
 
 | 日付 | バージョン | 変更内容 |
 | ---- | ---------- | -------- |
+| 2026-01-05 | 2.5 | 仕様書を最新のコードベースに同期 |
+| 2025-01-06 | 2.4 | ゲストキャンセル・返金機能追加、キャンセルポリシー管理 |
+| 2025-01-06 | 2.3 | レビュー機能追加（投稿・管理・公開） |
+| 2025-01-06 | 2.2 | メッセージング機能追加（ゲスト・管理者間） |
 | 2025-01-05 | 2.1 | 予約審査フロー追加（与信確保・承認/却下機能） |
 | 2025-01-05 | 2.0 | 清掃タスク管理・報酬計算機能追加 |
 | 2025-01-04 | 1.5 | サポーター管理機能追加 |

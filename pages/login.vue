@@ -12,8 +12,61 @@
         <p class="text-sm text-red-800">{{ error }}</p>
       </div>
 
-      <!-- フォーム -->
-      <div class="bg-white rounded-xl shadow-md p-8">
+      <!-- 成功メッセージ -->
+      <div v-if="successMessage" class="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+        <p class="text-sm text-green-800">{{ successMessage }}</p>
+      </div>
+
+      <!-- パスワードリセットフォーム -->
+      <div v-if="showResetPassword" class="bg-white rounded-xl shadow-md p-8">
+        <div v-if="!resetEmailSent">
+          <h2 class="text-lg font-semibold text-gray-900 mb-4">パスワードをリセット</h2>
+          <p class="text-sm text-gray-600 mb-6">
+            登録したメールアドレスを入力してください。パスワードリセット用のメールを送信します。
+          </p>
+          <form @submit.prevent="handleResetPassword" class="space-y-6">
+            <div>
+              <label for="resetEmail" class="block text-sm font-medium text-gray-700 mb-2">
+                メールアドレス
+              </label>
+              <input
+                id="resetEmail"
+                v-model="form.email"
+                type="email"
+                required
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                placeholder="example@email.com"
+              />
+            </div>
+            <button
+              type="submit"
+              :disabled="isLoading"
+              class="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {{ isLoading ? '送信中...' : 'リセットメールを送信' }}
+            </button>
+          </form>
+        </div>
+        <div v-else class="text-center">
+          <div class="text-green-500 text-5xl mb-4">✉️</div>
+          <h2 class="text-lg font-semibold text-gray-900 mb-2">メールを送信しました</h2>
+          <p class="text-sm text-gray-600 mb-6">
+            {{ form.email }} にパスワードリセット用のメールを送信しました。<br>
+            メールに記載されたリンクからパスワードを再設定してください。
+          </p>
+        </div>
+        <div class="mt-6 text-center">
+          <button
+            @click="backToLogin"
+            class="text-sm text-purple-600 hover:text-purple-800"
+          >
+            ← ログインに戻る
+          </button>
+        </div>
+      </div>
+
+      <!-- ログイン/サインアップフォーム -->
+      <div v-else class="bg-white rounded-xl shadow-md p-8">
         <form @submit.prevent="handleSubmit" class="space-y-6">
           <!-- 名前（サインアップ時のみ） -->
           <div v-if="isSignup">
@@ -71,6 +124,16 @@
           </button>
         </form>
 
+        <!-- パスワードを忘れた方（ログイン時のみ） -->
+        <div v-if="!isSignup" class="mt-4 text-center">
+          <button
+            @click="showResetForm"
+            class="text-sm text-gray-500 hover:text-gray-700"
+          >
+            パスワードを忘れた方はこちら
+          </button>
+        </div>
+
         <!-- 切り替えリンク -->
         <div class="mt-6 text-center">
           <button
@@ -105,7 +168,7 @@
 
 <script setup lang="ts">
 const { $auth } = useNuxtApp()
-const { login, signup } = useAuth()
+const { login, signup, resetPassword } = useAuth()
 const router = useRouter()
 const route = useRoute()
 
@@ -115,7 +178,10 @@ definePageMeta({
 
 const isSignup = ref(false)
 const isLoading = ref(false)
+const showResetPassword = ref(false)
+const resetEmailSent = ref(false)
 const error = ref('')
+const successMessage = ref('')
 
 const form = reactive({
   email: '',
@@ -125,7 +191,48 @@ const form = reactive({
 
 const toggleMode = () => {
   isSignup.value = !isSignup.value
+  showResetPassword.value = false
   error.value = ''
+  successMessage.value = ''
+}
+
+const showResetForm = () => {
+  showResetPassword.value = true
+  resetEmailSent.value = false
+  error.value = ''
+  successMessage.value = ''
+}
+
+const backToLogin = () => {
+  showResetPassword.value = false
+  resetEmailSent.value = false
+  error.value = ''
+  successMessage.value = ''
+}
+
+const handleResetPassword = async () => {
+  if (!$auth) {
+    error.value = 'Firebaseが設定されていません'
+    return
+  }
+
+  if (!form.email) {
+    error.value = 'メールアドレスを入力してください'
+    return
+  }
+
+  isLoading.value = true
+  error.value = ''
+
+  try {
+    await resetPassword(form.email)
+    resetEmailSent.value = true
+    successMessage.value = 'パスワードリセットメールを送信しました。メールをご確認ください。'
+  } catch (e: any) {
+    error.value = e.message || 'エラーが発生しました'
+  } finally {
+    isLoading.value = false
+  }
 }
 
 const handleSubmit = async () => {

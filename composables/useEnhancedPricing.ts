@@ -513,7 +513,7 @@ function loadEnhancedPricingSettingsFromLocalStorage(): EnhancedPricingSetting {
  * Firestoreに拡張版料金設定を保存
  */
 export async function saveEnhancedPricingSettingsToFirestore(
-  settings: Omit<EnhancedPricingSetting, 'id' | 'createdAt' | 'updatedAt'>
+  settings: Partial<Pick<EnhancedPricingSetting, 'id'>> & Omit<EnhancedPricingSetting, 'id' | 'createdAt' | 'updatedAt'>
 ): Promise<string> {
   const { $db } = useNuxtApp()
   if (!$db) throw new Error('Firestore is not initialized')
@@ -524,14 +524,14 @@ export async function saveEnhancedPricingSettingsToFirestore(
 
   // 既存の設定があれば更新、なければ新規作成
   if (settings.id) {
-    const docRef = doc($db, 'enhancedPricingSettings', settings.id)
+    const docRef = doc($db as ReturnType<typeof import('firebase/firestore').getFirestore>, 'enhancedPricingSettings', settings.id)
     await setDoc(docRef, {
       ...settings,
       updatedAt: now
     }, { merge: true })
     return settings.id
   } else {
-    const docRef = await addDoc(collection($db, 'enhancedPricingSettings'), {
+    const docRef = await addDoc(collection($db as ReturnType<typeof import('firebase/firestore').getFirestore>, 'enhancedPricingSettings'), {
       ...settings,
       createdAt: now,
       updatedAt: now

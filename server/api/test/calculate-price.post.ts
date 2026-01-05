@@ -1,11 +1,21 @@
 /**
  * 料金計算テストAPI
  * サーバーサイドの料金計算ロジックをテスト
+ *
+ * ⚠️ 本番環境では無効化
  */
 
 import { calculateBookingAmount, DEFAULT_PRICING, validateAmount } from '~/server/utils/pricing'
 
 export default defineEventHandler(async (event) => {
+  // 本番環境では無効化
+  if (process.env.NODE_ENV === 'production') {
+    throw createError({
+      statusCode: 404,
+      message: 'Not Found'
+    })
+  }
+
   try {
     const body = await readBody(event)
     const { checkInDate, checkOutDate, guestCount, couponDiscount = 0, clientAmount } = body

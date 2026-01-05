@@ -357,6 +357,15 @@ const showCompleteConfirm = ref(false)
 const elapsedSeconds = ref(0)
 let elapsedTimer: ReturnType<typeof setInterval> | null = null
 
+// Timestamp型からDateに変換するヘルパー
+const toDate = (timestamp: any): Date => {
+  if (!timestamp) return new Date()
+  if (timestamp.toDate && typeof timestamp.toDate === 'function') {
+    return timestamp.toDate()
+  }
+  return new Date(timestamp)
+}
+
 // タスクの読み込み
 const loadTask = async () => {
   const taskId = route.params.id as string
@@ -394,7 +403,7 @@ const startElapsedTimer = () => {
 
   const updateElapsed = () => {
     if (!task.value?.startTime) return
-    const startTime = task.value.startTime.toDate ? task.value.startTime.toDate() : new Date(task.value.startTime)
+    const startTime = toDate(task.value.startTime)
     elapsedSeconds.value = Math.floor((Date.now() - startTime.getTime()) / 1000)
   }
 
@@ -485,7 +494,7 @@ const startTask = async () => {
     const startTime = new Date()
     await updateTask(task.value.id, {
       status: 'in_progress',
-      startTime
+      startTime: startTime as any
     })
     task.value.status = 'in_progress'
     task.value.startTime = { toDate: () => startTime } as any
@@ -502,7 +511,7 @@ const startTask = async () => {
 const completeTask = async () => {
   if (!task.value || !task.value.startTime) return
 
-  const startTime = task.value.startTime.toDate ? task.value.startTime.toDate() : new Date(task.value.startTime)
+  const startTime = toDate(task.value.startTime)
   const endTime = new Date()
   const duration = Math.round((endTime.getTime() - startTime.getTime()) / 60000) // 分単位
 
@@ -517,9 +526,9 @@ const completeTask = async () => {
   try {
     await updateTask(task.value.id, {
       status: 'completed',
-      endTime,
+      endTime: endTime as any,
       actualDuration: duration,
-      completedAt: endTime,
+      completedAt: endTime as any,
       notes: notes.value,
       suppliesUsed: supplies.value.filter(s => s.name),
       compensation: {

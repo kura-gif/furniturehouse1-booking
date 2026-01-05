@@ -10,10 +10,11 @@ import type { CreateBookingInput } from '~/server/utils/validation'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
+  let rawBody: any = null
 
   try {
     // 1. リクエストボディを取得
-    const rawBody = await readBody(event)
+    rawBody = await readBody(event)
 
     // 2. 入力検証
     const validatedData = validateInput(createBookingSchema, rawBody)

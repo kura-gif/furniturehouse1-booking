@@ -6,16 +6,22 @@
  *
  * POST /api/bookings/reject
  * Body: { bookingId: string, reason: string, category?: string }
+ * Headers: Authorization: Bearer <Firebase ID Token>
  */
 
 import Stripe from 'stripe'
 import { FieldValue } from 'firebase-admin/firestore'
+import { requireAdmin } from '~/server/utils/auth'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
   const stripe = new Stripe(config.stripeSecretKey)
 
   try {
+    // 管理者認証を確認
+    const admin = await requireAdmin(event)
+    console.log('👤 Admin authenticated:', admin.uid, admin.displayName)
+
     const body = await readBody(event)
     const { bookingId, reason, category } = body
 
@@ -91,8 +97,8 @@ export default defineEventHandler(async (event) => {
       action: 'rejected',
       reason,
       category: category || 'other',
-      adminId: '', // TODO: 認証から取得
-      adminName: '管理者',
+      adminId: admin.uid,
+      adminName: admin.displayName || admin.email,
       createdAt: FieldValue.serverTimestamp(),
     })
 

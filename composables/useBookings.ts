@@ -39,14 +39,19 @@ export const useBookings = () => {
       const bookingReference = generateBookingReference()
       const bookingToken = generateBookingToken()
 
+      const startDateTimestamp = Timestamp.fromDate(bookingData.startDate)
+      const endDateTimestamp = Timestamp.fromDate(bookingData.endDate)
+
       const booking: Omit<Booking, 'id'> = {
         // userIdはログインユーザーの場合のみ設定
         ...(user.value && { userId: user.value.uid }),
         bookingReference,
         bookingToken,
         type: bookingData.type,
-        startDate: Timestamp.fromDate(bookingData.startDate),
-        endDate: Timestamp.fromDate(bookingData.endDate),
+        checkInDate: startDateTimestamp,
+        checkOutDate: endDateTimestamp,
+        startDate: startDateTimestamp,
+        endDate: endDateTimestamp,
         guestCount: bookingData.guestCount,
         guestName: bookingData.guestName,
         guestEmail: bookingData.guestEmail,
@@ -58,6 +63,10 @@ export const useBookings = () => {
         discountAmount: bookingData.discountAmount,
         ...(bookingData.couponCode && { couponId: bookingData.couponCode }),
         ...(bookingData.notes && { notes: bookingData.notes }),
+        ...(bookingData.selectedOptions && bookingData.selectedOptions.length > 0 && {
+          selectedOptions: bookingData.selectedOptions,
+          optionsTotalPrice: bookingData.optionsTotalPrice || 0
+        }),
         createdAt: Timestamp.now(),
         updatedAt: Timestamp.now()
       }
@@ -90,21 +99,30 @@ export const useBookings = () => {
 
   // 予約一覧を取得（管理者用）
   const getAllBookings = async (): Promise<Booking[]> => {
-    if (!$db) throw new Error('Firestore is not initialized')
+    if (!$db) {
+      console.error('[useBookings] Firestore is not initialized')
+      throw new Error('Firestore is not initialized')
+    }
 
     try {
+      console.log('[useBookings] getAllBookings called')
       const q = query(
         collection($db, 'bookings'),
         orderBy('createdAt', 'desc')
       )
 
       const querySnapshot = await getDocs(q)
-      return querySnapshot.docs.map(doc => ({
+      console.log('[useBookings] Query completed, docs count:', querySnapshot.docs.length)
+
+      const bookings = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       })) as Booking[]
+
+      console.log('[useBookings] Bookings loaded:', bookings.length)
+      return bookings
     } catch (error) {
-      console.error('Get all bookings error:', error)
+      console.error('[useBookings] Get all bookings error:', error)
       throw new Error('予約の取得に失敗しました')
     }
   }

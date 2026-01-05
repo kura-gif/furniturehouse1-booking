@@ -82,6 +82,48 @@
         </div>
       </div>
 
+      <!-- 与信期限アラート -->
+      <div v-if="authAlerts.length > 0" class="mb-8">
+        <div class="bg-white rounded-xl shadow-md overflow-hidden">
+          <div class="bg-gradient-to-r from-red-600 to-orange-500 px-6 py-3">
+            <h3 class="text-white font-bold flex items-center gap-2">
+              <span>⚠️</span>
+              与信期限アラート（{{ authAlerts.length }}件）
+            </h3>
+          </div>
+          <div class="p-4 space-y-3">
+            <div
+              v-for="alert in authAlerts"
+              :key="alert.bookingId"
+              :class="[
+                'border-l-4 rounded-r-lg p-4',
+                getAlertColor(alert.urgencyLevel)
+              ]"
+            >
+              <div class="flex items-start justify-between">
+                <div class="flex-1">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="text-lg">{{ getAlertIcon(alert.urgencyLevel) }}</span>
+                    <span class="font-bold">{{ alert.bookingReference }}</span>
+                    <span class="text-sm">- {{ alert.guestName }}様</span>
+                  </div>
+                  <p class="text-sm mb-2">{{ alert.message }}</p>
+                  <div class="text-xs opacity-80">
+                    {{ alert.checkInDate }} 〜 {{ alert.checkOutDate }} / ¥{{ alert.totalAmount.toLocaleString() }}
+                  </div>
+                </div>
+                <button
+                  @click="viewBookingById(alert.bookingId)"
+                  class="ml-4 px-4 py-2 bg-white rounded-lg shadow text-sm font-medium hover:bg-gray-50"
+                >
+                  対応する
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- 統計カード -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div class="card">
@@ -735,6 +777,27 @@
         <AdminPricingSettings />
       </div>
 
+      <!-- オプション管理タブ -->
+      <div v-if="currentTab === 'options'" class="card">
+        <div class="text-center py-8">
+          <svg class="w-16 h-16 text-purple-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+          </svg>
+          <h3 class="text-xl font-semibold text-gray-900 mb-2">予約オプション管理</h3>
+          <p class="text-gray-600 mb-6">BBQ設備、レンタサイクルなどのオプションを管理できます</p>
+          <NuxtLink
+            to="/admin/options"
+            class="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            オプション管理ページを開く
+          </NuxtLink>
+        </div>
+      </div>
+
       <!-- クーポン管理タブ -->
       <div v-if="currentTab === 'coupons'">
         <AdminCouponManagement />
@@ -747,6 +810,12 @@
 
       <!-- 設定タブ -->
       <div v-if="currentTab === 'settings'" class="space-y-6">
+        <!-- ローディング表示 -->
+        <div v-if="isLoadingSettings" class="text-center py-8">
+          <p class="text-gray-600">設定を読み込み中...</p>
+        </div>
+
+        <template v-else>
         <!-- チェックイン情報設定 -->
         <div class="card">
           <h2 class="text-2xl font-semibold mb-6">チェックイン情報</h2>
@@ -756,8 +825,8 @@
                 チェックイン時間
               </label>
               <input
+                v-model="facilitySettings.checkInTime"
                 type="time"
-                value="15:00"
                 class="w-full md:w-64 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
               />
             </div>
@@ -766,16 +835,30 @@
                 チェックアウト時間
               </label>
               <input
+                v-model="facilitySettings.checkOutTime"
                 type="time"
-                value="11:00"
                 class="w-full md:w-64 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
               />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                最大宿泊人数
+              </label>
+              <input
+                v-model.number="facilitySettings.maxGuests"
+                type="number"
+                min="1"
+                max="20"
+                class="w-full md:w-32 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+              />
+              <p class="text-sm text-gray-500 mt-1">トップページの「ハウスルール」に表示されます</p>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">
                 鍵の場所・受け渡し方法
               </label>
               <textarea
+                v-model="facilitySettings.keyInfo"
                 rows="3"
                 placeholder="例: 玄関横のキーボックス（暗証番号: 1234）"
                 class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
@@ -786,6 +869,7 @@
                 Wi-Fiパスワード
               </label>
               <input
+                v-model="facilitySettings.wifiPassword"
                 type="text"
                 placeholder="Wi-Fiパスワード"
                 class="w-full md:w-96 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
@@ -796,12 +880,20 @@
                 駐車場の案内
               </label>
               <textarea
+                v-model="facilitySettings.parkingInfo"
                 rows="2"
                 placeholder="駐車場の場所や注意事項"
                 class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
               ></textarea>
             </div>
-            <button class="btn-primary">保存</button>
+            <button
+              type="button"
+              @click="saveFacilitySettings"
+              :disabled="isSavingSettings"
+              class="btn-primary"
+            >
+              {{ isSavingSettings ? '保存中...' : '保存' }}
+            </button>
           </div>
         </div>
 
@@ -814,8 +906,9 @@
                 オーナー連絡先
               </label>
               <input
+                v-model="facilitySettings.ownerPhone"
                 type="tel"
-                value="090-1234-5678"
+                placeholder="090-1234-5678"
                 class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
               />
             </div>
@@ -824,6 +917,7 @@
                 水道トラブル
               </label>
               <input
+                v-model="facilitySettings.plumbingPhone"
                 type="tel"
                 placeholder="水道業者の電話番号"
                 class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
@@ -834,6 +928,7 @@
                 電気トラブル
               </label>
               <input
+                v-model="facilitySettings.electricPhone"
                 type="tel"
                 placeholder="電気業者の電話番号"
                 class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
@@ -844,13 +939,21 @@
                 鍵紛失時
               </label>
               <input
+                v-model="facilitySettings.locksmithPhone"
                 type="tel"
                 placeholder="鍵屋の電話番号"
                 class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
               />
             </div>
           </div>
-          <button class="btn-primary mt-4">保存</button>
+          <button
+            type="button"
+            @click="saveFacilitySettings"
+            :disabled="isSavingSettings"
+            class="btn-primary mt-4"
+          >
+            {{ isSavingSettings ? '保存中...' : '保存' }}
+          </button>
         </div>
 
         <!-- ハウスルール -->
@@ -862,12 +965,20 @@
                 ルール内容
               </label>
               <textarea
+                v-model="facilitySettings.houseRules"
                 rows="8"
                 placeholder="例:&#10;- 禁煙です&#10;- ペット不可&#10;- 騒音は22時まで&#10;- ゴミは分別してください"
                 class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
               ></textarea>
             </div>
-            <button class="btn-primary">保存</button>
+            <button
+              type="button"
+              @click="saveFacilitySettings"
+              :disabled="isSavingSettings"
+              class="btn-primary"
+            >
+              {{ isSavingSettings ? '保存中...' : '保存' }}
+            </button>
           </div>
         </div>
 
@@ -880,6 +991,7 @@
                 おすすめレストラン
               </label>
               <textarea
+                v-model="facilitySettings.restaurants"
                 rows="3"
                 placeholder="近くのおすすめレストラン情報"
                 class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
@@ -890,6 +1002,7 @@
                 観光スポット
               </label>
               <textarea
+                v-model="facilitySettings.attractions"
                 rows="3"
                 placeholder="近くの観光スポット"
                 class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
@@ -897,26 +1010,420 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">
-                交通アクセス
+                コンビニ・スーパー等
               </label>
               <textarea
+                v-model="facilitySettings.convenience"
                 rows="3"
-                placeholder="最寄り駅、バス停など"
+                placeholder="最寄りのコンビニやスーパーの情報"
                 class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
               ></textarea>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">
-                ゴミ出しルール
+                車でのアクセス
               </label>
               <textarea
+                v-model="facilitySettings.accessByCar"
                 rows="2"
-                placeholder="ゴミ出しの曜日や場所"
+                placeholder="駐車場情報やアクセス方法"
                 class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
               ></textarea>
             </div>
-            <button class="btn-primary">保存</button>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                公共交通機関でのアクセス
+              </label>
+              <textarea
+                v-model="facilitySettings.accessByPublicTransport"
+                rows="2"
+                placeholder="電車・バスなどのアクセス方法"
+                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+              ></textarea>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                近隣の医療機関
+              </label>
+              <textarea
+                v-model="facilitySettings.nearbyHospital"
+                rows="2"
+                placeholder="近くの病院やクリニック情報"
+                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+              ></textarea>
+            </div>
+            <button
+              type="button"
+              @click="saveFacilitySettings"
+              :disabled="isSavingSettings"
+              class="btn-primary"
+            >
+              {{ isSavingSettings ? '保存中...' : '保存' }}
+            </button>
           </div>
+        </div>
+
+        <!-- ハウスルール詳細設定 -->
+        <div class="card">
+          <h2 class="text-2xl font-semibold mb-6">ハウスルール詳細ページ設定</h2>
+          <p class="text-sm text-gray-500 mb-4">「ハウスルール」詳細ページに表示される内容を編集できます</p>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                禁止事項（各行が1項目）
+              </label>
+              <textarea
+                v-model="facilitySettings.houseRulesProhibited"
+                rows="5"
+                placeholder="- 禁煙&#10;- ペット不可&#10;- パーティー禁止"
+                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+              ></textarea>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                静粛時間
+              </label>
+              <input
+                v-model="facilitySettings.houseRulesNoise"
+                type="text"
+                placeholder="22:00〜翌8:00"
+                class="w-full md:w-64 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                ゴミの分別・処理（各行が1項目）
+              </label>
+              <textarea
+                v-model="facilitySettings.houseRulesGarbage"
+                rows="4"
+                placeholder="- 燃えるゴミ・燃えないゴミに分別&#10;- ペットボトルは洗ってください"
+                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+              ></textarea>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                チェックアウト時のお願い（各行が1項目）
+              </label>
+              <textarea
+                v-model="facilitySettings.houseRulesCheckout"
+                rows="5"
+                placeholder="- 食器を洗って戻す&#10;- エアコンを切る&#10;- 鍵を返却"
+                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+              ></textarea>
+            </div>
+            <button
+              type="button"
+              @click="saveFacilitySettings"
+              :disabled="isSavingSettings"
+              class="btn-primary"
+            >
+              {{ isSavingSettings ? '保存中...' : '保存' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- キャンセルポリシー詳細設定 -->
+        <div class="card">
+          <h2 class="text-2xl font-semibold mb-6">キャンセルポリシー詳細ページ設定</h2>
+          <p class="text-sm text-gray-500 mb-4">「キャンセルポリシー」詳細ページに表示される内容を編集できます</p>
+          <div class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  無料キャンセル期間
+                </label>
+                <input
+                  v-model="facilitySettings.cancelPolicyFree"
+                  type="text"
+                  placeholder="利用日の3日前まで"
+                  class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  無料キャンセル - キャンセル料
+                </label>
+                <input
+                  v-model="facilitySettings.cancelPolicyFreeDesc"
+                  type="text"
+                  placeholder="無料"
+                  class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  有料キャンセル期間
+                </label>
+                <input
+                  v-model="facilitySettings.cancelPolicyPartial"
+                  type="text"
+                  placeholder="利用日の2日前〜当日"
+                  class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  有料キャンセル - キャンセル料
+                </label>
+                <input
+                  v-model="facilitySettings.cancelPolicyPartialDesc"
+                  type="text"
+                  placeholder="利用料金の100%"
+                  class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  無断キャンセル
+                </label>
+                <input
+                  v-model="facilitySettings.cancelPolicyNoShow"
+                  type="text"
+                  placeholder="無断キャンセル（不泊）"
+                  class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  無断キャンセル - キャンセル料
+                </label>
+                <input
+                  v-model="facilitySettings.cancelPolicyNoShowDesc"
+                  type="text"
+                  placeholder="利用料金の100%"
+                  class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                キャンセル手続き方法
+              </label>
+              <textarea
+                v-model="facilitySettings.cancelPolicyProcedure"
+                rows="3"
+                placeholder="キャンセル手続きの方法を記載"
+                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+              ></textarea>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                例外事項（各行が1項目）
+              </label>
+              <textarea
+                v-model="facilitySettings.cancelPolicyExceptions"
+                rows="4"
+                placeholder="- 自然災害の場合&#10;- 施設都合の場合"
+                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+              ></textarea>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                注意事項（各行が1項目）
+              </label>
+              <textarea
+                v-model="facilitySettings.cancelPolicyNotes"
+                rows="4"
+                placeholder="- キャンセル料の計算基準&#10;- 返金処理について"
+                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+              ></textarea>
+            </div>
+            <button
+              type="button"
+              @click="saveFacilitySettings"
+              :disabled="isSavingSettings"
+              class="btn-primary"
+            >
+              {{ isSavingSettings ? '保存中...' : '保存' }}
+            </button>
+          </div>
+        </div>
+        </template>
+      </div>
+
+      <!-- システムタブ -->
+      <div v-if="currentTab === 'system'" class="space-y-6">
+        <div class="card">
+          <h3 class="text-xl font-semibold mb-4">Stripe/Firestore 整合性チェック</h3>
+          <p class="text-gray-600 mb-6">
+            決済システム（Stripe）とデータベース（Firestore）の間のデータ整合性を確認します。
+            ステータスの不一致や、与信期限切れが近い予約などを検出します。
+          </p>
+
+          <div class="bg-gray-50 rounded-lg p-4 mb-6">
+            <h4 class="font-medium mb-3">チェック設定</h4>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">開始日</label>
+                <input
+                  type="date"
+                  v-model="consistencyCheckDateFrom"
+                  class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">終了日</label>
+                <input
+                  type="date"
+                  v-model="consistencyCheckDateTo"
+                  class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+              <div class="flex items-end">
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    v-model="consistencyAutoFix"
+                    class="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                  />
+                  <span class="text-sm">自動修復を有効にする</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <button
+            @click="runConsistencyCheck"
+            :disabled="isRunningConsistencyCheck"
+            class="btn-primary"
+          >
+            <span v-if="isRunningConsistencyCheck">チェック中...</span>
+            <span v-else>整合性チェックを実行</span>
+          </button>
+
+          <!-- チェック結果 -->
+          <div v-if="consistencyCheckResult" class="mt-6">
+            <div class="flex items-center justify-between mb-4">
+              <h4 class="font-semibold text-lg">チェック結果</h4>
+              <span class="text-sm text-gray-500">
+                レポートID: {{ consistencyCheckResult.reportId }}
+              </span>
+            </div>
+
+            <!-- サマリー -->
+            <div class="grid grid-cols-3 gap-4 mb-6">
+              <div class="bg-blue-50 rounded-lg p-4 text-center">
+                <p class="text-2xl font-bold text-blue-600">{{ consistencyCheckResult.summary.totalChecked }}</p>
+                <p class="text-sm text-gray-600">チェック件数</p>
+              </div>
+              <div :class="[
+                'rounded-lg p-4 text-center',
+                consistencyCheckResult.summary.inconsistenciesFound > 0 ? 'bg-red-50' : 'bg-green-50'
+              ]">
+                <p :class="[
+                  'text-2xl font-bold',
+                  consistencyCheckResult.summary.inconsistenciesFound > 0 ? 'text-red-600' : 'text-green-600'
+                ]">
+                  {{ consistencyCheckResult.summary.inconsistenciesFound }}
+                </p>
+                <p class="text-sm text-gray-600">不整合件数</p>
+              </div>
+              <div class="bg-purple-50 rounded-lg p-4 text-center">
+                <p class="text-2xl font-bold text-purple-600">{{ consistencyCheckResult.summary.autoFixed }}</p>
+                <p class="text-sm text-gray-600">自動修復件数</p>
+              </div>
+            </div>
+
+            <!-- 不整合リスト -->
+            <div v-if="consistencyCheckResult.inconsistencies.length > 0">
+              <h5 class="font-medium mb-3">検出された問題</h5>
+              <div class="space-y-3">
+                <div
+                  v-for="(issue, index) in consistencyCheckResult.inconsistencies"
+                  :key="index"
+                  class="border rounded-lg p-4"
+                  :class="{
+                    'border-red-200 bg-red-50': issue.type === 'status_mismatch' || issue.type === 'missing_payment',
+                    'border-yellow-200 bg-yellow-50': issue.type === 'stale_authorization',
+                    'border-orange-200 bg-orange-50': issue.type === 'amount_mismatch'
+                  }"
+                >
+                  <div class="flex items-start justify-between">
+                    <div>
+                      <span class="font-mono text-sm text-gray-500">{{ issue.bookingReference }}</span>
+                      <span class="ml-2 text-xs px-2 py-1 rounded-full" :class="{
+                        'bg-red-200 text-red-800': issue.type === 'status_mismatch',
+                        'bg-yellow-200 text-yellow-800': issue.type === 'stale_authorization',
+                        'bg-orange-200 text-orange-800': issue.type === 'amount_mismatch',
+                        'bg-gray-200 text-gray-800': issue.type === 'missing_payment'
+                      }">
+                        {{ getInconsistencyTypeLabel(issue.type) }}
+                      </span>
+                    </div>
+                    <span v-if="issue.autoFixable" class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                      自動修復可能
+                    </span>
+                  </div>
+                  <p class="mt-2 text-sm">{{ issue.description }}</p>
+                  <p class="mt-1 text-xs text-gray-600">
+                    <strong>推奨アクション:</strong> {{ issue.suggestedAction }}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div v-else class="text-center py-8 text-green-600">
+              <svg class="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p class="font-semibold">すべて正常です</p>
+              <p class="text-sm text-gray-500">不整合は検出されませんでした</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Webhookログ -->
+        <div class="card">
+          <h3 class="text-xl font-semibold mb-4">Webhookログ</h3>
+          <p class="text-gray-600 mb-4">
+            直近のStripe Webhookイベントの処理履歴を確認できます。
+          </p>
+          <button
+            @click="loadWebhookLogs"
+            :disabled="isLoadingWebhookLogs"
+            class="btn-secondary mb-4"
+          >
+            {{ isLoadingWebhookLogs ? '読み込み中...' : 'ログを更新' }}
+          </button>
+
+          <div v-if="webhookLogs.length > 0" class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">日時</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">イベント</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">ステータス</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <tr v-for="log in webhookLogs" :key="log.id">
+                  <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                    {{ formatDateTime(log.timestamp) }}
+                  </td>
+                  <td class="px-4 py-3 whitespace-nowrap text-sm font-mono">
+                    {{ log.eventType }}
+                  </td>
+                  <td class="px-4 py-3 whitespace-nowrap text-sm">
+                    <span
+                      :class="[
+                        'px-2 py-1 rounded-full text-xs',
+                        log.processed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      ]"
+                    >
+                      {{ log.processed ? '成功' : 'エラー' }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p v-else class="text-gray-500 text-center py-4">
+            ログを読み込むには「ログを更新」をクリックしてください
+          </p>
         </div>
       </div>
     </div>
@@ -1090,12 +1597,104 @@
               キャンセル
             </button>
             <button
+              v-if="['confirmed', 'pending_review'].includes(selectedBooking.status)"
+              @click="openModifyModal"
+              class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              予約変更
+            </button>
+            <button
               @click="openMessage(selectedBooking)"
               class="btn-secondary flex-1"
             >
               メッセージ
             </button>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 予約変更モーダル -->
+    <div v-if="showModifyModal && selectedBooking" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+        <h3 class="text-xl font-semibold text-gray-900 mb-4">予約変更</h3>
+
+        <div class="space-y-4 mb-6">
+          <!-- 現在の予約情報 -->
+          <div class="bg-gray-50 rounded-lg p-4">
+            <p class="text-sm text-gray-600">予約番号</p>
+            <p class="font-medium">{{ selectedBooking.bookingReference }}</p>
+            <p class="text-sm text-gray-600 mt-2">ゲスト</p>
+            <p class="font-medium">{{ selectedBooking.guestName }}様</p>
+          </div>
+
+          <!-- 日程変更 -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">チェックイン日</label>
+            <input
+              v-model="modifyForm.checkInDate"
+              type="date"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            />
+            <p class="text-xs text-gray-500 mt-1">現在: {{ formatDate(selectedBooking.startDate) }}</p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">チェックアウト日</label>
+            <input
+              v-model="modifyForm.checkOutDate"
+              type="date"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            />
+            <p class="text-xs text-gray-500 mt-1">現在: {{ formatDate(selectedBooking.endDate) }}</p>
+          </div>
+
+          <!-- 人数変更 -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">宿泊人数</label>
+            <select
+              v-model="modifyForm.guestCount"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            >
+              <option :value="null">変更しない</option>
+              <option v-for="n in 6" :key="n" :value="n">{{ n }}名</option>
+            </select>
+            <p class="text-xs text-gray-500 mt-1">現在: {{ selectedBooking.guestCount }}名</p>
+          </div>
+
+          <!-- 変更理由 -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">変更理由 <span class="text-red-500">*</span></label>
+            <textarea
+              v-model="modifyForm.reason"
+              rows="3"
+              placeholder="例: お客様からの日程変更依頼"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            ></textarea>
+          </div>
+
+          <!-- 金額変更の警告 -->
+          <div v-if="modifyForm.checkInDate || modifyForm.checkOutDate || modifyForm.guestCount" class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <p class="text-sm text-yellow-800">
+              <strong>注意:</strong> 変更により金額が変わる場合、差額の返金または追加請求が発生します。
+            </p>
+          </div>
+        </div>
+
+        <div class="flex gap-3">
+          <button
+            @click="showModifyModal = false"
+            class="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+          >
+            キャンセル
+          </button>
+          <button
+            @click="submitModification"
+            :disabled="isModifying || !modifyForm.reason"
+            class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+          >
+            {{ isModifying ? '処理中...' : '変更を実行' }}
+          </button>
         </div>
       </div>
     </div>
@@ -1273,9 +1872,10 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, reactive, watch, nextTick } from 'vue'
+import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore'
 import type { Booking, BookingStatus, PaymentStatus, GuestMessage, RejectionCategory } from '~/types'
 
-const { appUser, loading, user, logout } = useAuth()
+const { appUser, loading, user, logout, getIdToken } = useAuth()
 const { getAllBookings, confirmBooking: confirmBookingAPI, cancelBooking: cancelBookingAPI } = useBookings()
 const {
   subscribeToMessages,
@@ -1292,7 +1892,8 @@ const router = useRouter()
 
 definePageMeta({
   layout: false,
-  middleware: 'admin'
+  middleware: 'admin',
+  ssr: false  // クライアントサイドのみでレンダリング（ハイドレーション問題回避）
 })
 
 // ログアウト処理
@@ -1309,6 +1910,49 @@ const handleLogout = async () => {
 const allBookings = ref<Booking[]>([])
 const isLoading = ref(false)
 
+// 施設設定データ
+const facilitySettings = ref({
+  // 基本設定
+  checkInTime: '14:00',
+  checkOutTime: '11:00',
+  maxGuests: 6,
+  keyInfo: '',
+  wifiPassword: '',
+  parkingInfo: '',
+  ownerPhone: '',
+  plumbingPhone: '',
+  electricPhone: '',
+  locksmithPhone: '',
+
+  // ハウスルール詳細ページ用
+  houseRules: '',
+  houseRulesProhibited: '- 建物内・敷地内全面禁煙（電子タバコ含む）\n- ペット同伴不可\n- パーティー・騒音を伴うイベント禁止\n- 商用目的の撮影は事前許可が必要',
+  houseRulesNoise: '22:00〜翌8:00',
+  houseRulesGarbage: '- 燃えるゴミ・燃えないゴミ・資源ゴミに分別\n- ペットボトル・缶は洗ってからお捨てください\n- 大量のゴミが出る場合は事前にご相談ください',
+  houseRulesCheckout: '- 使用した食器類は軽く洗って元の場所にお戻しください\n- タオル・リネン類は脱衣所の所定の場所にまとめてください\n- エアコン・照明・水道の元栓を確認してください\n- 窓・ドアの施錠を確認してください\n- 鍵を所定の場所にお戻しください',
+
+  // キャンセルポリシー詳細ページ用
+  cancelPolicyFree: '利用日の3日前まで',
+  cancelPolicyFreeDesc: '無料',
+  cancelPolicyPartial: '利用日の2日前〜当日',
+  cancelPolicyPartialDesc: '利用料金の100%（清掃料等を含む）',
+  cancelPolicyNoShow: '無断キャンセル（不泊）',
+  cancelPolicyNoShowDesc: '利用料金の100%',
+  cancelPolicyProcedure: '予約サイトからキャンセル\nご予約時にご利用いただいた予約サイトにログインし、「予約の管理」または「キャンセル」メニューからお手続きください。',
+  cancelPolicyExceptions: '- 悪天候や自然災害等で当社が施設の利用が危険と判断した場合\n- 施設の設備故障等により利用が不可能となった場合\n- その他、やむを得ない事由により当社が利用不可と判断した場合',
+  cancelPolicyNotes: '- キャンセル料の計算は、施設利用日を基準とします\n- キャンセル料には、基本利用料金および清掃料等の追加料金が含まれます\n- 返金処理には、決済方法により数日〜数週間かかる場合があります',
+
+  // 周辺情報詳細ページ用
+  restaurants: '',
+  attractions: '',
+  convenience: '',
+  accessByCar: '駐車場をご利用いただけます。駐車場の詳細は予約確認メールをご確認ください。',
+  accessByPublicTransport: '詳細なアクセス方法は予約確認メールでご案内いたします。',
+  nearbyHospital: '急な体調不良の際は、お近くの病院・クリニックをご利用ください。'
+})
+const isLoadingSettings = ref(false)
+const isSavingSettings = ref(false)
+
 // 返金モーダル
 const showRefundModal = ref(false)
 const refundReason = ref('')
@@ -1322,6 +1966,87 @@ const refundCalculation = ref<{
 } | null>(null)
 const isCalculatingRefund = ref(false)
 
+// 予約変更モーダル
+const showModifyModal = ref(false)
+const isModifying = ref(false)
+const modifyForm = reactive({
+  checkInDate: '',
+  checkOutDate: '',
+  guestCount: null as number | null,
+  reason: ''
+})
+
+const openModifyModal = () => {
+  // フォームをリセット
+  modifyForm.checkInDate = ''
+  modifyForm.checkOutDate = ''
+  modifyForm.guestCount = null
+  modifyForm.reason = ''
+  showModifyModal.value = true
+}
+
+const submitModification = async () => {
+  if (!selectedBooking.value || !modifyForm.reason) return
+
+  // 少なくとも1つの変更があるか確認
+  if (!modifyForm.checkInDate && !modifyForm.checkOutDate && modifyForm.guestCount === null) {
+    alert('変更内容を指定してください')
+    return
+  }
+
+  isModifying.value = true
+
+  try {
+    const { getIdToken } = useAuth()
+    const token = await getIdToken()
+    if (!token) throw new Error('認証が必要です')
+
+    const body: any = {
+      bookingId: selectedBooking.value.id,
+      reason: modifyForm.reason
+    }
+
+    if (modifyForm.checkInDate) {
+      body.newCheckInDate = modifyForm.checkInDate
+    }
+    if (modifyForm.checkOutDate) {
+      body.newCheckOutDate = modifyForm.checkOutDate
+    }
+    if (modifyForm.guestCount !== null) {
+      body.newGuestCount = modifyForm.guestCount
+    }
+
+    const response = await fetch('/api/bookings/modify', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    })
+
+    const result = await response.json()
+
+    if (!response.ok) {
+      throw new Error(result.message || '予約変更に失敗しました')
+    }
+
+    alert(result.message)
+    showModifyModal.value = false
+    selectedBooking.value = null
+
+    // 予約一覧を再読み込み
+    dataLoaded.value = false
+    await loadData()
+
+  } catch (error: any) {
+    console.error('予約変更エラー:', error)
+    alert(error.message || '予約変更に失敗しました')
+  } finally {
+    isModifying.value = false
+  }
+}
+
 // 審査モーダル
 const showRejectModal = ref(false)
 const rejectCategory = ref('')
@@ -1331,11 +2056,13 @@ const isRejecting = ref(false)
 
 // 予約データを取得
 const loadBookings = async () => {
+  console.log('[Admin] loadBookings called')
   isLoading.value = true
   try {
     allBookings.value = await getAllBookings()
+    console.log('[Admin] Bookings loaded:', allBookings.value.length)
   } catch (error) {
-    console.error('予約データ取得エラー:', error)
+    console.error('[Admin] 予約データ取得エラー:', error)
     alert('予約データの取得に失敗しました')
   } finally {
     isLoading.value = false
@@ -1379,25 +2106,90 @@ const stats = computed(() => {
 // 認証状態が確定してからデータを読み込み
 const dataLoaded = ref(false)
 
+// 与信期限アラート
+interface AuthorizationAlert {
+  bookingId: string
+  bookingReference: string
+  guestName: string
+  guestEmail: string
+  checkInDate: string
+  checkOutDate: string
+  totalAmount: number
+  daysSinceAuth: number
+  urgencyLevel: 'warning' | 'critical' | 'expired'
+  message: string
+}
+const authAlerts = ref<AuthorizationAlert[]>([])
+const authAlertsLoading = ref(false)
+
+const loadAuthorizationAlerts = async () => {
+  authAlertsLoading.value = true
+  try {
+    const { getIdToken } = useAuth()
+    const token = await getIdToken()
+    if (!token) return
+
+    const response = await fetch('/api/admin/authorization-alerts', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+
+    if (response.ok) {
+      const data = await response.json()
+      authAlerts.value = data.alerts || []
+    }
+  } catch (error) {
+    console.error('[Admin] 与信アラート取得エラー:', error)
+  } finally {
+    authAlertsLoading.value = false
+  }
+}
+
+const getAlertColor = (level: string) => {
+  switch (level) {
+    case 'expired': return 'bg-red-100 border-red-500 text-red-800'
+    case 'critical': return 'bg-orange-100 border-orange-500 text-orange-800'
+    default: return 'bg-yellow-100 border-yellow-500 text-yellow-800'
+  }
+}
+
+const getAlertIcon = (level: string) => {
+  switch (level) {
+    case 'expired': return '🚨'
+    case 'critical': return '⚠️'
+    default: return '⏰'
+  }
+}
+
 const loadData = async () => {
-  if (dataLoaded.value) return
+  console.log('[Admin] loadData called, dataLoaded:', dataLoaded.value)
+  if (dataLoaded.value) {
+    console.log('[Admin] loadData skipped - already loaded')
+    return
+  }
   dataLoaded.value = true
+  console.log('[Admin] Starting to load bookings and blocked dates')
   await Promise.all([
     loadBookings(),
-    loadBlockedDates()
+    loadBlockedDates(),
+    loadAuthorizationAlerts()
   ])
+  console.log('[Admin] Data loading complete')
 }
 
 // 認証状態を監視してデータを読み込み
 watch([loading, user], ([isLoading, currentUser]) => {
+  console.log('[Admin] Auth state changed - loading:', isLoading, 'user:', currentUser?.email)
   if (!isLoading && currentUser) {
+    console.log('[Admin] Auth ready, calling loadData')
     loadData()
   }
 }, { immediate: true })
 
 // マウント時にも確認（認証が既に完了している場合）
 onMounted(() => {
+  console.log('[Admin] onMounted - loading:', loading.value, 'user:', user.value?.email)
   if (!loading.value && user.value) {
+    console.log('[Admin] onMounted - calling loadData')
     loadData()
   }
 })
@@ -1405,6 +2197,7 @@ onMounted(() => {
 const tabs = [
   { id: 'bookings', name: '予約管理' },
   { id: 'pricing-enhanced', name: '料金設定' }, // 拡張版を「料金設定」に変更
+  { id: 'options', name: 'オプション' },
   { id: 'calendar', name: 'カレンダー' },
   { id: 'messages', name: 'メッセージ' },
   { id: 'reports', name: 'レポート' },
@@ -1416,7 +2209,8 @@ const tabs = [
   // { id: 'pricing', name: '料金設定' }, // 旧料金設定は非表示化
   { id: 'coupons', name: 'クーポン' },
   { id: 'cancellation', name: 'キャンセルポリシー' },
-  { id: 'settings', name: '設定' }
+  { id: 'settings', name: '設定' },
+  { id: 'system', name: 'システム' }
 ]
 
 const currentTab = ref('bookings')
@@ -1486,6 +2280,114 @@ function formatDateTime(timestamp: any) {
     console.error('日時フォーマットエラー:', error)
     return '-'
   }
+}
+
+// ========================================
+// システム機能（整合性チェック）
+// ========================================
+
+const consistencyCheckDateFrom = ref('')
+const consistencyCheckDateTo = ref('')
+const consistencyAutoFix = ref(false)
+const isRunningConsistencyCheck = ref(false)
+const consistencyCheckResult = ref<{
+  reportId: string
+  summary: {
+    totalChecked: number
+    inconsistenciesFound: number
+    autoFixed: number
+  }
+  inconsistencies: Array<{
+    bookingId: string
+    bookingReference: string
+    type: string
+    description: string
+    suggestedAction: string
+    autoFixable: boolean
+  }>
+} | null>(null)
+
+const webhookLogs = ref<Array<{
+  id: string
+  eventType: string
+  eventId?: string
+  processed: boolean
+  timestamp: any
+  error?: string
+}>>([])
+const isLoadingWebhookLogs = ref(false)
+
+// 整合性チェックを実行
+const runConsistencyCheck = async () => {
+  isRunningConsistencyCheck.value = true
+  consistencyCheckResult.value = null
+
+  try {
+    const token = await getIdToken()
+    if (!token) {
+      throw new Error('認証が必要です。再ログインしてください。')
+    }
+
+    const response = await $fetch<any>('/api/admin/consistency-check', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: {
+        autoFix: consistencyAutoFix.value,
+        dateFrom: consistencyCheckDateFrom.value || undefined,
+        dateTo: consistencyCheckDateTo.value || undefined
+      }
+    })
+
+    consistencyCheckResult.value = response
+    console.log('整合性チェック完了:', response)
+  } catch (error: any) {
+    console.error('整合性チェックエラー:', error)
+    alert(`エラー: ${error.message || '整合性チェックに失敗しました'}`)
+  } finally {
+    isRunningConsistencyCheck.value = false
+  }
+}
+
+// Webhookログを取得
+const loadWebhookLogs = async () => {
+  isLoadingWebhookLogs.value = true
+
+  try {
+    const { $firestore } = useNuxtApp()
+    const db = $firestore as ReturnType<typeof import('firebase/firestore').getFirestore>
+
+    const logsSnapshot = await getDocs(
+      query(
+        collection(db, 'webhookLogs'),
+        orderBy('timestamp', 'desc'),
+        limit(50)
+      )
+    )
+
+    webhookLogs.value = logsSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as any
+  } catch (error: any) {
+    console.error('Webhookログ取得エラー:', error)
+    alert(`エラー: ${error.message || 'ログの取得に失敗しました'}`)
+  } finally {
+    isLoadingWebhookLogs.value = false
+  }
+}
+
+// 不整合タイプのラベルを取得
+const getInconsistencyTypeLabel = (type: string): string => {
+  const labels: Record<string, string> = {
+    'status_mismatch': 'ステータス不一致',
+    'missing_payment': '決済情報なし',
+    'orphan_payment': '孤立した決済',
+    'amount_mismatch': '金額不一致',
+    'stale_authorization': '与信期限切れ間近'
+  }
+  return labels[type] || type
 }
 
 // ========================================
@@ -1628,6 +2530,13 @@ function getStatusColor(status: BookingStatus) {
 
 function viewBooking(booking: Booking) {
   selectedBooking.value = booking
+}
+
+function viewBookingById(bookingId: string) {
+  const booking = allBookings.value.find(b => b.id === bookingId)
+  if (booking) {
+    selectedBooking.value = booking
+  }
 }
 
 function getPaymentStatusLabel(status: PaymentStatus) {
@@ -1774,6 +2683,11 @@ async function approveBooking(bookingId: string) {
 
   isApproving.value = true
   try {
+    const token = await getIdToken()
+    if (!token) {
+      throw new Error('認証が必要です。再ログインしてください。')
+    }
+
     const response = await $fetch<{
       success: boolean
       bookingId: string
@@ -1781,6 +2695,9 @@ async function approveBooking(bookingId: string) {
       message: string
     }>('/api/bookings/approve', {
       method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
       body: { bookingId }
     })
 
@@ -1809,6 +2726,11 @@ async function rejectBooking() {
 
   isRejecting.value = true
   try {
+    const token = await getIdToken()
+    if (!token) {
+      throw new Error('認証が必要です。再ログインしてください。')
+    }
+
     const response = await $fetch<{
       success: boolean
       bookingId: string
@@ -1816,6 +2738,9 @@ async function rejectBooking() {
       message: string
     }>('/api/bookings/reject', {
       method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
       body: {
         bookingId: selectedBooking.value.id,
         reason: rejectMessage.value,
@@ -1892,4 +2817,77 @@ async function handleDeleteBlockedDate(id: string) {
     alert('ブロック期間の削除に失敗しました')
   }
 }
+
+// 施設設定の読み込み
+async function loadFacilitySettings() {
+  if (!user.value) return
+
+  isLoadingSettings.value = true
+  try {
+    const idToken = await user.value.getIdToken()
+    const response = await fetch('/api/admin/settings', {
+      headers: {
+        'Authorization': `Bearer ${idToken}`
+      }
+    })
+
+    if (response.ok) {
+      const data = await response.json()
+      if (data.success && data.settings) {
+        facilitySettings.value = { ...facilitySettings.value, ...data.settings }
+      }
+    }
+  } catch (error) {
+    console.error('設定の読み込みに失敗しました:', error)
+  } finally {
+    isLoadingSettings.value = false
+  }
+}
+
+// 施設設定の保存
+async function saveFacilitySettings() {
+  console.log('[Settings] saveFacilitySettings called, user:', user.value?.email)
+  if (!user.value) {
+    console.error('[Settings] No user found')
+    alert('ログインが必要です')
+    return
+  }
+
+  isSavingSettings.value = true
+  try {
+    console.log('[Settings] Getting ID token...')
+    const idToken = await user.value.getIdToken()
+    console.log('[Settings] Got token, saving settings...')
+
+    const response = await fetch('/api/admin/settings', {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${idToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(facilitySettings.value)
+    })
+
+    console.log('[Settings] Response status:', response.status)
+    if (response.ok) {
+      alert('設定を保存しました')
+    } else {
+      const error = await response.json()
+      console.error('[Settings] Save error:', error)
+      alert(`保存に失敗しました: ${error.message}`)
+    }
+  } catch (error) {
+    console.error('[Settings] 設定の保存に失敗しました:', error)
+    alert('設定の保存に失敗しました')
+  } finally {
+    isSavingSettings.value = false
+  }
+}
+
+// 設定タブに切り替えた時に設定を読み込む
+watch(currentTab, (newTab) => {
+  if (newTab === 'settings' && user.value) {
+    loadFacilitySettings()
+  }
+})
 </script>

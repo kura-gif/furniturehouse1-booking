@@ -5,6 +5,7 @@
 
 import { cert, getApps, initializeApp, type ServiceAccount } from 'firebase-admin/app'
 import { getFirestore } from 'firebase-admin/firestore'
+import { getAuth } from 'firebase-admin/auth'
 
 let adminApp: any = null
 
@@ -106,6 +107,19 @@ export const getFirestoreAdmin = () => {
     }
   }
   return getFirestore()
+}
+
+/**
+ * Firebase Authインスタンスを取得
+ */
+export const getAuthAdmin = () => {
+  if (!adminApp) {
+    const app = initializeFirebaseAdmin()
+    if (!app) {
+      throw new Error('Firebase Admin SDK is not initialized. Please configure credentials.')
+    }
+  }
+  return getAuth()
 }
 
 /**

@@ -47,27 +47,26 @@
               <tbody class="bg-white divide-y divide-gray-200">
                 <tr>
                   <td class="px-6 py-4 text-sm text-gray-700">
-                    利用日の<strong>3日前まで</strong>
+                    <strong>{{ settings.cancelPolicyFree }}</strong>
                   </td>
                   <td class="px-6 py-4 text-sm text-gray-700">
-                    <span class="font-semibold text-green-600">無料</span>
+                    <span class="font-semibold text-green-600">{{ settings.cancelPolicyFreeDesc }}</span>
                   </td>
                 </tr>
                 <tr class="bg-gray-50">
                   <td class="px-6 py-4 text-sm text-gray-700">
-                    利用日の<strong>2日前～当日</strong>
+                    <strong>{{ settings.cancelPolicyPartial }}</strong>
                   </td>
                   <td class="px-6 py-4 text-sm text-gray-700">
-                    <span class="font-semibold text-red-600">利用料金の100%</span><br />
-                    <span class="text-xs text-gray-500">（清掃料等を含む）</span>
+                    <span class="font-semibold text-red-600">{{ settings.cancelPolicyPartialDesc }}</span>
                   </td>
                 </tr>
                 <tr>
                   <td class="px-6 py-4 text-sm text-gray-700">
-                    <strong>無断キャンセル</strong>（不泊）
+                    <strong>{{ settings.cancelPolicyNoShow }}</strong>
                   </td>
                   <td class="px-6 py-4 text-sm text-gray-700">
-                    <span class="font-semibold text-red-600">利用料金の100%</span>
+                    <span class="font-semibold text-red-600">{{ settings.cancelPolicyNoShowDesc }}</span>
                   </td>
                 </tr>
               </tbody>
@@ -82,10 +81,7 @@
           </h2>
           <div class="space-y-4 text-gray-700">
             <div class="bg-blue-50 border-l-4 border-blue-500 p-6">
-              <h3 class="font-semibold text-blue-900 mb-2">予約サイトからキャンセル</h3>
-              <p style="line-height: 1.8;">
-                ご予約時にご利用いただいた予約サイトにログインし、「予約の管理」または「キャンセル」メニューからお手続きください。
-              </p>
+              <p class="whitespace-pre-line" style="line-height: 1.8;">{{ settings.cancelPolicyProcedure }}</p>
             </div>
             <div>
               <h3 class="font-semibold text-gray-900 mb-2">メールでのお問い合わせ</h3>
@@ -110,9 +106,9 @@
               以下の場合、キャンセル料は発生しません：
             </p>
             <ul class="list-disc list-inside space-y-2 ml-4" style="line-height: 1.8;">
-              <li>悪天候や自然災害等で当社が施設の利用が危険と判断した場合</li>
-              <li>施設の設備故障等により利用が不可能となった場合</li>
-              <li>その他、やむを得ない事由により当社が利用不可と判断した場合</li>
+              <li v-for="(item, index) in parseListItems(settings.cancelPolicyExceptions)" :key="index">
+                {{ item }}
+              </li>
             </ul>
             <p style="line-height: 1.8;" class="mt-4">
               返金が生じる場合は、予約サイトの決済手段・規定に従って返金いたします。
@@ -139,9 +135,9 @@
           </h2>
           <div class="text-gray-700">
             <ul class="list-disc list-inside space-y-2 ml-4" style="line-height: 1.8;">
-              <li>キャンセル料の計算は、施設利用日を基準とします</li>
-              <li>キャンセル料には、基本利用料金および清掃料等の追加料金が含まれます</li>
-              <li>返金処理には、決済方法により数日～数週間かかる場合があります</li>
+              <li v-for="(item, index) in parseListItems(settings.cancelPolicyNotes)" :key="index">
+                {{ item }}
+              </li>
               <li>詳細は<NuxtLink to="/terms" class="text-indigo-600 hover:underline">利用規約</NuxtLink>をご確認ください</li>
             </ul>
           </div>
@@ -175,6 +171,47 @@ definePageMeta({
   layout: false
 })
 
+// 設定データ
+const settings = ref({
+  cancelPolicyFree: '利用日の3日前まで',
+  cancelPolicyFreeDesc: '無料',
+  cancelPolicyPartial: '利用日の2日前〜当日',
+  cancelPolicyPartialDesc: '利用料金の100%（清掃料等を含む）',
+  cancelPolicyNoShow: '無断キャンセル（不泊）',
+  cancelPolicyNoShowDesc: '利用料金の100%',
+  cancelPolicyProcedure: '予約サイトからキャンセル\nご予約時にご利用いただいた予約サイトにログインし、「予約の管理」または「キャンセル」メニューからお手続きください。',
+  cancelPolicyExceptions: '- 悪天候や自然災害等で当社が施設の利用が危険と判断した場合\n- 施設の設備故障等により利用が不可能となった場合\n- その他、やむを得ない事由により当社が利用不可と判断した場合',
+  cancelPolicyNotes: '- キャンセル料の計算は、施設利用日を基準とします\n- キャンセル料には、基本利用料金および清掃料等の追加料金が含まれます\n- 返金処理には、決済方法により数日〜数週間かかる場合があります'
+})
+
+// リスト形式のテキストを配列に変換
+const parseListItems = (text: string): string[] => {
+  if (!text) return []
+  return text
+    .split('\n')
+    .map(line => line.replace(/^[-・]\s*/, '').trim())
+    .filter(line => line.length > 0)
+}
+
+// 設定を読み込み
+const loadSettings = async () => {
+  try {
+    const response = await fetch('/api/public/settings')
+    if (response.ok) {
+      const data = await response.json()
+      if (data.success && data.settings) {
+        settings.value = { ...settings.value, ...data.settings }
+      }
+    }
+  } catch (error) {
+    console.error('設定の取得に失敗:', error)
+  }
+}
+
+onMounted(() => {
+  loadSettings()
+})
+
 // SEO設定
 useHead({
   title: 'キャンセルポリシー | 家具の家 No.1',
@@ -188,7 +225,6 @@ useHead({
 </script>
 
 <style scoped>
-/* プロースタイル調整 */
 .prose {
   max-width: none;
 }
@@ -211,7 +247,6 @@ useHead({
   text-decoration: underline;
 }
 
-/* テーブルスタイル */
 table {
   border-collapse: collapse;
 }

@@ -38,7 +38,7 @@
           <h4 class="font-semibold mb-4">管理者</h4>
           <ul class="space-y-2 text-sm text-gray-400">
             <li>
-              <NuxtLink to="/admin" class="hover:text-white transition-colors">管理ダッシュボード</NuxtLink>
+              <a href="/admin" class="hover:text-white transition-colors">管理ダッシュボード</a>
             </li>
           </ul>
         </div>

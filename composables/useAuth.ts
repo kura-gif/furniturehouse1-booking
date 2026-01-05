@@ -3,9 +3,10 @@ import {
   createUserWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
+  sendPasswordResetEmail,
   type User
 } from 'firebase/auth'
-import { doc, setDoc, getDoc, Timestamp } from 'firebase/firestore'
+import { doc, setDoc, Timestamp } from 'firebase/firestore'
 import type { User as AppUser } from '~/types'
 
 export const useAuth = () => {
@@ -13,9 +14,16 @@ export const useAuth = () => {
   const user = useState<User | null>('auth-user', () => null)
   const appUser = useState<AppUser | null>('app-user', () => null)
   const loading = useState('auth-loading', () => true)
+  const initialized = useState('auth-initialized', () => false)
 
   // 認証状態の監視
   const initAuth = () => {
+    // 既に初期化済みの場合はスキップ
+    if (initialized.value) {
+      console.log('[Auth] Already initialized, skipping')
+      return
+    }
+
     console.log('[Auth] initAuth called. Has $auth:', !!$auth)
 
     if (!$auth) {
@@ -26,41 +34,59 @@ export const useAuth = () => {
       return
     }
 
-    // タイムアウト設定（5秒後に強制的にloading = false）
+    initialized.value = true
+
+    // タイムアウト設定（10秒後に強制的にloading = false）
     const timeout = setTimeout(() => {
       if (loading.value) {
         console.warn('[Auth] Auth initialization timeout - forcing loading = false')
         loading.value = false
       }
-    }, 5000)
+    }, 10000)
 
     onAuthStateChanged($auth, async (firebaseUser) => {
       clearTimeout(timeout) // 正常に完了したらタイムアウトをクリア
+      console.log('[Auth] onAuthStateChanged:', firebaseUser?.email || 'no user')
       user.value = firebaseUser
 
-      if (firebaseUser && $db) {
+      if (firebaseUser) {
+        console.log('[Auth] Starting user fetch for:', firebaseUser.uid)
         try {
-          // Firestoreからユーザー情報を取得
-          const userDoc = await getDoc(doc($db, 'users', firebaseUser.uid))
-          if (userDoc.exists()) {
-            appUser.value = {
-              id: userDoc.id,
-              uid: firebaseUser.uid,
-              ...userDoc.data()
-            } as AppUser
-            console.log('[Auth] User loaded:', appUser.value.email, 'Role:', appUser.value.role)
+          // サーバーAPIを使ってユーザー情報を取得（クライアントFirestoreの問題を回避）
+          const idToken = await firebaseUser.getIdToken()
+          console.log('[Auth] Got ID token, fetching user from API...')
+
+          const response = await fetch('/api/auth/user', {
+            headers: {
+              'Authorization': `Bearer ${idToken}`
+            }
+          })
+
+          if (response.ok) {
+            const data = await response.json()
+            console.log('[Auth] API response:', data)
+            if (data.success && data.user) {
+              appUser.value = data.user as AppUser
+              console.log('[Auth] User loaded:', appUser.value.email, 'Role:', appUser.value.role)
+            } else {
+              console.warn('[Auth] User not found in database')
+              appUser.value = null
+            }
           } else {
-            console.warn('[Auth] User document not found in Firestore:', firebaseUser.uid)
+            const errorText = await response.text()
+            console.error('[Auth] API error:', response.status, response.statusText, errorText)
             appUser.value = null
           }
         } catch (error) {
-          console.error('[Auth] Failed to load user from Firestore:', error)
+          console.error('[Auth] Failed to load user:', error)
           appUser.value = null
         }
       } else {
+        console.log('[Auth] No firebaseUser, skipping user fetch')
         appUser.value = null
       }
 
+      console.log('[Auth] Setting loading to false')
       loading.value = false
     })
   }
@@ -120,6 +146,18 @@ export const useAuth = () => {
     }
   }
 
+  // パスワードリセット
+  const resetPassword = async (email: string) => {
+    if (!$auth) throw new Error('Firebase Auth is not initialized')
+
+    try {
+      await sendPasswordResetEmail($auth, email)
+    } catch (error: any) {
+      console.error('Password reset error:', error)
+      throw new Error(getErrorMessage(error.code))
+    }
+  }
+
   // エラーメッセージの日本語化
   const getErrorMessage = (errorCode: string): string => {
     const messages: Record<string, string> = {
@@ -131,13 +169,49 @@ export const useAuth = () => {
       'auth/user-not-found': 'メールアドレスまたはパスワードが間違っています',
       'auth/wrong-password': 'メールアドレスまたはパスワードが間違っています',
       'auth/invalid-credential': 'メールアドレスまたはパスワードが間違っています',
-      'auth/too-many-requests': 'ログイン試行回数が多すぎます。しばらく待ってから再試行してください'
+      'auth/too-many-requests': 'ログイン試行回数が多すぎます。しばらく待ってから再試行してください',
+      'auth/missing-email': 'メールアドレスを入力してください'
     }
     return messages[errorCode] || 'エラーが発生しました'
   }
 
   // 管理者かどうかをチェック
   const isAdmin = computed(() => appUser.value?.role === 'admin')
+
+  // IDトークンを取得
+  const getIdToken = async (): Promise<string | null> => {
+    if (!user.value) return null
+    try {
+      return await user.value.getIdToken()
+    } catch (error) {
+      console.error('[Auth] Failed to get ID token:', error)
+      return null
+    }
+  }
+
+  // 認証付きfetch
+  const fetchWithAuth = async <T>(url: string, options: RequestInit = {}): Promise<T> => {
+    const token = await getIdToken()
+    if (!token) {
+      throw new Error('認証が必要です')
+    }
+
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        ...options.headers,
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: response.statusText }))
+      throw new Error(errorData.message || `HTTP error ${response.status}`)
+    }
+
+    return response.json()
+  }
 
   return {
     user,
@@ -147,6 +221,9 @@ export const useAuth = () => {
     initAuth,
     login,
     signup,
-    logout
+    logout,
+    resetPassword,
+    getIdToken,
+    fetchWithAuth
   }
 }

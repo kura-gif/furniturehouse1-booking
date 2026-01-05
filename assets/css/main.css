@@ -35,6 +35,13 @@
 }
 
 @layer base {
+  /* 角丸を全て無効化 */
+  *,
+  *::before,
+  *::after {
+    border-radius: 0 !important;
+  }
+
   /* リセットとベーススタイル */
   * {
     -webkit-font-smoothing: antialiased;

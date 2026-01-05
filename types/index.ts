@@ -68,6 +68,9 @@ export interface Booking {
   reviewedByName?: string // 審査した管理者名
   rejectionReason?: string // 却下理由（メッセージ）
   rejectionCategory?: RejectionCategory // 却下カテゴリ
+  // オプション関連
+  selectedOptions?: SelectedBookingOption[]  // 選択したオプション
+  optionsTotalPrice?: number                 // オプション合計金額
   createdAt: Timestamp
   updatedAt: Timestamp
 }
@@ -258,6 +261,8 @@ export interface CreateBookingRequest {
   discountAmount: number
   couponCode?: string
   notes?: string
+  selectedOptions?: SelectedBookingOption[]  // 選択したオプション
+  optionsTotalPrice?: number                 // オプション合計金額
 }
 
 /**
@@ -807,4 +812,30 @@ export interface RefundCalculation {
   daysBeforeCheckIn: number           // チェックイン何日前か
   appliedRule: CancellationPolicyRule // 適用されたルール
   isCancellable: boolean              // キャンセル可能か
+}
+
+/**
+ * 予約オプション（BBQ設備、レンタサイクルなど）
+ */
+export interface BookingOption {
+  id: string
+  name: string                        // オプション名（例: BBQ設備セット）
+  description: string                 // 説明文
+  price: number                       // 料金（固定）
+  imageUrl?: string                   // サムネイル画像URL
+  dailyLimit: number                  // 1日あたりの予約可能数
+  isActive: boolean                   // 有効かどうか
+  order: number                       // 表示順
+  createdAt: Timestamp
+  updatedAt: Timestamp
+}
+
+/**
+ * 予約に紐づくオプション情報
+ */
+export interface SelectedBookingOption {
+  optionId: string
+  name: string
+  price: number
+  imageUrl?: string
 }

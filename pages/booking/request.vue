@@ -53,6 +53,102 @@
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- 左側: フォーム -->
         <div class="lg:col-span-2 space-y-8">
+          <!-- オプション選択セクション -->
+          <div v-if="availableOptions.length > 0" class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+            <h2 class="text-xl font-semibold mb-4" style="color: #231815;">
+              オプションを追加
+            </h2>
+            <p class="text-sm text-gray-600 mb-4">ご滞在をより快適にするオプションをお選びください</p>
+
+            <!-- オプション一覧 -->
+            <div class="space-y-4">
+              <div
+                v-for="option in availableOptions"
+                :key="option.id"
+                class="border rounded-lg p-4 transition-all"
+                :class="{
+                  'border-purple-500 bg-purple-50': isOptionSelected(option.id),
+                  'border-gray-200 hover:border-gray-300': !isOptionSelected(option.id),
+                  'opacity-50': !optionAvailability[option.id]?.available
+                }"
+              >
+                <div class="flex gap-4">
+                  <!-- サムネイル画像 -->
+                  <div class="flex-shrink-0">
+                    <img
+                      v-if="option.imageUrl"
+                      :src="option.imageUrl"
+                      :alt="option.name"
+                      class="w-20 h-20 object-cover rounded-lg"
+                    />
+                    <div
+                      v-else
+                      class="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center"
+                    >
+                      <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                  </div>
+
+                  <!-- オプション情報 -->
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-start justify-between">
+                      <div>
+                        <h3 class="font-semibold text-gray-900">{{ option.name }}</h3>
+                        <p class="text-sm text-gray-600 mt-1">{{ option.description }}</p>
+                      </div>
+                      <span class="text-lg font-semibold text-purple-600 whitespace-nowrap ml-4">
+                        ¥{{ option.price.toLocaleString() }}
+                      </span>
+                    </div>
+
+                    <!-- 空き状況と選択ボタン -->
+                    <div class="flex items-center justify-between mt-3">
+                      <div class="text-sm">
+                        <span v-if="optionAvailability[option.id]?.available" class="text-green-600">
+                          残り{{ optionAvailability[option.id]?.remaining }}件
+                        </span>
+                        <span v-else class="text-red-500">
+                          予約済み
+                        </span>
+                      </div>
+
+                      <button
+                        v-if="optionAvailability[option.id]?.available"
+                        @click="toggleOption(option)"
+                        class="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                        :class="{
+                          'bg-purple-600 text-white hover:bg-purple-700': isOptionSelected(option.id),
+                          'bg-gray-100 text-gray-700 hover:bg-gray-200': !isOptionSelected(option.id)
+                        }"
+                      >
+                        {{ isOptionSelected(option.id) ? '選択済み' : '追加する' }}
+                      </button>
+                      <span v-else class="text-sm text-gray-400">選択不可</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 選択中のオプション合計 -->
+            <div v-if="selectedOptions.length > 0" class="mt-4 pt-4 border-t border-gray-200">
+              <div class="flex justify-between items-center text-sm">
+                <span class="text-gray-600">選択中のオプション ({{ selectedOptions.length }}件)</span>
+                <span class="font-semibold text-purple-600">+¥{{ optionsTotalPrice.toLocaleString() }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- オプション読み込み中 -->
+          <div v-else-if="loadingOptions" class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+            <div class="flex items-center justify-center py-4">
+              <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600 mr-3"></div>
+              <span class="text-gray-600">オプションを読み込み中...</span>
+            </div>
+          </div>
+
           <!-- ステップ1: 予約内容の確認 -->
           <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
             <div class="flex justify-between items-center mb-4">
@@ -191,22 +287,30 @@
                   <span class="text-gray-900">¥{{ cleaningFee.toLocaleString() }}</span>
                 </div>
 
+                <!-- オプション料金 -->
+                <div v-if="selectedOptions.length > 0" class="space-y-1">
+                  <div v-for="opt in selectedOptions" :key="opt.optionId" class="flex justify-between text-sm">
+                    <span class="text-gray-600">{{ opt.name }}</span>
+                    <span class="text-gray-900">¥{{ opt.price.toLocaleString() }}</span>
+                  </div>
+                </div>
+
                 <!-- 税抜合計 -->
                 <div class="flex justify-between text-xs text-gray-500">
                   <span>小計（税抜）</span>
-                  <span>¥{{ subtotalBeforeTax.toLocaleString() }}</span>
+                  <span>¥{{ subtotalBeforeTaxWithOptions.toLocaleString() }}</span>
                 </div>
 
                 <!-- 消費税 -->
                 <div class="flex justify-between">
                   <span class="text-gray-600">消費税 ({{ taxRatePercent }}%)</span>
-                  <span class="text-gray-900">¥{{ tax.toLocaleString() }}</span>
+                  <span class="text-gray-900">¥{{ taxWithOptions.toLocaleString() }}</span>
                 </div>
 
                 <!-- 合計（税込） -->
                 <div class="flex justify-between pt-2 border-t-2 border-gray-300 font-semibold text-base">
                   <span>合計（税込）</span>
-                  <span>¥{{ totalAmount.toLocaleString() }}</span>
+                  <span>¥{{ totalAmountWithOptions.toLocaleString() }}</span>
                 </div>
 
                 <!-- 料金サマリー -->
@@ -388,6 +492,22 @@
               </p>
             </div>
 
+            <!-- 選択中オプション -->
+            <div v-if="selectedOptions.length > 0" class="mb-6 pb-6 border-b border-gray-200">
+              <h4 class="font-semibold text-gray-900 mb-3">オプション</h4>
+              <div class="space-y-2">
+                <div v-for="opt in selectedOptions" :key="opt.optionId" class="flex items-center gap-2 text-sm">
+                  <img
+                    v-if="opt.imageUrl"
+                    :src="opt.imageUrl"
+                    :alt="opt.name"
+                    class="w-8 h-8 object-cover rounded"
+                  />
+                  <span class="text-gray-900">{{ opt.name }}</span>
+                </div>
+              </div>
+            </div>
+
             <!-- 料金の詳細 -->
             <div class="space-y-3 text-sm mb-6">
               <div class="flex justify-between">
@@ -398,9 +518,13 @@
                 <span class="text-gray-600 underline">清掃料金</span>
                 <span class="text-gray-900">¥{{ cleaningFee.toLocaleString() }}</span>
               </div>
+              <div v-if="selectedOptions.length > 0" class="flex justify-between">
+                <span class="text-gray-600 underline">オプション</span>
+                <span class="text-gray-900">¥{{ optionsTotalPrice.toLocaleString() }}</span>
+              </div>
               <div class="flex justify-between">
                 <span class="text-gray-600">税金</span>
-                <span class="text-gray-900">¥{{ taxAmount.toLocaleString() }}</span>
+                <span class="text-gray-900">¥{{ taxWithOptions.toLocaleString() }}</span>
               </div>
             </div>
 
@@ -408,7 +532,7 @@
             <div class="pt-4 border-t border-gray-200">
               <div class="flex justify-between items-center">
                 <span class="font-semibold text-gray-900">合計額 JPY</span>
-                <span class="font-semibold text-gray-900 text-xl">¥{{ totalAmount.toLocaleString() }}</span>
+                <span class="font-semibold text-gray-900 text-xl">¥{{ totalAmountWithOptions.toLocaleString() }}</span>
               </div>
               <button type="button" class="text-sm underline text-gray-600 hover:text-gray-900 mt-2">
                 料金内訳
@@ -443,9 +567,13 @@
               <span v-if="infants > 0">、乳幼児{{ infants }}名</span>
             </span>
           </div>
+          <div v-if="selectedOptions.length > 0" class="flex justify-between text-sm">
+            <span class="text-gray-600">オプション</span>
+            <span class="font-medium text-gray-900">{{ selectedOptions.map(o => o.name).join('、') }}</span>
+          </div>
           <div class="border-t pt-3 flex justify-between">
             <span class="font-semibold text-gray-900">合計金額</span>
-            <span class="font-semibold text-lg text-gray-900">¥{{ totalAmount.toLocaleString() }}</span>
+            <span class="font-semibold text-lg text-gray-900">¥{{ totalAmountWithOptions.toLocaleString() }}</span>
           </div>
         </div>
 
@@ -480,6 +608,8 @@
 </template>
 
 <script setup lang="ts">
+import type { BookingOption, SelectedBookingOption } from '~/types'
+
 definePageMeta({
   layout: false
 })
@@ -490,6 +620,7 @@ const { createBooking } = useBookings()
 const { createPaymentIntent, initializeElements, confirmCardPayment } = useStripePayment()
 const { calculatePrice, pricingSetting, loadFromFirestore } = useEnhancedPricing()
 const { getActivePolicy, generatePolicyDescription } = useCancellationPolicy()
+const { getActiveOptions } = useBookingOptions()
 
 // パンくずリスト
 const breadcrumbItems = [
@@ -504,9 +635,73 @@ const adults = ref(parseInt(route.query.adults as string) || 1)
 const children = ref(parseInt(route.query.children as string) || 0)
 const infants = ref(parseInt(route.query.infants as string) || 0)
 
+// オプション関連
+const availableOptions = ref<BookingOption[]>([])
+const selectedOptions = ref<SelectedBookingOption[]>([])
+const optionAvailability = ref<Record<string, { available: boolean; remaining: number; dailyLimit: number }>>({})
+const loadingOptions = ref(true)
+
+// オプションの合計金額
+const optionsTotalPrice = computed(() => {
+  return selectedOptions.value.reduce((sum, opt) => sum + opt.price, 0)
+})
+
+// オプションが選択されているか確認
+const isOptionSelected = (optionId: string): boolean => {
+  return selectedOptions.value.some(opt => opt.optionId === optionId)
+}
+
+// オプションの選択/解除
+const toggleOption = (option: BookingOption) => {
+  const index = selectedOptions.value.findIndex(opt => opt.optionId === option.id)
+  if (index >= 0) {
+    selectedOptions.value.splice(index, 1)
+  } else {
+    selectedOptions.value.push({
+      optionId: option.id,
+      name: option.name,
+      price: option.price,
+      imageUrl: option.imageUrl
+    })
+  }
+}
+
+// オプションと空き状況を読み込み
+const loadOptionsAndAvailability = async () => {
+  try {
+    loadingOptions.value = true
+
+    // 有効なオプションを取得
+    const options = await getActiveOptions()
+    availableOptions.value = options
+
+    if (options.length > 0 && checkInDate.value) {
+      // 空き状況を確認
+      const result = await $fetch('/api/public/options-availability', {
+        method: 'POST',
+        body: {
+          date: checkInDate.value,
+          optionIds: options.map(o => o.id)
+        }
+      })
+
+      if (result.success && result.availability) {
+        optionAvailability.value = result.availability
+      }
+    }
+  } catch (error) {
+    console.error('オプション読み込みエラー:', error)
+  } finally {
+    loadingOptions.value = false
+  }
+}
+
 // 料金設定とキャンセルポリシーを読み込み
 onMounted(async () => {
   await loadFromFirestore()
+
+  // オプションを読み込み
+  await loadOptionsAndAvailability()
 
   // キャンセルポリシーを取得
   try {
@@ -563,6 +758,14 @@ const taxRatePercent = computed(() => {
   return Math.round(rate * 100)
 })
 const totalAmount = computed(() => priceCalculation.value?.totalAmount || 0)
+
+// オプションを含めた料金計算
+const subtotalBeforeTaxWithOptions = computed(() => subtotalBeforeTax.value + optionsTotalPrice.value)
+const taxWithOptions = computed(() => {
+  const rate = pricingSetting.value?.taxRate || 0.1
+  return Math.floor(subtotalBeforeTaxWithOptions.value * rate)
+})
+const totalAmountWithOptions = computed(() => subtotalBeforeTaxWithOptions.value + taxWithOptions.value)
 
 // 1泊あたりの平均料金（料金サマリーカードに表示用）
 const pricePerNight = computed(() => {
@@ -730,7 +933,8 @@ const proceedToPayment = async () => {
           checkIn: checkInDate.value,
           checkOut: checkOutDate.value,
           guests: `大人${adults.value}人${children.value > 0 ? `、子ども${children.value}人` : ''}${infants.value > 0 ? `、乳幼児${infants.value}人` : ''}`,
-          totalAmount: totalAmount.value.toString()
+          totalAmount: totalAmountWithOptions.value.toString(),
+          options: selectedOptions.value.map(o => o.name).join('、') || 'なし'
         }
       }
     })
@@ -744,10 +948,12 @@ const proceedToPayment = async () => {
       guestName: guestName.value,
       guestEmail: guestEmail.value,
       guestPhone: guestPhone.value,
-      totalAmount: totalAmount.value,
+      totalAmount: totalAmountWithOptions.value,
       baseAmount: subtotal.value,
       discountAmount: 0,
-      notes: `決済ID: ${clientSecret.value.split('_secret_')[0]}`
+      notes: `決済ID: ${clientSecret.value.split('_secret_')[0]}`,
+      selectedOptions: selectedOptions.value,
+      optionsTotalPrice: optionsTotalPrice.value
     }
 
     const bookingId = await createBooking(bookingData)

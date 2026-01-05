@@ -303,7 +303,8 @@ import {
 } from 'firebase/firestore'
 import type { Coupon } from '~/types'
 
-const { $firestore } = useNuxtApp()
+const { $db } = useNuxtApp()
+const $firestore = $db as ReturnType<typeof import('firebase/firestore').getFirestore>
 
 // クーポンリスト
 const coupons = ref<Coupon[]>([])

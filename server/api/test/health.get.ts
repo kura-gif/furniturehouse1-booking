@@ -1,9 +1,19 @@
 /**
  * ヘルスチェックAPI
  * システムの状態を確認
+ *
+ * ⚠️ 本番環境では無効化
  */
 
 export default defineEventHandler(async (event) => {
+  // 本番環境では無効化
+  if (process.env.NODE_ENV === 'production') {
+    throw createError({
+      statusCode: 404,
+      message: 'Not Found'
+    })
+  }
+
   const config = useRuntimeConfig()
 
   const status = {

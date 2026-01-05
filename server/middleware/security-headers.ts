@@ -85,6 +85,6 @@ function setCORSHeaders(event: any, config: any) {
     setHeader(event, 'Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
     setHeader(event, 'Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With')
     setHeader(event, 'Access-Control-Allow-Credentials', 'true')
-    setHeader(event, 'Access-Control-Max-Age', '86400') // 24時間
+    setHeader(event, 'Access-Control-Max-Age', 86400) // 24時間
   }
 }

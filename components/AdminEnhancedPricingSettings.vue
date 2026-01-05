@@ -47,6 +47,26 @@
         </p>
       </div>
 
+      <div class="border-t border-gray-200 pt-6">
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          清掃料金（1予約あたり）
+        </label>
+        <div class="flex items-center gap-2">
+          <span class="text-gray-600">¥</span>
+          <input
+            v-model.number="settings.cleaningFee"
+            type="number"
+            step="500"
+            min="0"
+            class="w-48 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+          />
+          <span class="text-gray-600">円</span>
+        </div>
+        <p class="text-sm text-gray-600 mt-2">
+          💡 チェックアウト後の清掃費用です。予約ごとに1回加算されます
+        </p>
+      </div>
+
       <button @click="saveSettings" class="btn-primary">設定を保存</button>
     </div>
 
@@ -532,6 +552,11 @@
         </div>
 
         <div>
+          <h4 class="font-semibold mb-2">清掃料金</h4>
+          <p>¥{{ formatPrice(settings.cleaningFee || 0) }} / 予約</p>
+        </div>
+
+        <div>
           <h4 class="font-semibold mb-2">人数別追加料金</h4>
           <p class="text-sm">3人目: {{ thirdGuestRatePercent }}%</p>
           <p class="text-sm">4人目: {{ fourthGuestRatePercent }}%、5人目: {{ fifthGuestRatePercent }}%、6人目: {{ sixthGuestRatePercent }}%</p>
@@ -589,7 +614,12 @@ const steps = [
 ]
 
 const settings = reactive<EnhancedPricingSetting>({
+  id: '',
+  type: 'stay',
+  createdAt: null,
+  updatedAt: null,
   basePrice: 35000,
+  cleaningFee: 5000,
   guestCountPricing: {
     baseGuestCount: 2,
     thirdGuestRate: 0.5,

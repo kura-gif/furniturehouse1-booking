@@ -59,7 +59,21 @@
       "Bash(git rm:*)",
       "Bash(git remote:*)",
       "Bash(gh repo create:*)",
-      "Bash(export FIREBASE_TOKEN=\"1//0ebdwMGcsHXNlCgYIARAAGA4SNgF-L9IrbRoPeEgZ9A8-uAk0e5i35Zmzt4iv_d5hCPlcycLVwK3Pzbe0Ypcq0I3RQQOtXF3f_w\")"
+      "Bash(export FIREBASE_TOKEN=\"1//0ebdwMGcsHXNlCgYIARAAGA4SNgF-L9IrbRoPeEgZ9A8-uAk0e5i35Zmzt4iv_d5hCPlcycLVwK3Pzbe0Ypcq0I3RQQOtXF3f_w\")",
+      "Bash(timeout 10 curl:*)",
+      "Bash(node -e \"\nconst admin = require\\(''firebase-admin''\\);\nconst serviceAccount = JSON.parse\\(Buffer.from\\(process.env.FIREBASE_ADMIN_KEY, ''base64''\\).toString\\(\\)\\);\nadmin.initializeApp\\({ credential: admin.credential.cert\\(serviceAccount\\), projectId: ''furniture-house-1'' }\\);\nconst db = admin.firestore\\(\\);\ndb.collection\\(''enhancedPricingSettings''\\).get\\(\\).then\\(snapshot => {\n  console.log\\(''料金設定件数:'', snapshot.size\\);\n  if \\(snapshot.empty\\) {\n    console.log\\(''データがありません''\\);\n  } else {\n    snapshot.forEach\\(doc => {\n      const data = doc.data\\(\\);\n      console.log\\(''ID:'', doc.id, ''有効:'', data.isActive\\);\n    }\\);\n  }\n  process.exit\\(0\\);\n}\\).catch\\(err => {\n  console.error\\(''エラー:'', err.message\\);\n  process.exit\\(1\\);\n}\\);\n\")",
+      "Bash(timeout 3 curl:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm show:*)",
+      "Bash(node:*)",
+      "Bash(source:*)",
+      "Bash(vercel logs:*)",
+      "Bash(dig:*)",
+      "Bash(grep:*)",
+      "Bash(mkdir:*)",
+      "Bash(open http://localhost:3001/site)",
+      "Bash(npm run typecheck:*)",
+      "Bash(open http://localhost:3002/site)"
     ]
   }
 }

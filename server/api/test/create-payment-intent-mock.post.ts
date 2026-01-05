@@ -1,12 +1,22 @@
 /**
  * Payment Intent作成テストAPI（Firebase Admin不要）
  * 開発環境での料金計算とStripe統合のテスト用
+ *
+ * ⚠️ 本番環境では無効化
  */
 
 import Stripe from 'stripe'
 import { calculateBookingAmount, DEFAULT_PRICING } from '~/server/utils/pricing'
 
 export default defineEventHandler(async (event) => {
+  // 本番環境では無効化
+  if (process.env.NODE_ENV === 'production') {
+    throw createError({
+      statusCode: 404,
+      message: 'Not Found'
+    })
+  }
+
   const config = useRuntimeConfig()
   const stripe = new Stripe(config.stripeSecretKey)
 

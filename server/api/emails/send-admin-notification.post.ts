@@ -57,6 +57,97 @@ export default defineEventHandler(async (event) => {
   let contentHtml = ''
 
   switch (type) {
+    case 'new_booking_request':
+      subject = `【審査待ち】新規予約リクエスト ${bookingReference} - ${guestName}様`
+      headerColor = '#8b5cf6' // purple
+      headerIcon = '📋'
+      headerText = '新規予約リクエストが入りました'
+      contentHtml = `
+        <div class="info-box" style="border-left-color: #8b5cf6;">
+          <h3 style="margin-top: 0;">予約リクエスト情報</h3>
+          <div class="info-row">
+            <span class="label">予約番号</span>
+            <span class="value" style="font-family: monospace; font-weight: bold;">${bookingReference}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">お客様名</span>
+            <span class="value">${guestName}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">メール</span>
+            <span class="value">${guestEmail}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">電話番号</span>
+            <span class="value">${guestPhone || '未登録'}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">チェックイン</span>
+            <span class="value">${checkInDate}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">チェックアウト</span>
+            <span class="value">${checkOutDate}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">宿泊人数</span>
+            <span class="value">${guestCount}名</span>
+          </div>
+          <div class="info-row">
+            <span class="label">合計金額</span>
+            <span class="value" style="font-weight: bold; color: #8b5cf6;">¥${totalAmount?.toLocaleString() || 0}</span>
+          </div>
+          ${body.notes ? `
+          <div class="info-row">
+            <span class="label">備考</span>
+            <span class="value">${body.notes}</span>
+          </div>
+          ` : ''}
+        </div>
+        <p style="background: #f5f3ff; padding: 15px; border-radius: 6px; color: #5b21b6;">
+          <strong>審査が必要です</strong><br>
+          カード与信は確保済みです。承認または却下の操作をお願いします。
+        </p>
+        <p style="margin-top: 20px;">
+          <a href="${config.public.siteUrl || 'http://localhost:3000'}/admin"
+             style="display: inline-block; background: #8b5cf6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">
+            管理画面で審査する
+          </a>
+        </p>
+      `
+      break
+
+    case 'booking_approved':
+      subject = `【承認完了】${bookingReference} - ${guestName}様`
+      headerColor = '#10b981' // green
+      headerIcon = '✅'
+      headerText = '予約が承認されました'
+      contentHtml = `
+        <div class="info-box">
+          <h3 style="margin-top: 0;">承認情報</h3>
+          <div class="info-row">
+            <span class="label">予約番号</span>
+            <span class="value" style="font-family: monospace; font-weight: bold;">${bookingReference}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">お客様名</span>
+            <span class="value">${guestName}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">メール</span>
+            <span class="value">${guestEmail}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">決済金額</span>
+            <span class="value" style="font-weight: bold; color: #10b981;">¥${totalAmount?.toLocaleString() || 0}</span>
+          </div>
+        </div>
+        <p style="background: #ecfdf5; padding: 15px; border-radius: 6px; color: #065f46;">
+          決済が確定しました。お客様に承認通知メールが送信されています。
+        </p>
+      `
+      break
+
     case 'new_booking':
       subject = `【新規予約】${bookingReference} - ${guestName}様`
       headerColor = '#10b981' // green

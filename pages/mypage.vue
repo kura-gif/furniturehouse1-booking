@@ -43,7 +43,12 @@
 
           <!-- 予約一覧 -->
           <div class="card">
-            <h2 class="text-xl font-semibold mb-6">予約一覧</h2>
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-xl font-semibold">予約一覧</h2>
+              <NuxtLink to="/booking/request" class="btn-primary text-sm px-4 py-2">
+                新規予約
+              </NuxtLink>
+            </div>
 
             <!-- 予約なし -->
             <div v-if="bookings.length === 0" class="text-center py-12">
@@ -66,47 +71,46 @@
                 <div class="flex items-start justify-between mb-4">
                   <div>
                     <div class="flex items-center gap-2 mb-2">
-                      <span class="text-sm font-medium px-3 py-1 rounded-full"
-                        :class="{
-                          'bg-yellow-100 text-yellow-800': booking.status === 'pending',
-                          'bg-green-100 text-green-800': booking.status === 'confirmed',
-                          'bg-gray-100 text-gray-800': booking.status === 'cancelled',
-                          'bg-blue-100 text-blue-800': booking.status === 'completed'
-                        }"
+                      <span
+                        class="text-sm font-medium px-3 py-1 cursor-help"
+                        :class="getStatusClass(booking.status)"
+                        :title="getStatusDescription(booking.status)"
                       >
                         {{ getStatusLabel(booking.status) }}
                       </span>
-                      <span class="text-sm font-medium px-3 py-1 rounded-full"
-                        :class="{
-                          'bg-yellow-100 text-yellow-800': booking.paymentStatus === 'pending',
-                          'bg-green-100 text-green-800': booking.paymentStatus === 'paid',
-                          'bg-gray-100 text-gray-800': booking.paymentStatus === 'refunded',
-                          'bg-red-100 text-red-800': booking.paymentStatus === 'failed'
-                        }"
-                      >
-                        {{ getPaymentStatusLabel(booking.paymentStatus) }}
-                      </span>
                     </div>
-                    <p class="text-xs text-gray-500">予約ID: {{ booking.id }}</p>
+                    <p class="text-xs text-gray-500">予約番号: {{ booking.bookingReference || booking.id }}</p>
+                    <!-- 却下理由の表示 -->
+                    <p v-if="booking.status === 'rejected' && booking.rejectionReason" class="text-sm text-red-600 mt-2">
+                      却下理由: {{ booking.rejectionReason }}
+                    </p>
                   </div>
                 </div>
 
                 <div class="grid md:grid-cols-2 gap-4 text-sm">
                   <div>
                     <p class="text-gray-600 mb-1">チェックイン</p>
-                    <p class="font-semibold">{{ formatDate(booking.startDate.toDate()) }}</p>
+                    <p class="font-semibold">{{ formatDateWithDay(booking.startDate.toDate()) }}</p>
+                    <p class="text-xs text-gray-500">{{ siteSettings.checkInTime }}〜</p>
                   </div>
                   <div>
                     <p class="text-gray-600 mb-1">チェックアウト</p>
-                    <p class="font-semibold">{{ formatDate(booking.endDate.toDate()) }}</p>
+                    <p class="font-semibold">{{ formatDateWithDay(booking.endDate.toDate()) }}</p>
+                    <p class="text-xs text-gray-500">〜{{ siteSettings.checkOutTime }}</p>
+                  </div>
+                  <div>
+                    <p class="text-gray-600 mb-1">宿泊日数</p>
+                    <p class="font-semibold">{{ calculateNights(booking.startDate.toDate(), booking.endDate.toDate()) }}泊</p>
                   </div>
                   <div>
                     <p class="text-gray-600 mb-1">宿泊者数</p>
                     <p class="font-semibold">{{ booking.guestCount }}名</p>
                   </div>
-                  <div>
-                    <p class="text-gray-600 mb-1">合計金額</p>
-                    <p class="font-semibold text-lg">¥{{ booking.totalAmount.toLocaleString() }}</p>
+                </div>
+                <div class="mt-3 pt-3 border-t border-gray-100">
+                  <div class="flex justify-between items-center">
+                    <span class="text-gray-600 text-sm">合計金額</span>
+                    <span class="font-bold text-lg text-purple-700">¥{{ booking.totalAmount.toLocaleString() }}</span>
                   </div>
                 </div>
 
@@ -117,7 +121,7 @@
 
                 <div class="mt-4 pt-4 border-t flex flex-wrap gap-2">
                   <NuxtLink
-                    v-if="booking.status !== 'cancelled'"
+                    v-if="canMessage(booking.status)"
                     :to="`/messages/${booking.id}`"
                     class="px-4 py-2 text-sm btn-secondary"
                   >
@@ -131,18 +135,11 @@
                     レビューを書く
                   </button>
                   <button
-                    v-if="booking.status === 'pending' || booking.status === 'confirmed'"
+                    v-if="canCancel(booking.status)"
                     @click="handleCancelBooking(booking)"
-                    class="px-4 py-2 text-sm border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-custom"
+                    class="px-4 py-2 text-sm border border-red-300 text-red-600 hover:bg-red-50 transition-custom"
                   >
                     予約をキャンセル
-                  </button>
-                  <button
-                    v-if="booking.paymentStatus === 'pending'"
-                    @click="handlePayment(booking.id)"
-                    class="px-4 py-2 text-sm btn-primary"
-                  >
-                    決済する
                   </button>
                 </div>
               </div>
@@ -390,6 +387,12 @@ const bookings = ref<Booking[]>([])
 const isLoading = ref(false)
 const reviewedBookingIds = ref<Set<string>>(new Set())
 
+// サイト設定（チェックイン・チェックアウト時間）
+const siteSettings = ref({
+  checkInTime: '15:00',
+  checkOutTime: '11:00'
+})
+
 // レビューモーダル関連
 const showReviewModal = ref(false)
 const selectedBooking = ref<Booking | null>(null)
@@ -432,7 +435,28 @@ const loadBookings = async () => {
 
   isLoading.value = true
   try {
-    bookings.value = await getUserBookings(user.value.uid)
+    const allBookings = await getUserBookings(user.value.uid)
+    // 今後の予約（チェックイン日が今日以降）と過去の予約を分けてソート
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    const upcoming: Booking[] = []
+    const past: Booking[] = []
+
+    for (const booking of allBookings) {
+      const checkInDate = booking.startDate.toDate()
+      if (checkInDate >= today || ['pending', 'pending_review', 'confirmed'].includes(booking.status)) {
+        upcoming.push(booking)
+      } else {
+        past.push(booking)
+      }
+    }
+
+    // 今後の予約はチェックイン日が近い順、過去の予約はチェックイン日が新しい順
+    upcoming.sort((a, b) => a.startDate.toDate().getTime() - b.startDate.toDate().getTime())
+    past.sort((a, b) => b.startDate.toDate().getTime() - a.startDate.toDate().getTime())
+
+    bookings.value = [...upcoming, ...past]
   } catch (error) {
     console.error('予約一覧の取得エラー:', error)
     alert('予約一覧の取得に失敗しました')
@@ -444,28 +468,76 @@ const loadBookings = async () => {
 // ステータスラベル
 const getStatusLabel = (status: string) => {
   const labels: Record<string, string> = {
-    pending: '予約待ち',
+    pending: '承認待ち',
+    pending_review: '審査中',
     confirmed: '予約確定',
-    cancelled: 'キャンセル',
-    completed: '完了'
+    rejected: '却下',
+    cancelled: 'キャンセル済み',
+    completed: '宿泊完了',
+    payment_failed: '決済エラー',
+    refunded: '返金済み',
+    expired: '期限切れ'
   }
   return labels[status] || status
 }
 
-// 支払いステータスラベル
-const getPaymentStatusLabel = (status: string) => {
-  const labels: Record<string, string> = {
-    pending: '未払い',
-    paid: '支払い済み',
-    refunded: '返金済み',
-    failed: '失敗'
+// ステータスに応じたCSSクラス
+const getStatusClass = (status: string) => {
+  const classes: Record<string, string> = {
+    pending: 'bg-yellow-100 text-yellow-800',
+    pending_review: 'bg-orange-100 text-orange-800',
+    confirmed: 'bg-green-100 text-green-800',
+    rejected: 'bg-red-100 text-red-800',
+    cancelled: 'bg-gray-100 text-gray-600',
+    completed: 'bg-blue-100 text-blue-800',
+    payment_failed: 'bg-red-100 text-red-800',
+    refunded: 'bg-purple-100 text-purple-800',
+    expired: 'bg-gray-100 text-gray-600'
   }
-  return labels[status] || status
+  return classes[status] || 'bg-gray-100 text-gray-800'
+}
+
+// ステータスの説明（ツールチップ用）
+const getStatusDescription = (status: string) => {
+  const descriptions: Record<string, string> = {
+    pending: '管理者による予約の承認を待っています',
+    pending_review: '予約内容を審査中です',
+    confirmed: '予約が確定しました。チェックイン日をお待ちください',
+    rejected: '予約が承認されませんでした',
+    cancelled: 'この予約はキャンセルされました',
+    completed: 'ご宿泊ありがとうございました',
+    payment_failed: '決済処理に問題が発生しました',
+    refunded: 'キャンセルに伴い返金処理が完了しました',
+    expired: '予約の有効期限が切れました'
+  }
+  return descriptions[status] || ''
+}
+
+// キャンセル可能なステータスかどうか
+const canCancel = (status: string) => {
+  return ['pending', 'pending_review', 'confirmed'].includes(status)
+}
+
+// メッセージ可能なステータスかどうか
+const canMessage = (status: string) => {
+  return !['cancelled', 'rejected', 'expired', 'payment_failed'].includes(status)
 }
 
 // 日付フォーマット
 const formatDate = (date: Date) => {
   return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`
+}
+
+// 日付フォーマット（曜日付き）
+const formatDateWithDay = (date: Date) => {
+  const days = ['日', '月', '火', '水', '木', '金', '土']
+  return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日(${days[date.getDay()]})`
+}
+
+// 宿泊日数を計算
+const calculateNights = (startDate: Date, endDate: Date): number => {
+  const diffTime = endDate.getTime() - startDate.getTime()
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
 }
 
 // 予約キャンセルモーダルを開く
@@ -478,7 +550,16 @@ const handleCancelBooking = async (booking: Booking) => {
 
   try {
     // 返金額を計算
-    const response = await $fetch('/api/bookings/calculate-refund', {
+    const response = await $fetch<{
+      success: boolean
+      calculation?: {
+        originalAmount: number
+        refundPercentage: number
+        refundAmount: number
+        nonRefundableAmount: number
+        daysBeforeCheckIn: number
+      }
+    }>('/api/bookings/calculate-refund', {
       method: 'POST',
       body: { bookingId: booking.id }
     })
@@ -540,12 +621,6 @@ const confirmCancelBooking = async () => {
   } finally {
     isCancelling.value = false
   }
-}
-
-// 決済処理
-const handlePayment = (bookingId: string) => {
-  // TODO: Stripe決済ページへリダイレクト
-  alert('決済機能は今後実装予定です')
 }
 
 // レビュー済みかチェック
@@ -611,8 +686,27 @@ const loadReviewedBookings = async () => {
   reviewedBookingIds.value = ids
 }
 
+// サイト設定を読み込み
+const loadSiteSettings = async () => {
+  try {
+    const response = await fetch('/api/public/settings')
+    if (response.ok) {
+      const data = await response.json()
+      if (data.success && data.settings) {
+        siteSettings.value = {
+          checkInTime: data.settings.checkInTime || '15:00',
+          checkOutTime: data.settings.checkOutTime || '11:00'
+        }
+      }
+    }
+  } catch (error) {
+    console.error('設定の取得に失敗:', error)
+  }
+}
+
 // マウント時に予約一覧を読み込み
 onMounted(async () => {
+  await loadSiteSettings()
   if (user.value) {
     await loadBookings()
     await loadReviewedBookings()
