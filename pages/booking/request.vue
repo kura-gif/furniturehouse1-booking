@@ -620,7 +620,6 @@ const { createBooking } = useBookings()
 const { createPaymentIntent, initializeElements, confirmCardPayment } = useStripePayment()
 const { calculatePrice, pricingSetting, loadFromFirestore } = useEnhancedPricing()
 const { getActivePolicy, generatePolicyDescription } = useCancellationPolicy()
-const { getActiveOptions } = useBookingOptions()
 
 // パンくずリスト
 const breadcrumbItems = [
@@ -671,22 +670,24 @@ const loadOptionsAndAvailability = async () => {
   try {
     loadingOptions.value = true
 
-    // 有効なオプションを取得
-    const options = await getActiveOptions()
-    availableOptions.value = options
+    // 公開APIから有効なオプションを取得（Firestoreインデックス不要）
+    const optionsResult = await $fetch('/api/public/options')
+    if (optionsResult.success && optionsResult.options) {
+      availableOptions.value = optionsResult.options as BookingOption[]
 
-    if (options.length > 0 && checkInDate.value) {
-      // 空き状況を確認
-      const result = await $fetch('/api/public/options-availability', {
-        method: 'POST',
-        body: {
-          date: checkInDate.value,
-          optionIds: options.map(o => o.id)
+      if (optionsResult.options.length > 0 && checkInDate.value) {
+        // 空き状況を確認
+        const result = await $fetch('/api/public/options-availability', {
+          method: 'POST',
+          body: {
+            date: checkInDate.value,
+            optionIds: optionsResult.options.map((o: any) => o.id)
+          }
+        })
+
+        if (result.success && result.availability) {
+          optionAvailability.value = result.availability
         }
-      })
-
-      if (result.success && result.availability) {
-        optionAvailability.value = result.availability
       }
     }
   } catch (error) {

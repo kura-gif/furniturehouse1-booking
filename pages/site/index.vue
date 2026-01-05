@@ -15,7 +15,9 @@
     <!-- ヒーローセクション -->
     <section class="site-hero">
       <div class="site-hero-main">
-        <img :src="heroImages[currentImageIndex]" :alt="`家具の家 No.1 写真${currentImageIndex + 1}`" class="site-hero-image" />
+        <transition name="fade" mode="out-in">
+          <img :key="currentImageIndex" :src="heroImages[currentImageIndex]" :alt="`家具の家 No.1 写真${currentImageIndex + 1}`" class="site-hero-image" />
+        </transition>
         <div class="site-hero-nav">
           <button class="site-hero-nav-btn" @click="nextImage" aria-label="次の画像">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
@@ -293,6 +295,17 @@ useHead({
   object-fit: cover;
 }
 
+/* フェードトランジション */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.8s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
 .site-hero-nav {
   position: absolute;
   bottom: 20px;
@@ -460,7 +473,7 @@ useHead({
 /* 構造体セクション */
 .site-structure-section {
   background-color: #ffffff;
-  padding: 80px 80px 60px;
+  padding: 80px 120px 60px;
 }
 
 @media (max-width: 1024px) {
@@ -470,10 +483,10 @@ useHead({
 }
 
 .site-structure-inner {
-  max-width: 1000px;
+  max-width: 1100px;
   margin: 0 auto;
   display: flex;
-  gap: 60px;
+  gap: 80px;
   align-items: flex-start;
 }
 
@@ -489,30 +502,31 @@ useHead({
 }
 
 .site-structure-title {
-  font-size: 18px;
+  font-size: 28px;
   font-weight: 400;
-  line-height: 1.7;
-  margin-bottom: 28px;
+  line-height: 1.4;
+  letter-spacing: 1px;
+  margin-bottom: 40px;
   color: #231815;
 }
 
 .site-structure-text p {
-  font-size: 14px;
-  line-height: 2;
-  margin-bottom: 16px;
+  font-size: 15px;
+  line-height: 2.2;
+  margin-bottom: 8px;
   color: #231815;
   font-weight: 300;
 }
 
 .site-structure-image {
   flex-shrink: 0;
-  width: 280px;
+  width: 340px;
 }
 
 @media (max-width: 768px) {
   .site-structure-image {
     width: 100%;
-    max-width: 280px;
+    max-width: 340px;
   }
 }
 
@@ -524,7 +538,7 @@ useHead({
 /* 体験セクション */
 .site-experience-section {
   background-color: #ffffff;
-  padding: 40px 80px 60px;
+  padding: 40px 120px 60px;
 }
 
 @media (max-width: 1024px) {
@@ -534,10 +548,10 @@ useHead({
 }
 
 .site-experience-inner {
-  max-width: 1000px;
+  max-width: 1100px;
   margin: 0 auto;
   display: flex;
-  gap: 60px;
+  gap: 80px;
   align-items: flex-start;
 }
 
@@ -553,22 +567,22 @@ useHead({
 }
 
 .site-experience-text p {
-  font-size: 14px;
-  line-height: 2;
-  margin-bottom: 16px;
+  font-size: 15px;
+  line-height: 2.2;
+  margin-bottom: 8px;
   color: #231815;
   font-weight: 300;
 }
 
 .site-experience-image {
   flex-shrink: 0;
-  width: 280px;
+  width: 340px;
 }
 
 @media (max-width: 768px) {
   .site-experience-image {
     width: 100%;
-    max-width: 280px;
+    max-width: 340px;
   }
 }
 
