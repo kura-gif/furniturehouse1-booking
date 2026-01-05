@@ -130,6 +130,10 @@ export default defineEventHandler(async (event) => {
         status: 'pending',
         paymentStatus: 'pending',
 
+        // 審査ステータス（与信確保後に審査開始）
+        reviewStatus: 'pending_review',
+        reviewDeadline: Timestamp.fromDate(new Date(Date.now() + 48 * 60 * 60 * 1000)), // 48時間後
+
         // システム情報
         bookingReference: generateBookingReference(),
         bookingToken: generateSecureToken(),

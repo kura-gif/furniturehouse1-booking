@@ -3,6 +3,7 @@
  * - サーバーサイドで金額を再計算
  * - クライアントから送信された金額を検証
  * - クーポン検証
+ * - 審査機能対応: capture_method: 'manual' で与信のみ確保
  */
 
 import Stripe from 'stripe'
@@ -90,10 +91,12 @@ export default defineEventHandler(async (event) => {
       total: calculatedAmount,
     })
 
-    // 6. Payment Intentを作成
+    // 6. Payment Intentを作成（与信確保のみ、審査後にキャプチャ）
+    // capture_method: 'manual' で与信枠を確保し、実際の請求は審査承認後に行う
     const paymentIntent = await stripe.paymentIntents.create({
       amount: calculatedAmount,
       currency: 'jpy',
+      capture_method: 'manual', // 審査機能: 与信のみ確保、後でcaptureする
       automatic_payment_methods: {
         enabled: true,
       },

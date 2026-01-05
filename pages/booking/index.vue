@@ -20,8 +20,8 @@
           <!-- ゲスト選択 -->
           <div class="card">
             <h2 class="text-lg font-semibold mb-4">宿泊人数</h2>
-            <div class="grid grid-cols-2 gap-4">
-              <!-- 大人 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <!-- 大人（16歳以上） -->
               <div class="border rounded-lg p-4">
                 <label class="block text-sm font-medium text-gray-700 mb-3">
                   大人
@@ -40,7 +40,7 @@
                   <span class="text-xl font-semibold min-w-[40px] text-center">{{ adults }}</span>
                   <button
                     @click="incrementAdults"
-                    :disabled="adults + children >= 4"
+                    :disabled="totalGuests >= 6"
                     class="w-10 h-10 rounded-full border-2 border-gray-300 hover:border-purple-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                   >
                     <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -50,11 +50,11 @@
                 </div>
               </div>
 
-              <!-- 子供・乳幼児 -->
+              <!-- 子ども（7〜15歳） -->
               <div class="border rounded-lg p-4">
                 <label class="block text-sm font-medium text-gray-700 mb-3">
-                  子供・乳幼児
-                  <span class="text-xs text-gray-500 ml-1">(0-15歳)</span>
+                  子ども
+                  <span class="text-xs text-gray-500 ml-1">(7〜15歳・50%)</span>
                 </label>
                 <div class="flex items-center gap-4">
                   <button
@@ -69,7 +69,36 @@
                   <span class="text-xl font-semibold min-w-[40px] text-center">{{ children }}</span>
                   <button
                     @click="incrementChildren"
-                    :disabled="adults + children >= 4"
+                    :disabled="totalGuests >= 6"
+                    class="w-10 h-10 rounded-full border-2 border-gray-300 hover:border-purple-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- 乳幼児（0〜6歳） -->
+              <div class="border rounded-lg p-4">
+                <label class="block text-sm font-medium text-gray-700 mb-3">
+                  乳幼児
+                  <span class="text-xs text-gray-500 ml-1">(0〜6歳・無料)</span>
+                </label>
+                <div class="flex items-center gap-4">
+                  <button
+                    @click="decrementInfants"
+                    :disabled="infants <= 0"
+                    class="w-10 h-10 rounded-full border-2 border-gray-300 hover:border-purple-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                    </svg>
+                  </button>
+                  <span class="text-xl font-semibold min-w-[40px] text-center">{{ infants }}</span>
+                  <button
+                    @click="incrementInfants"
+                    :disabled="totalGuests >= 6"
                     class="w-10 h-10 rounded-full border-2 border-gray-300 hover:border-purple-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                   >
                     <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -79,7 +108,7 @@
                 </div>
               </div>
             </div>
-            <p class="text-sm text-gray-500 mt-3">※ 最大4名様までご利用いただけます</p>
+            <p class="text-sm text-gray-500 mt-3">※ 最大6名様までご利用いただけます</p>
           </div>
 
           <!-- カレンダー -->
@@ -139,7 +168,8 @@
                   <span class="text-sm text-gray-600">宿泊人数</span>
                   <span class="font-semibold">
                     大人{{ adults }}名
-                    <span v-if="children > 0">・子供{{ children }}名</span>
+                    <span v-if="children > 0">・子ども{{ children }}名</span>
+                    <span v-if="infants > 0">・乳幼児{{ infants }}名</span>
                   </span>
                 </div>
               </div>
@@ -166,6 +196,26 @@
                 この段階ではまだ予約は確定していません
               </p>
             </div>
+
+            <!-- キャンセルポリシー -->
+            <div class="mt-6 pt-6 border-t border-gray-200">
+              <div class="flex items-center gap-2 mb-3">
+                <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                <h3 class="text-sm font-semibold text-gray-700">キャンセルポリシー</h3>
+              </div>
+              <div v-if="cancellationPolicyDescription" class="text-xs text-gray-600 space-y-1">
+                <p v-for="(line, index) in cancellationPolicyDescription.split('\n')" :key="index">
+                  {{ line }}
+                </p>
+              </div>
+              <div v-else class="text-xs text-gray-600 space-y-1">
+                <p>• チェックイン5日前まで: 全額返金</p>
+                <p>• チェックイン3〜4日前: 50%返金</p>
+                <p>• チェックイン2日前以降: 返金不可</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -176,7 +226,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
 definePageMeta({
   layout: false
@@ -184,6 +234,7 @@ definePageMeta({
 
 const router = useRouter()
 const route = useRoute()
+const { getActivePolicy, generatePolicyDescription } = useCancellationPolicy()
 
 // パンくずリスト
 const breadcrumbItems = [
@@ -194,12 +245,19 @@ const breadcrumbItems = [
 // クエリパラメータから初期値を取得
 const adults = ref(parseInt(route.query.adults as string) || 1)
 const children = ref(parseInt(route.query.children as string) || 0)
+const infants = ref(parseInt(route.query.infants as string) || 0)
 const checkInDate = ref(route.query.checkIn as string || '')
 const checkOutDate = ref(route.query.checkOut as string || '')
 
+// キャンセルポリシー
+const cancellationPolicyDescription = ref('')
+
+// 合計ゲスト数
+const totalGuests = computed(() => adults.value + children.value + infants.value)
+
 // 人数調整
 function incrementAdults() {
-  if (adults.value + children.value < 4) {
+  if (totalGuests.value < 6) {
     adults.value++
   }
 }
@@ -211,7 +269,7 @@ function decrementAdults() {
 }
 
 function incrementChildren() {
-  if (adults.value + children.value < 4) {
+  if (totalGuests.value < 6) {
     children.value++
   }
 }
@@ -219,6 +277,18 @@ function incrementChildren() {
 function decrementChildren() {
   if (children.value > 0) {
     children.value--
+  }
+}
+
+function incrementInfants() {
+  if (totalGuests.value < 6) {
+    infants.value++
+  }
+}
+
+function decrementInfants() {
+  if (infants.value > 0) {
+    infants.value--
   }
 }
 
@@ -252,7 +322,8 @@ function handleProceedToRequest() {
       checkIn: checkInDate.value,
       checkOut: checkOutDate.value,
       adults: adults.value.toString(),
-      children: children.value.toString()
+      children: children.value.toString(),
+      infants: infants.value.toString()
     }
   })
 }
@@ -267,6 +338,22 @@ function formatDisplayDate(dateStr: string): string {
 function formatPrice(price: number): string {
   return price.toLocaleString()
 }
+
+// キャンセルポリシーをロード
+async function loadCancellationPolicy() {
+  try {
+    const policy = await getActivePolicy()
+    if (policy) {
+      cancellationPolicyDescription.value = generatePolicyDescription(policy.rules)
+    }
+  } catch (error) {
+    console.error('キャンセルポリシー取得エラー:', error)
+  }
+}
+
+onMounted(() => {
+  loadCancellationPolicy()
+})
 
 // SEO設定
 useHead({

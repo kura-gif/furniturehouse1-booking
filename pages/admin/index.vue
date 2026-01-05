@@ -338,121 +338,39 @@
 
       <!-- メッセージタブ -->
       <div v-if="currentTab === 'messages'" class="card">
-        <h2 class="text-2xl font-semibold mb-6">ゲストメッセージ</h2>
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-2xl font-semibold">ゲストメッセージ</h2>
+          <NuxtLink
+            to="/admin/messages"
+            class="btn-primary flex items-center gap-2"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+            メッセージ管理を開く
+          </NuxtLink>
+        </div>
 
-        <div class="grid md:grid-cols-3 gap-6">
-          <!-- ゲスト一覧 -->
-          <div class="md:col-span-1 border-r pr-4">
-            <h3 class="text-lg font-semibold mb-4">予約一覧</h3>
-            <div class="space-y-2">
-              <div
-                v-for="booking in allBookings.filter(b => b.status !== 'cancelled')"
-                :key="booking.id"
-                @click="selectedBooking = booking"
-                :class="[
-                  'p-3 rounded-lg cursor-pointer transition-custom',
-                  selectedBooking?.id === booking.id
-                    ? 'bg-purple-100 border-2 border-purple-500'
-                    : 'bg-gray-50 hover:bg-gray-100 border-2 border-transparent'
-                ]"
-              >
-                <div class="font-semibold">{{ booking.guestName }}</div>
-                <div class="text-sm text-gray-600">
-                  {{ formatDate(booking.startDate) }}
-                </div>
-                <div class="text-xs text-gray-500 mt-1">
-                  {{ booking.type === 'stay' ? '宿泊' : 'ワークショップ' }}
-                </div>
-              </div>
-            </div>
+        <div class="text-center py-12">
+          <div class="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg class="w-10 h-10 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
           </div>
-
-          <!-- メッセージエリア -->
-          <div class="md:col-span-2">
-            <div v-if="selectedBooking">
-              <div class="mb-4 pb-4 border-b">
-                <h3 class="font-semibold text-lg">{{ selectedBooking.guestName }}様</h3>
-                <p class="text-sm text-gray-600">{{ selectedBooking.guestEmail }}</p>
-              </div>
-
-              <!-- メッセージ履歴 -->
-              <div
-                ref="messagesContainer"
-                class="bg-gray-50 rounded-lg p-4 mb-4 h-96 overflow-y-auto"
-              >
-                <div v-if="messages.length === 0" class="text-center text-gray-500 py-8">
-                  まだメッセージがありません
-                </div>
-                <div v-else class="space-y-4">
-                  <div
-                    v-for="msg in messages"
-                    :key="msg.id"
-                    :class="[
-                      'flex',
-                      msg.senderType === 'admin' ? 'justify-end' : 'justify-start'
-                    ]"
-                  >
-                    <div
-                      :class="[
-                        'rounded-lg p-3 max-w-md',
-                        msg.senderType === 'admin'
-                          ? 'bg-purple-500 text-white'
-                          : 'bg-white shadow'
-                      ]"
-                    >
-                      <p class="text-sm">{{ msg.message }}</p>
-                      <p
-                        :class="[
-                          'text-xs mt-2',
-                          msg.senderType === 'admin' ? 'opacity-75' : 'text-gray-500'
-                        ]"
-                      >
-                        {{ formatDateTime(msg.createdAt) }}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- メッセージ送信フォーム -->
-              <form @submit.prevent="handleSendMessage" class="flex gap-2">
-                <input
-                  v-model="newMessage"
-                  type="text"
-                  placeholder="メッセージを入力..."
-                  class="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-                  :disabled="isSendingMessage"
-                />
-                <button
-                  type="submit"
-                  class="btn-primary"
-                  :disabled="!newMessage.trim() || isSendingMessage"
-                >
-                  {{ isSendingMessage ? '送信中...' : '送信' }}
-                </button>
-              </form>
-
-              <!-- クイック返信テンプレート -->
-              <div class="mt-4">
-                <p class="text-sm text-gray-600 mb-2">クイック返信</p>
-                <div class="flex flex-wrap gap-2">
-                  <button
-                    v-for="(reply, index) in quickReplies"
-                    :key="index"
-                    type="button"
-                    @click="useQuickReply(reply)"
-                    class="text-sm px-3 py-1 bg-gray-100 rounded-full hover:bg-gray-200"
-                  >
-                    {{ reply.substring(0, 20) }}...
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div v-else class="text-center text-gray-500 py-12">
-              左側から予約を選択してください
-            </div>
-          </div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">新しいメッセージ管理画面</h3>
+          <p class="text-gray-600 mb-6">
+            ゲストとのメッセージのやり取りは専用の管理画面で行えます。<br>
+            リアルタイムでメッセージを送受信できます。
+          </p>
+          <NuxtLink
+            to="/admin/messages"
+            class="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+          >
+            メッセージ管理を開く
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </NuxtLink>
         </div>
       </div>
 
@@ -521,254 +439,71 @@
       </div>
 
       <!-- 施設サポート管理タブ -->
-      <div v-if="currentTab === 'support'" class="space-y-6">
-        <!-- サブタブ -->
+      <div v-if="currentTab === 'facility-support'" class="space-y-6">
         <div class="card">
-          <div class="flex gap-4 border-b">
-            <button
-              @click="supportSubTab = 'schedule'"
-              :class="[
-                'px-4 py-2 font-medium transition-colors',
-                supportSubTab === 'schedule'
-                  ? 'text-purple-600 border-b-2 border-purple-600'
-                  : 'text-gray-600 hover:text-gray-900'
-              ]"
-            >
-              スケジュール
-            </button>
-            <button
-              @click="supportSubTab = 'supporters'"
-              :class="[
-                'px-4 py-2 font-medium transition-colors',
-                supportSubTab === 'supporters'
-                  ? 'text-purple-600 border-b-2 border-purple-600'
-                  : 'text-gray-600 hover:text-gray-900'
-              ]"
-            >
-              サポーター管理
-            </button>
-            <button
-              @click="supportSubTab = 'availability'"
-              :class="[
-                'px-4 py-2 font-medium transition-colors',
-                supportSubTab === 'availability'
-                  ? 'text-purple-600 border-b-2 border-purple-600'
-                  : 'text-gray-600 hover:text-gray-900'
-              ]"
-            >
-              利用可能状況
-            </button>
-          </div>
-        </div>
-
-        <!-- スケジュールタブ -->
-        <div v-if="supportSubTab === 'schedule'" class="card">
-          <div class="flex items-center justify-between mb-6">
-            <h2 class="text-2xl font-semibold">施設サポートスケジュール</h2>
-            <button @click="showCreateTaskModal = true" class="btn-primary text-sm">
-              + 新規タスク作成
-            </button>
-          </div>
-
-          <!-- サポートタスク一覧 -->
-          <div class="space-y-4">
-            <div
-              v-for="booking in allBookings.filter(b => b.status === 'confirmed').slice(0, 5)"
-              :key="booking.id"
-              class="border rounded-lg p-4 hover:shadow-md transition-custom"
-            >
-              <div class="flex items-center justify-between">
-                <div class="flex-1">
-                  <div class="flex items-center gap-3 mb-2">
-                    <div class="bg-purple-100 text-purple-700 rounded-lg px-3 py-1 text-sm font-semibold">
-                      {{ formatDate(booking.endDate) }} チェックアウト後
-                    </div>
-                    <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-semibold">
-                      未割当
-                    </span>
-                  </div>
-
-                  <div class="text-sm text-gray-600">
-                    <p>ゲスト: {{ booking.guestName }}様（{{ booking.guestCount }}名）</p>
-                    <p class="mt-1">予定時間: <span class="font-semibold">3時間</span></p>
-                    <p class="mt-1">想定コスト: ¥4,500（時給 ¥1,300 × 3h + 交通費 ¥600）</p>
-                  </div>
-                </div>
-
-                <div class="flex gap-2">
-                  <button class="btn-secondary text-sm">サポーター割当</button>
-                  <button class="btn-secondary text-sm">詳細</button>
-                </div>
-              </div>
-
-              <!-- チェックリスト -->
-              <div class="mt-4 pt-4 border-t">
-                <p class="text-sm font-semibold mb-2">サポートチェックリスト</p>
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
-                  <label class="flex items-center gap-2">
-                    <input type="checkbox" class="rounded" disabled />
-                    <span class="text-gray-400">リネン交換</span>
-                  </label>
-                  <label class="flex items-center gap-2">
-                    <input type="checkbox" class="rounded" disabled />
-                    <span class="text-gray-400">バスルーム清掃</span>
-                  </label>
-                  <label class="flex items-center gap-2">
-                    <input type="checkbox" class="rounded" disabled />
-                    <span class="text-gray-400">キッチン清掃</span>
-                  </label>
-                  <label class="flex items-center gap-2">
-                    <input type="checkbox" class="rounded" disabled />
-                    <span class="text-gray-400">ゴミ回収</span>
-                  </label>
-                  <label class="flex items-center gap-2">
-                    <input type="checkbox" class="rounded" disabled />
-                    <span class="text-gray-400">床清掃</span>
-                  </label>
-                  <label class="flex items-center gap-2">
-                    <input type="checkbox" class="rounded" disabled />
-                    <span class="text-gray-400">窓清掃</span>
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 空の状態 -->
-          <div v-if="allBookings.filter(b => b.status === 'confirmed').length === 0" class="text-center py-12">
-            <p class="text-gray-500">サポートタスクはありません</p>
-          </div>
-        </div>
-
-        <!-- サポーター管理タブ -->
-        <div v-if="supportSubTab === 'supporters'" class="card">
-          <div class="flex items-center justify-between mb-6">
-            <h2 class="text-2xl font-semibold">施設サポーター管理</h2>
-            <button @click="openCreateSupporterModal" class="btn-primary text-sm">
-              + サポーター追加
-            </button>
-          </div>
-
-          <!-- サポーター一覧 -->
-          <div v-if="allSupporters.length === 0" class="text-center py-12 text-gray-500">
-            <p class="mb-4">サポーターが登録されていません</p>
-            <button @click="openCreateSupporterModal" class="btn-primary">
-              最初のサポーターを追加
-            </button>
-          </div>
-
-          <div v-else class="space-y-4">
-            <div
-              v-for="supporter in allSupporters"
-              :key="supporter.id"
-              class="border rounded-lg p-4 hover:shadow-md transition-custom"
-            >
-              <div class="flex items-center justify-between">
-                <div class="flex-1">
-                  <div class="flex items-center gap-3 mb-2">
-                    <h3 class="font-semibold text-lg">{{ supporter.name }}</h3>
-                    <span
-                      :class="supporter.isActive
-                        ? 'px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold'
-                        : 'px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-semibold'"
-                    >
-                      {{ supporter.isActive ? 'アクティブ' : '非アクティブ' }}
-                    </span>
-                  </div>
-
-                  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600">
-                    <div>
-                      <p class="text-xs text-gray-500">メール</p>
-                      <p class="font-medium">{{ supporter.email }}</p>
-                    </div>
-                    <div>
-                      <p class="text-xs text-gray-500">電話</p>
-                      <p class="font-medium">{{ supporter.phone || '未設定' }}</p>
-                    </div>
-                    <div>
-                      <p class="text-xs text-gray-500">時給</p>
-                      <p class="font-medium">¥{{ supporter.hourlyRate.toLocaleString() }}</p>
-                    </div>
-                    <div>
-                      <p class="text-xs text-gray-500">交通費（往復）</p>
-                      <p class="font-medium">¥{{ supporter.transportationFee.toLocaleString() }}</p>
-                    </div>
-                  </div>
-
-                  <div class="mt-3 text-sm">
-                    <p class="text-gray-600">今月の稼働: <span class="font-semibold">計算中...</span></p>
-                    <p class="text-gray-600">今月の報酬: <span class="font-semibold">計算中...</span></p>
-                  </div>
-                </div>
-
-                <div class="flex gap-2">
-                  <button @click="editSupporter(supporter)" class="btn-secondary text-sm">編集</button>
-                  <button class="btn-secondary text-sm">スケジュール</button>
-                  <button class="btn-secondary text-sm">チャット</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 利用可能状況タブ -->
-        <div v-if="supportSubTab === 'availability'" class="card">
-          <h2 class="text-2xl font-semibold mb-6">サポーター利用可能状況</h2>
-
-          <div class="mb-6">
-            <label class="block text-sm font-medium text-gray-700 mb-2">サポーター選択</label>
-            <select class="w-full md:w-64 px-4 py-2 border rounded-lg">
-              <option>田中 花子</option>
-              <option>佐藤 太郎</option>
-            </select>
-          </div>
-
-          <!-- カレンダー表示（簡易版） -->
-          <div class="border rounded-lg p-6">
-            <div class="text-center mb-4">
-              <h3 class="text-lg font-semibold">2025年1月</h3>
-            </div>
-
-            <div class="grid grid-cols-7 gap-2">
-              <!-- 曜日ヘッダー -->
-              <div v-for="day in ['日', '月', '火', '水', '木', '金', '土']" :key="day" class="text-center text-sm font-medium text-gray-600 py-2">
-                {{ day }}
-              </div>
-
-              <!-- 日付（モック） -->
-              <div v-for="date in 31" :key="date" class="aspect-square">
-                <div
-                  :class="[
-                    'w-full h-full flex items-center justify-center rounded-lg text-sm cursor-pointer transition-colors',
-                    date % 5 === 0 ? 'bg-green-100 text-green-800 font-semibold' :
-                    date % 7 === 0 ? 'bg-red-100 text-red-800' :
-                    'hover:bg-gray-100'
-                  ]"
-                >
-                  {{ date }}
-                </div>
-              </div>
-            </div>
-
-            <div class="mt-6 flex gap-6 text-sm">
-              <div class="flex items-center gap-2">
-                <div class="w-4 h-4 bg-green-100 rounded"></div>
-                <span>利用可能（OK日）</span>
-              </div>
-              <div class="flex items-center gap-2">
-                <div class="w-4 h-4 bg-red-100 rounded"></div>
-                <span>利用不可（NG日）</span>
-              </div>
-              <div class="flex items-center gap-2">
-                <div class="w-4 h-4 bg-gray-100 rounded"></div>
-                <span>未設定</span>
-              </div>
-            </div>
-          </div>
-
-          <p class="mt-4 text-sm text-gray-600">
-            ※ サポーターが直接カレンダーに入力できるよう、専用ページを提供予定です
+          <h2 class="text-2xl font-semibold mb-6">施設サポート管理</h2>
+          <p class="text-gray-600 mb-6">
+            清掃スタッフ（サポーター）の管理と清掃タスクの割り当てを行います。
           </p>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- サポーター管理 -->
+            <NuxtLink
+              to="/admin/supporters"
+              class="block p-6 border-2 border-purple-200 rounded-xl hover:border-purple-400 hover:shadow-lg transition-all bg-gradient-to-br from-purple-50 to-white"
+            >
+              <div class="flex items-center gap-4 mb-4">
+                <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                  <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-lg font-semibold text-gray-900">サポーター管理</h3>
+                  <p class="text-sm text-gray-600">スタッフの登録・編集・報酬設定</p>
+                </div>
+              </div>
+              <p class="text-purple-600 text-sm font-medium">管理画面を開く →</p>
+            </NuxtLink>
+
+            <!-- 清掃タスク管理 -->
+            <NuxtLink
+              to="/admin/cleaning-tasks"
+              class="block p-6 border-2 border-blue-200 rounded-xl hover:border-blue-400 hover:shadow-lg transition-all bg-gradient-to-br from-blue-50 to-white"
+            >
+              <div class="flex items-center gap-4 mb-4">
+                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                  <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-lg font-semibold text-gray-900">清掃タスク管理</h3>
+                  <p class="text-sm text-gray-600">タスク一覧・割り当て・完了確認</p>
+                </div>
+              </div>
+              <p class="text-blue-600 text-sm font-medium">管理画面を開く →</p>
+            </NuxtLink>
+
+            <!-- 報酬計算・月次レポート -->
+            <NuxtLink
+              to="/admin/compensation-report"
+              class="block p-6 border-2 border-green-200 rounded-xl hover:border-green-400 hover:shadow-lg transition-all bg-gradient-to-br from-green-50 to-white"
+            >
+              <div class="flex items-center gap-4 mb-4">
+                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                  <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-lg font-semibold text-gray-900">報酬計算・月次レポート</h3>
+                  <p class="text-sm text-gray-600">報酬計算・支払い管理・CSV出力</p>
+                </div>
+              </div>
+              <p class="text-green-600 text-sm font-medium">管理画面を開く →</p>
+            </NuxtLink>
+          </div>
         </div>
       </div>
 
@@ -1003,6 +738,11 @@
       <!-- クーポン管理タブ -->
       <div v-if="currentTab === 'coupons'">
         <AdminCouponManagement />
+      </div>
+
+      <!-- キャンセルポリシー管理タブ -->
+      <div v-if="currentTab === 'cancellation'">
+        <AdminCancellationPolicySettings />
       </div>
 
       <!-- 設定タブ -->
@@ -1296,17 +1036,54 @@
             <p class="text-sm whitespace-pre-wrap bg-gray-50 p-3 rounded-lg mt-1">{{ selectedBooking.notes }}</p>
           </div>
 
+          <!-- 審査待ちの場合の表示 -->
+          <div v-if="selectedBooking.reviewStatus === 'pending_review'" class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <div class="flex items-center gap-2 mb-2">
+              <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span class="font-semibold text-yellow-800">審査待ち</span>
+            </div>
+            <p class="text-sm text-yellow-700 mb-1">与信確保済み（まだ請求されていません）</p>
+            <p class="text-xs text-yellow-600">
+              審査期限: {{ selectedBooking.reviewDeadline ? formatDateTime(selectedBooking.reviewDeadline) : '48時間以内' }}
+            </p>
+          </div>
+
           <!-- アクションボタン -->
           <div class="flex flex-wrap gap-3 pt-4 border-t">
+            <!-- 審査承認/却下ボタン（審査待ちの場合のみ） -->
             <button
-              v-if="selectedBooking.status === 'pending'"
+              v-if="selectedBooking.reviewStatus === 'pending_review'"
+              @click="approveBooking(selectedBooking.id)"
+              :disabled="isApproving"
+              class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+            >
+              {{ isApproving ? '処理中...' : '✓ 承認する' }}
+            </button>
+            <button
+              v-if="selectedBooking.reviewStatus === 'pending_review'"
+              @click="showRejectModal = true"
+              class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+            >
+              ✕ 却下する
+            </button>
+            <button
+              v-if="selectedBooking.status === 'pending' && selectedBooking.reviewStatus !== 'pending_review'"
               @click="confirmBooking(selectedBooking.id)"
               class="btn-primary flex-1"
             >
               予約を確定
             </button>
             <button
-              v-if="selectedBooking.status !== 'cancelled'"
+              v-if="selectedBooking.paymentStatus === 'paid' && selectedBooking.status !== 'refunded'"
+              @click="openRefundModal"
+              class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+            >
+              返金処理
+            </button>
+            <button
+              v-if="selectedBooking.status !== 'cancelled' && selectedBooking.status !== 'refunded' && selectedBooking.status !== 'rejected'"
               @click="cancelBooking(selectedBooking.id)"
               class="btn-secondary flex-1"
             >
@@ -1323,138 +1100,172 @@
       </div>
     </div>
 
-    <!-- サポーター作成/編集モーダル -->
-    <div
-      v-if="showCreateSupporterModal || selectedSupporter"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-      @click="closeSupporterModal"
-    >
-      <div
-        class="bg-white rounded-xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
-        @click.stop
-      >
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-2xl font-semibold">
-            {{ selectedSupporter ? 'サポーター編集' : '新規サポーター追加' }}
-          </h3>
-          <button
-            @click="closeSupporterModal"
-            class="p-2 hover:bg-gray-100 rounded-lg transition-custom"
-          >
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
+    <!-- 返金モーダル -->
+    <div v-if="showRefundModal && selectedBooking" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+        <h3 class="text-xl font-semibold text-gray-900 mb-4">返金処理</h3>
 
-        <form @submit.prevent="handleSaveSupporter" class="space-y-4">
-          <!-- 名前 -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              名前 <span class="text-red-500">*</span>
-            </label>
-            <input
-              v-model="supporterForm.name"
-              type="text"
-              required
-              class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-              placeholder="例: 田中 花子"
-            />
+        <div class="space-y-4 mb-6">
+          <!-- 予約情報 -->
+          <div class="bg-gray-50 rounded-lg p-4">
+            <p class="text-sm text-gray-600">予約番号</p>
+            <p class="font-medium">{{ selectedBooking.bookingReference }}</p>
+            <p class="text-sm text-gray-600 mt-2">ゲスト</p>
+            <p class="font-medium">{{ selectedBooking.guestName }}様</p>
+            <p class="text-sm text-gray-600 mt-2">決済額</p>
+            <p class="font-medium text-lg">¥{{ selectedBooking.totalAmount?.toLocaleString() }}</p>
           </div>
 
-          <!-- メールアドレス -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              メールアドレス <span class="text-red-500">*</span>
-            </label>
-            <input
-              v-model="supporterForm.email"
-              type="email"
-              required
-              class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-              placeholder="例: tanaka@example.com"
-            />
-            <p class="text-xs text-gray-500 mt-1">通知メールが送信されます</p>
-          </div>
-
-          <!-- 電話番号 -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              電話番号
-            </label>
-            <input
-              v-model="supporterForm.phone"
-              type="tel"
-              class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-              placeholder="例: 090-1234-5678"
-            />
-          </div>
-
-          <!-- 時給 -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              時給（円） <span class="text-red-500">*</span>
-            </label>
-            <input
-              v-model.number="supporterForm.hourlyRate"
-              type="number"
-              required
-              min="0"
-              step="50"
-              class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-              placeholder="例: 1300"
-            />
-            <p class="text-xs text-gray-500 mt-1">個別に設定できます</p>
-          </div>
-
-          <!-- 交通費 -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              交通費（往復・円） <span class="text-red-500">*</span>
-            </label>
-            <input
-              v-model.number="supporterForm.transportationFee"
-              type="number"
-              required
-              min="0"
-              step="50"
-              class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-              placeholder="例: 600"
-            />
-            <p class="text-xs text-gray-500 mt-1">距離に応じたガソリン代</p>
-          </div>
-
-          <!-- アクティブステータス -->
-          <div class="flex items-center gap-2">
-            <input
-              v-model="supporterForm.isActive"
-              type="checkbox"
-              id="isActive"
-              class="rounded"
-            />
-            <label for="isActive" class="text-sm font-medium text-gray-700">
-              アクティブ（タスク割当可能）
-            </label>
-          </div>
-
-          <!-- ボタン -->
-          <div class="flex gap-2 pt-4">
+          <!-- 自動計算結果 -->
+          <div v-if="refundCalculation" class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+            <h4 class="font-medium text-purple-900 mb-2">キャンセルポリシーに基づく計算</h4>
+            <div class="text-sm space-y-1">
+              <p class="text-purple-700">
+                チェックイン{{ refundCalculation.daysBeforeCheckIn }}日前
+                <span class="text-purple-500">（{{ refundCalculation.policyName }}）</span>
+              </p>
+              <p class="text-purple-700">
+                返金率: <span class="font-semibold">{{ refundCalculation.refundPercentage }}%</span>
+              </p>
+              <p class="text-purple-900 font-semibold text-lg">
+                計算上の返金額: ¥{{ refundCalculation.refundAmount?.toLocaleString() }}
+              </p>
+            </div>
             <button
               type="button"
-              @click="closeSupporterModal"
-              class="btn-secondary flex-1"
+              @click="applyCalculatedRefund"
+              class="mt-3 text-sm text-purple-600 hover:text-purple-800 font-medium"
             >
-              キャンセル
-            </button>
-            <button
-              type="submit"
-              :disabled="isSavingSupporter"
-              class="btn-primary flex-1"
-            >
-              {{ isSavingSupporter ? '保存中...' : '保存' }}
+              この金額を適用 →
             </button>
           </div>
-        </form>
+          <div v-else-if="isCalculatingRefund" class="text-center py-4">
+            <div class="animate-spin w-6 h-6 border-2 border-purple-600 border-t-transparent rounded-full mx-auto"></div>
+            <p class="text-sm text-gray-600 mt-2">計算中...</p>
+          </div>
+
+          <!-- 返金額 -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              返金額（空欄で全額返金）
+            </label>
+            <input
+              v-model.number="refundAmount"
+              type="number"
+              :max="selectedBooking.totalAmount"
+              :placeholder="`全額: ¥${selectedBooking.totalAmount?.toLocaleString()}`"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+            />
+          </div>
+
+          <!-- 返金理由 -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">返金理由</label>
+            <select
+              v-model="refundReason"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+            >
+              <option value="">選択してください</option>
+              <option value="requested_by_customer">お客様からのリクエスト</option>
+              <option value="duplicate">重複決済</option>
+              <option value="host_cancellation">ホスト都合によるキャンセル</option>
+              <option value="other">その他</option>
+            </select>
+          </div>
+
+          <!-- 警告 -->
+          <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+            <p class="text-sm text-yellow-800">
+              <strong>注意:</strong> 返金処理は取り消しできません。返金額はゲストのカードに3〜10営業日で反映されます。
+            </p>
+          </div>
+        </div>
+
+        <div class="flex gap-3">
+          <button
+            @click="closeRefundModal"
+            :disabled="isRefunding"
+            class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+          >
+            キャンセル
+          </button>
+          <button
+            @click="processRefund"
+            :disabled="isRefunding || !refundReason"
+            class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {{ isRefunding ? '処理中...' : '返金を実行' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 審査却下モーダル -->
+    <div v-if="showRejectModal && selectedBooking" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl">
+        <h3 class="text-xl font-semibold text-gray-900 mb-4">予約を却下</h3>
+
+        <div class="space-y-4 mb-6">
+          <!-- 予約情報 -->
+          <div class="bg-gray-50 rounded-lg p-4">
+            <p class="text-sm text-gray-600">予約番号</p>
+            <p class="font-medium">{{ selectedBooking.bookingReference }}</p>
+            <p class="text-sm text-gray-600 mt-2">ゲスト</p>
+            <p class="font-medium">{{ selectedBooking.guestName }}様</p>
+          </div>
+
+          <!-- 却下理由カテゴリ -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">却下理由</label>
+            <select
+              v-model="rejectCategory"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+            >
+              <option value="">選択してください</option>
+              <option value="schedule_conflict">日程の都合が合わない</option>
+              <option value="capacity_exceeded">人数制限を超えている</option>
+              <option value="maintenance">施設メンテナンス中</option>
+              <option value="other">その他</option>
+            </select>
+          </div>
+
+          <!-- 却下メッセージ -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              ゲストへのメッセージ <span class="text-red-500">*</span>
+            </label>
+            <textarea
+              v-model="rejectMessage"
+              rows="4"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              placeholder="誠に恐れ入りますが、ご希望の日程は既に予約が入っており..."
+            ></textarea>
+          </div>
+
+          <!-- 警告 -->
+          <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+            <p class="text-sm text-yellow-800">
+              <strong>注意:</strong> 却下すると与信が解放され、ゲストに通知メールが送信されます。この操作は取り消しできません。
+            </p>
+          </div>
+        </div>
+
+        <div class="flex gap-3">
+          <button
+            @click="closeRejectModal"
+            :disabled="isRejecting"
+            class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+          >
+            キャンセル
+          </button>
+          <button
+            @click="rejectBooking"
+            :disabled="isRejecting || !rejectMessage || !rejectCategory"
+            class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {{ isRejecting ? '処理中...' : '却下を確定' }}
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -1462,20 +1273,10 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, reactive, watch, nextTick } from 'vue'
-import type { Booking, BookingStatus, PaymentStatus, Supporter, SupportTask, GuestMessage } from '~/types'
+import type { Booking, BookingStatus, PaymentStatus, GuestMessage, RejectionCategory } from '~/types'
 
-const { appUser, logout } = useAuth()
+const { appUser, loading, user, logout } = useAuth()
 const { getAllBookings, confirmBooking: confirmBookingAPI, cancelBooking: cancelBookingAPI } = useBookings()
-const {
-  getAllSupporters,
-  getActiveSupporters,
-  createSupporter,
-  updateSupporter,
-  getAllSupportTasks,
-  createSupportTask,
-  updateSupportTask,
-  assignSupporter
-} = useSupport()
 const {
   subscribeToMessages,
   sendMessage,
@@ -1507,6 +1308,26 @@ const handleLogout = async () => {
 // Firebaseから取得した予約データ
 const allBookings = ref<Booking[]>([])
 const isLoading = ref(false)
+
+// 返金モーダル
+const showRefundModal = ref(false)
+const refundReason = ref('')
+const refundAmount = ref<number | null>(null)
+const isRefunding = ref(false)
+const refundCalculation = ref<{
+  daysBeforeCheckIn: number
+  refundPercentage: number
+  refundAmount: number
+  policyName: string
+} | null>(null)
+const isCalculatingRefund = ref(false)
+
+// 審査モーダル
+const showRejectModal = ref(false)
+const rejectCategory = ref('')
+const rejectMessage = ref('')
+const isApproving = ref(false)
+const isRejecting = ref(false)
 
 // 予約データを取得
 const loadBookings = async () => {
@@ -1555,12 +1376,30 @@ const stats = computed(() => {
   }
 })
 
-// マウント時に予約データを読み込み
+// 認証状態が確定してからデータを読み込み
+const dataLoaded = ref(false)
+
+const loadData = async () => {
+  if (dataLoaded.value) return
+  dataLoaded.value = true
+  await Promise.all([
+    loadBookings(),
+    loadBlockedDates()
+  ])
+}
+
+// 認証状態を監視してデータを読み込み
+watch([loading, user], ([isLoading, currentUser]) => {
+  if (!isLoading && currentUser) {
+    loadData()
+  }
+}, { immediate: true })
+
+// マウント時にも確認（認証が既に完了している場合）
 onMounted(() => {
-  loadBookings()
-  loadSupporters()
-  loadSupportTasks()
-  loadBlockedDates()
+  if (!loading.value && user.value) {
+    loadData()
+  }
 })
 
 const tabs = [
@@ -1569,124 +1408,19 @@ const tabs = [
   { id: 'calendar', name: 'カレンダー' },
   { id: 'messages', name: 'メッセージ' },
   { id: 'reports', name: 'レポート' },
-  { id: 'support', name: '施設サポート' },
+  { id: 'facility-support', name: '施設サポート' },
   { id: 'inventory', name: '備品管理' },
   { id: 'amenities', name: 'アメニティ管理' },
   { id: 'photos', name: '写真ギャラリー' },
   { id: 'reviews', name: 'レビュー' },
   // { id: 'pricing', name: '料金設定' }, // 旧料金設定は非表示化
   { id: 'coupons', name: 'クーポン' },
+  { id: 'cancellation', name: 'キャンセルポリシー' },
   { id: 'settings', name: '設定' }
 ]
 
 const currentTab = ref('bookings')
 const bookingFilter = ref('all')
-
-// 施設サポート関連の状態
-const supportSubTab = ref('schedule')
-const showCreateTaskModal = ref(false)
-const showCreateSupporterModal = ref(false)
-
-// サポーター管理
-const allSupporters = ref<Supporter[]>([])
-const allSupportTasks = ref<SupportTask[]>([])
-const selectedSupporter = ref<Supporter | null>(null)
-const isSavingSupporter = ref(false)
-const supporterForm = reactive({
-  name: '',
-  email: '',
-  phone: '',
-  hourlyRate: 1300,
-  transportationFee: 600,
-  isActive: true
-})
-
-// サポーターデータを取得
-const loadSupporters = async () => {
-  try {
-    allSupporters.value = await getAllSupporters()
-  } catch (error) {
-    console.error('サポーターデータ取得エラー:', error)
-    alert('サポーターデータの取得に失敗しました')
-  }
-}
-
-// サポートタスクデータを取得
-const loadSupportTasks = async () => {
-  try {
-    allSupportTasks.value = await getAllSupportTasks()
-  } catch (error) {
-    console.error('サポートタスクデータ取得エラー:', error)
-    alert('サポートタスクデータの取得に失敗しました')
-  }
-}
-
-// サポーターモーダルを開く
-const openCreateSupporterModal = () => {
-  selectedSupporter.value = null
-  supporterForm.name = ''
-  supporterForm.email = ''
-  supporterForm.phone = ''
-  supporterForm.hourlyRate = 1300
-  supporterForm.transportationFee = 600
-  supporterForm.isActive = true
-  showCreateSupporterModal.value = true
-}
-
-// サポーター編集モーダルを開く
-const editSupporter = (supporter: Supporter) => {
-  selectedSupporter.value = supporter
-  supporterForm.name = supporter.name
-  supporterForm.email = supporter.email
-  supporterForm.phone = supporter.phone || ''
-  supporterForm.hourlyRate = supporter.hourlyRate
-  supporterForm.transportationFee = supporter.transportationFee
-  supporterForm.isActive = supporter.isActive
-  showCreateSupporterModal.value = true
-}
-
-// サポーターモーダルを閉じる
-const closeSupporterModal = () => {
-  showCreateSupporterModal.value = false
-  selectedSupporter.value = null
-}
-
-// サポーターを保存
-const handleSaveSupporter = async () => {
-  isSavingSupporter.value = true
-  try {
-    if (selectedSupporter.value) {
-      // 更新
-      await updateSupporter(selectedSupporter.value.id, {
-        name: supporterForm.name,
-        email: supporterForm.email,
-        phone: supporterForm.phone,
-        hourlyRate: supporterForm.hourlyRate,
-        transportationFee: supporterForm.transportationFee,
-        isActive: supporterForm.isActive
-      })
-      alert('サポーター情報を更新しました')
-    } else {
-      // 新規作成
-      await createSupporter({
-        name: supporterForm.name,
-        email: supporterForm.email,
-        phone: supporterForm.phone,
-        hourlyRate: supporterForm.hourlyRate,
-        transportationFee: supporterForm.transportationFee,
-        isActive: supporterForm.isActive
-      })
-      alert('サポーターを登録しました')
-    }
-    closeSupporterModal()
-    await loadSupporters()
-  } catch (error) {
-    console.error('サポーター保存エラー:', error)
-    alert('サポーターの保存に失敗しました')
-  } finally {
-    isSavingSupporter.value = false
-  }
-}
 
 const filteredBookings = computed(() => {
   if (bookingFilter.value === 'all') {
@@ -1863,21 +1597,31 @@ const useQuickReply = (template: string) => {
 }
 
 function getStatusLabel(status: BookingStatus) {
-  const labels = {
+  const labels: Record<string, string> = {
     pending: '保留中',
+    pending_review: '審査中',
     confirmed: '確定',
     cancelled: 'キャンセル',
-    completed: '完了'
+    completed: '完了',
+    payment_failed: '決済失敗',
+    refunded: '返金済み',
+    rejected: '却下',
+    expired: '期限切れ'
   }
   return labels[status] || status
 }
 
 function getStatusColor(status: BookingStatus) {
-  const colors = {
+  const colors: Record<string, string> = {
     pending: 'bg-yellow-100 text-yellow-800',
+    pending_review: 'bg-orange-100 text-orange-800',
     confirmed: 'bg-green-100 text-green-800',
     cancelled: 'bg-red-100 text-red-800',
-    completed: 'bg-gray-100 text-gray-800'
+    completed: 'bg-gray-100 text-gray-800',
+    payment_failed: 'bg-red-100 text-red-800',
+    refunded: 'bg-blue-100 text-blue-800',
+    rejected: 'bg-red-100 text-red-800',
+    expired: 'bg-gray-100 text-gray-800'
   }
   return colors[status] || 'bg-gray-100 text-gray-800'
 }
@@ -1936,6 +1680,161 @@ function openMessage(booking: Booking) {
   // メッセージタブに移動
   currentTab.value = 'messages'
   selectedBooking.value = booking
+}
+
+// 返金処理
+function closeRefundModal() {
+  showRefundModal.value = false
+  refundReason.value = ''
+  refundAmount.value = null
+  refundCalculation.value = null
+  isCalculatingRefund.value = false
+}
+
+// 返金モーダルを開く（自動計算付き）
+async function openRefundModal() {
+  if (!selectedBooking.value) return
+
+  showRefundModal.value = true
+  refundCalculation.value = null
+  isCalculatingRefund.value = true
+
+  try {
+    const response = await $fetch<{
+      success: boolean
+      calculation: {
+        daysBeforeCheckIn: number
+        refundPercentage: number
+        refundAmount: number
+        policyName: string
+      }
+    }>('/api/bookings/calculate-refund', {
+      method: 'POST',
+      body: {
+        bookingId: selectedBooking.value.id
+      }
+    })
+
+    if (response.success) {
+      refundCalculation.value = response.calculation
+    }
+  } catch (error: any) {
+    console.error('返金計算エラー:', error)
+    // エラーでも手動入力は可能
+  } finally {
+    isCalculatingRefund.value = false
+  }
+}
+
+// 計算結果を返金額に適用
+function applyCalculatedRefund() {
+  if (refundCalculation.value) {
+    refundAmount.value = refundCalculation.value.refundAmount
+  }
+}
+
+async function processRefund() {
+  if (!selectedBooking.value || !refundReason.value) return
+
+  isRefunding.value = true
+  try {
+    const response = await $fetch<{
+      success: boolean
+      refundId: string
+      amount: number
+      status: string
+      isFullRefund: boolean
+    }>('/api/stripe/create-refund', {
+      method: 'POST',
+      body: {
+        bookingId: selectedBooking.value.id,
+        reason: refundReason.value,
+        amount: refundAmount.value || undefined
+      }
+    })
+
+    if (response.success) {
+      const amountStr = response.amount?.toLocaleString() || ''
+      alert(`返金が完了しました（¥${amountStr}）`)
+      closeRefundModal()
+      selectedBooking.value = null
+      await loadBookings()
+    }
+  } catch (error: any) {
+    console.error('返金エラー:', error)
+    alert(error.data?.message || error.message || '返金処理に失敗しました')
+  } finally {
+    isRefunding.value = false
+  }
+}
+
+// 審査承認処理
+async function approveBooking(bookingId: string) {
+  if (!confirm('この予約を承認しますか？決済が確定されます。')) return
+
+  isApproving.value = true
+  try {
+    const response = await $fetch<{
+      success: boolean
+      bookingId: string
+      status: string
+      message: string
+    }>('/api/bookings/approve', {
+      method: 'POST',
+      body: { bookingId }
+    })
+
+    if (response.success) {
+      alert('予約を承認しました。決済が確定され、ゲストに通知メールが送信されました。')
+      selectedBooking.value = null
+      await loadBookings()
+    }
+  } catch (error: any) {
+    console.error('承認エラー:', error)
+    alert(error.data?.message || error.message || '予約の承認に失敗しました')
+  } finally {
+    isApproving.value = false
+  }
+}
+
+// 審査却下モーダル
+function closeRejectModal() {
+  showRejectModal.value = false
+  rejectCategory.value = ''
+  rejectMessage.value = ''
+}
+
+async function rejectBooking() {
+  if (!selectedBooking.value || !rejectMessage.value || !rejectCategory.value) return
+
+  isRejecting.value = true
+  try {
+    const response = await $fetch<{
+      success: boolean
+      bookingId: string
+      status: string
+      message: string
+    }>('/api/bookings/reject', {
+      method: 'POST',
+      body: {
+        bookingId: selectedBooking.value.id,
+        reason: rejectMessage.value,
+        category: rejectCategory.value
+      }
+    })
+
+    if (response.success) {
+      alert('予約を却下しました。与信が解放され、ゲストに通知メールが送信されました。')
+      closeRejectModal()
+      selectedBooking.value = null
+      await loadBookings()
+    }
+  } catch (error: any) {
+    console.error('却下エラー:', error)
+    alert(error.data?.message || error.message || '予約の却下に失敗しました')
+  } finally {
+    isRejecting.value = false
+  }
 }
 
 // ブロック期間管理

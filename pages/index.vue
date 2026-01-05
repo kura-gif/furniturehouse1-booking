@@ -367,18 +367,18 @@
                 </div>
 
                 <!-- カレンダーモーダル -->
-                <div v-if="showCalendar" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-25" @click="showCalendar = false">
-                  <div @click.stop class="bg-white rounded-xl shadow-2xl border border-gray-200 p-6" style="min-width: 660px; max-width: 90vw;">
+                <div v-if="showCalendar" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-25 p-4" @click="showCalendar = false">
+                  <div @click.stop class="bg-white rounded-xl shadow-2xl border border-gray-200 p-4 md:p-6 w-full max-w-[340px] md:max-w-[700px]">
                   <!-- カレンダーヘッダー -->
-                  <div class="flex items-center justify-between mb-6">
+                  <div class="flex items-center justify-between mb-4 md:mb-6">
                     <button @click="previousMonth" class="p-2 hover:bg-gray-100 rounded-full transition-colors" type="button">
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                       </svg>
                     </button>
-                    <div class="flex gap-12">
-                      <span class="font-semibold text-base">{{ currentMonthName }}</span>
-                      <span class="font-semibold text-base">{{ nextMonthName }}</span>
+                    <div class="flex gap-4 md:gap-12">
+                      <span class="font-semibold text-sm md:text-base">{{ currentMonthName }}</span>
+                      <span class="font-semibold text-sm md:text-base hidden md:block">{{ nextMonthName }}</span>
                     </div>
                     <button @click="nextMonth" class="p-2 hover:bg-gray-100 rounded-full transition-colors" type="button">
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -387,8 +387,8 @@
                     </button>
                   </div>
 
-                  <!-- 2ヶ月分のカレンダー -->
-                  <div class="grid grid-cols-2 gap-12">
+                  <!-- カレンダー（モバイル: 1ヶ月、デスクトップ: 2ヶ月） -->
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12">
                     <!-- 当月 -->
                     <div>
                       <div class="grid grid-cols-7 gap-1 mb-2">
@@ -416,8 +416,8 @@
                       </div>
                     </div>
 
-                    <!-- 翌月 -->
-                    <div>
+                    <!-- 翌月（デスクトップのみ表示） -->
+                    <div class="hidden md:block">
                       <div class="grid grid-cols-7 gap-1 mb-2">
                         <div v-for="day in ['日', '月', '火', '水', '木', '金', '土']" :key="day" class="text-center text-xs font-semibold text-gray-600 py-2">
                           {{ day }}
@@ -445,7 +445,7 @@
                   </div>
 
                   <!-- カレンダーフッター -->
-                  <div class="flex items-center justify-between mt-6 pt-6 border-t border-gray-200">
+                  <div class="flex items-center justify-between mt-4 md:mt-6 pt-4 md:pt-6 border-t border-gray-200">
                     <button @click="clearDates" class="text-sm font-medium underline hover:text-gray-600" type="button">
                       日付をクリア
                     </button>
@@ -474,11 +474,11 @@
 
                   <!-- ゲスト数選択ドロップダウン -->
                   <div v-if="showGuestPicker" class="mt-4 space-y-4">
-                    <!-- 大人 -->
+                    <!-- 大人（16歳以上） -->
                     <div class="flex items-center justify-between">
                       <div>
                         <p class="font-medium text-sm">大人</p>
-                        <p class="text-xs text-gray-500">13歳以上</p>
+                        <p class="text-xs text-gray-500">16歳以上</p>
                       </div>
                       <div class="flex items-center gap-3">
                         <button
@@ -501,11 +501,11 @@
                       </div>
                     </div>
 
-                    <!-- 子ども -->
+                    <!-- 子ども（7〜15歳） -->
                     <div class="flex items-center justify-between">
                       <div>
                         <p class="font-medium text-sm">子ども</p>
-                        <p class="text-xs text-gray-500">2〜12歳</p>
+                        <p class="text-xs text-gray-500">7〜15歳（大人料金の50%）</p>
                       </div>
                       <div class="flex items-center gap-3">
                         <button
@@ -519,6 +519,33 @@
                         <span class="w-6 text-center">{{ children }}</span>
                         <button
                           @click="children++"
+                          :disabled="totalGuests >= 4"
+                          class="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:border-gray-900 disabled:opacity-30 disabled:cursor-not-allowed"
+                          type="button"
+                        >
+                          <span class="text-lg">+</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- 乳幼児（0〜6歳） -->
+                    <div class="flex items-center justify-between">
+                      <div>
+                        <p class="font-medium text-sm">乳幼児</p>
+                        <p class="text-xs text-gray-500">0〜6歳（無料）</p>
+                      </div>
+                      <div class="flex items-center gap-3">
+                        <button
+                          @click="infants > 0 && infants--"
+                          :disabled="infants <= 0"
+                          class="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:border-gray-900 disabled:opacity-30 disabled:cursor-not-allowed"
+                          type="button"
+                        >
+                          <span class="text-lg">−</span>
+                        </button>
+                        <span class="w-6 text-center">{{ infants }}</span>
+                        <button
+                          @click="infants++"
                           :disabled="totalGuests >= 4"
                           class="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:border-gray-900 disabled:opacity-30 disabled:cursor-not-allowed"
                           type="button"
@@ -951,25 +978,9 @@ const sharePhoto = async () => {
   }
 }
 
-// 予約ページへ遷移（デフォルト値: 明日から1泊、大人1名）
+// 予約ページへ遷移
 const goToBooking = () => {
-  const tomorrow = new Date()
-  tomorrow.setDate(tomorrow.getDate() + 1)
-  const checkIn = tomorrow.toISOString().split('T')[0]
-
-  const dayAfter = new Date(tomorrow)
-  dayAfter.setDate(dayAfter.getDate() + 1)
-  const checkOut = dayAfter.toISOString().split('T')[0]
-
-  navigateTo({
-    path: '/booking/request',
-    query: {
-      checkIn,
-      checkOut,
-      adults: '1',
-      children: '0'
-    }
-  })
+  navigateTo('/booking')
 }
 
 // 予約フォームの状態管理
@@ -977,6 +988,7 @@ const checkInDate = ref('')
 const checkOutDate = ref('')
 const adults = ref(1)
 const children = ref(0)
+const infants = ref(0)
 const showGuestPicker = ref(false)
 const showCalendar = ref(false)
 
@@ -1132,7 +1144,7 @@ const clearDates = () => {
 }
 
 // 合計ゲスト数
-const totalGuests = computed(() => adults.value + children.value)
+const totalGuests = computed(() => adults.value + children.value + infants.value)
 
 // 宿泊日数を計算
 const nights = computed(() => {
@@ -1192,7 +1204,8 @@ const handleReservation = () => {
       checkIn: checkInDate.value,
       checkOut: checkOutDate.value,
       adults: adults.value,
-      children: children.value
+      children: children.value,
+      infants: infants.value
     }
   })
 }

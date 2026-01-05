@@ -1,211 +1,257 @@
 <template>
   <div class="min-h-screen bg-gray-50">
-    <!-- ヘッダー -->
     <AppHeader />
 
-    <div class="container mx-auto px-4 py-8">
-      <div v-if="!booking" class="text-center py-12">
-        <p class="text-gray-500">予約情報を読み込んでいます...</p>
+    <div class="pt-20">
+      <!-- ローディング -->
+      <div v-if="isLoading" class="flex items-center justify-center h-64">
+        <div class="animate-spin w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full"></div>
       </div>
 
-      <div v-else class="max-w-4xl mx-auto">
-        <!-- 予約情報ヘッダー -->
-        <div class="card mb-6">
-          <div class="flex items-center justify-between">
+      <!-- エラー -->
+      <div v-else-if="error" class="max-w-2xl mx-auto px-4 py-8">
+        <div class="bg-white rounded-xl shadow-md p-8 text-center">
+          <p class="text-red-600 mb-4">{{ error }}</p>
+          <NuxtLink to="/mypage" class="btn-primary">マイページに戻る</NuxtLink>
+        </div>
+      </div>
+
+      <!-- チャットエリア -->
+      <div v-else class="max-w-3xl mx-auto">
+        <!-- ヘッダー -->
+        <div class="bg-white border-b border-gray-200 px-4 py-4">
+          <div class="flex items-center gap-4">
+            <NuxtLink to="/mypage" class="text-gray-600 hover:text-gray-900">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+              </svg>
+            </NuxtLink>
             <div>
-              <h1 class="text-2xl font-bold mb-2">予約に関するメッセージ</h1>
-              <p class="text-gray-600">
-                {{ formatDate(booking.startDate) }} - {{ formatDate(booking.endDate) }}
-              </p>
-              <p class="text-sm text-gray-500">
-                {{ booking.type === 'stay' ? '宿泊予約' : 'ワークショップ' }}
+              <h1 class="text-lg font-bold">ホストとのメッセージ</h1>
+              <p v-if="conversation?.bookingReference" class="text-sm text-purple-600">
+                予約番号: {{ conversation.bookingReference }}
               </p>
             </div>
-            <button @click="$router.back()" class="btn-secondary">
-              戻る
-            </button>
           </div>
         </div>
 
-        <!-- チャットエリア -->
-        <div class="card">
-          <!-- メッセージ履歴 -->
-          <div
-            ref="messagesContainer"
-            class="bg-gray-50 rounded-lg p-4 mb-4 h-[500px] overflow-y-auto"
-          >
-            <div v-if="messages.length === 0" class="text-center text-gray-500 py-12">
-              <p class="mb-2">まだメッセージがありません</p>
-              <p class="text-sm">ご不明な点がございましたら、お気軽にメッセージをお送りください。</p>
-            </div>
-            <div v-else class="space-y-4">
-              <div
-                v-for="msg in messages"
-                :key="msg.id"
-                :class="[
-                  'flex',
-                  msg.senderType === 'guest' ? 'justify-end' : 'justify-start'
-                ]"
-              >
-                <div
-                  :class="[
-                    'rounded-lg p-3 max-w-md',
-                    msg.senderType === 'guest'
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-white shadow border border-gray-200'
-                  ]"
-                >
-                  <div v-if="msg.senderType === 'admin'" class="flex items-center gap-2 mb-1">
-                    <span class="text-xs font-semibold text-purple-600">管理者</span>
-                  </div>
-                  <p class="text-sm">{{ msg.message }}</p>
-                  <p
-                    :class="[
-                      'text-xs mt-2',
-                      msg.senderType === 'guest' ? 'opacity-75' : 'text-gray-500'
-                    ]"
-                  >
-                    {{ formatDateTime(msg.createdAt) }}
-                  </p>
-                </div>
-              </div>
-            </div>
+        <!-- メッセージ一覧 -->
+        <div ref="messagesContainer" class="h-[calc(100vh-280px)] overflow-y-auto p-4 space-y-4 bg-gray-50">
+          <div v-if="messages.length === 0" class="text-center text-gray-500 py-8">
+            <p class="mb-2">メッセージはまだありません</p>
+            <p class="text-sm">ホストに質問やリクエストがあればお気軽にメッセージを送ってください</p>
           </div>
 
-          <!-- メッセージ送信フォーム -->
-          <form @submit.prevent="handleSendMessage" class="flex gap-2">
-            <input
+          <div
+            v-for="message in messages"
+            :key="message.id"
+            :class="[
+              'flex',
+              message.senderType === 'guest' ? 'justify-end' : 'justify-start'
+            ]"
+          >
+            <div
+              :class="[
+                'max-w-[70%] rounded-lg px-4 py-2',
+                message.senderType === 'guest'
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-white border border-gray-200 text-gray-900'
+              ]"
+            >
+              <p class="text-xs opacity-70 mb-1">
+                {{ message.senderType === 'guest' ? 'あなた' : 'ホスト' }}
+              </p>
+              <p class="whitespace-pre-wrap break-words">{{ message.content }}</p>
+              <p class="text-xs opacity-70 mt-1 text-right">
+                {{ formatMessageTime(message.createdAt) }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 入力エリア -->
+        <div class="bg-white border-t border-gray-200 p-4">
+          <div v-if="conversation?.status === 'closed'" class="text-center text-gray-500">
+            この会話は終了しています
+          </div>
+          <form v-else @submit.prevent="handleSendMessage" class="flex gap-2">
+            <textarea
               v-model="newMessage"
-              type="text"
+              @keydown.enter.exact.prevent="handleSendMessage"
               placeholder="メッセージを入力..."
-              class="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-              :disabled="isSendingMessage"
-            />
+              rows="2"
+              class="flex-1 resize-none border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              :disabled="isSending"
+            ></textarea>
             <button
               type="submit"
-              class="btn-primary"
-              :disabled="!newMessage.trim() || isSendingMessage"
+              :disabled="!newMessage.trim() || isSending"
+              class="btn-primary px-6 self-end"
             >
-              {{ isSendingMessage ? '送信中...' : '送信' }}
+              <span v-if="isSending">送信中...</span>
+              <span v-else>送信</span>
             </button>
           </form>
-
-          <!-- ヒント -->
-          <div class="mt-4 p-3 bg-blue-50 rounded-lg">
-            <p class="text-sm text-blue-800">
-              💡 チェックイン情報、鍵の受け渡し方法など、ご不明な点がございましたらお気軽にお問い合わせください。
-            </p>
-          </div>
         </div>
       </div>
     </div>
+
+    <AppFooter />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, nextTick } from 'vue'
-import type { Booking, GuestMessage } from '~/types'
-
-const route = useRoute()
-const router = useRouter()
-const { appUser } = useAuth()
-const { getBooking } = useBookings()
-const {
-  subscribeToMessages,
-  sendMessage,
-  markAllMessagesAsRead
-} = useMessaging()
+import type { Conversation, Message } from '~/types'
 
 definePageMeta({
+  layout: false,
   middleware: 'auth'
 })
 
+const route = useRoute()
+const router = useRouter()
 const bookingId = route.params.id as string
-const booking = ref<Booking | null>(null)
-const messages = ref<GuestMessage[]>([])
+const { user } = useAuth()
+
+const {
+  getOrCreateConversation,
+  getConversationByBookingId,
+  subscribeToMessages,
+  sendMessage,
+  markAsReadByGuest
+} = useConversations()
+
+const { getBooking } = useBookings()
+
+const conversation = ref<Conversation | null>(null)
+const messages = ref<Message[]>([])
 const newMessage = ref('')
-const isSendingMessage = ref(false)
-const messageUnsubscribe = ref<(() => void) | null>(null)
+const isLoading = ref(true)
+const isSending = ref(false)
+const error = ref<string | null>(null)
 const messagesContainer = ref<HTMLElement | null>(null)
 
-// 予約情報を取得
-onMounted(async () => {
+let unsubscribe: (() => void) | null = null
+
+// メッセージ時刻フォーマット
+const formatMessageTime = (timestamp: any): string => {
+  if (!timestamp) return ''
+  const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp)
+  const now = new Date()
+  const isToday = date.toDateString() === now.toDateString()
+
+  const time = `${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`
+
+  if (isToday) {
+    return time
+  }
+
+  return `${date.getMonth() + 1}/${date.getDate()} ${time}`
+}
+
+// 最下部へスクロール
+const scrollToBottom = () => {
+  nextTick(() => {
+    if (messagesContainer.value) {
+      messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+    }
+  })
+}
+
+// 会話を読み込み
+const loadConversation = async () => {
+  isLoading.value = true
+  error.value = null
+
   try {
-    const bookingData = await getBooking(bookingId)
-    if (!bookingData) {
-      alert('予約が見つかりませんでした')
-      router.push('/mypage')
+    // 予約情報を取得
+    const booking = await getBooking(bookingId)
+    if (!booking) {
+      error.value = '予約が見つかりません'
       return
     }
 
-    // 自分の予約かチェック
-    if (bookingData.userId !== appUser.value?.id) {
-      alert('アクセス権限がありません')
-      router.push('/mypage')
+    // ユーザーが予約の所有者か確認
+    if (booking.userId !== user.value?.uid && booking.guestEmail !== user.value?.email) {
+      error.value = 'この予約へのアクセス権がありません'
       return
     }
 
-    booking.value = bookingData
+    // 既存の会話を取得または作成
+    let existingConversation = await getConversationByBookingId(bookingId)
 
-    // メッセージをリアルタイムで監視
-    messageUnsubscribe.value = subscribeToMessages(bookingId, (newMessages) => {
+    if (!existingConversation) {
+      existingConversation = await getOrCreateConversation(
+        bookingId,
+        booking.bookingReference,
+        booking.guestName,
+        booking.guestEmail,
+        user.value?.uid
+      )
+    }
+
+    conversation.value = existingConversation
+
+    // 既読にする
+    await markAsReadByGuest(existingConversation.id)
+
+    // メッセージをリアルタイム監視
+    unsubscribe = subscribeToMessages(existingConversation.id, (newMessages) => {
       messages.value = newMessages
-
-      // 既読処理（管理者からのメッセージを既読にする）
-      if (appUser.value?.id) {
-        markAllMessagesAsRead(bookingId, appUser.value.id)
-      }
-
-      // 最新メッセージまでスクロール
-      nextTick(() => {
-        if (messagesContainer.value) {
-          messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
-        }
-      })
+      scrollToBottom()
     })
-  } catch (error) {
-    console.error('予約データ取得エラー:', error)
-    alert('予約データの取得に失敗しました')
-    router.push('/mypage')
+  } catch (err) {
+    console.error('会話の取得に失敗:', err)
+    error.value = '会話の取得に失敗しました'
+  } finally {
+    isLoading.value = false
   }
-})
-
-// コンポーネント破棄時に監視を解除
-onUnmounted(() => {
-  if (messageUnsubscribe.value) {
-    messageUnsubscribe.value()
-  }
-})
+}
 
 // メッセージ送信
 const handleSendMessage = async () => {
-  if (!newMessage.value.trim() || !booking.value || !appUser.value) return
+  if (!newMessage.value.trim() || isSending.value || !conversation.value) return
 
-  isSendingMessage.value = true
+  isSending.value = true
+  const content = newMessage.value.trim()
+  newMessage.value = ''
+
   try {
     await sendMessage(
-      booking.value.id,
-      appUser.value.id,
+      conversation.value.id,
+      content,
       'guest',
-      appUser.value.displayName || booking.value.guestName,
-      newMessage.value.trim()
+      user.value?.displayName || 'ゲスト',
+      user.value?.uid
     )
-    newMessage.value = ''
-  } catch (error) {
-    console.error('メッセージ送信エラー:', error)
+    scrollToBottom()
+  } catch (err) {
+    console.error('メッセージ送信に失敗:', err)
     alert('メッセージの送信に失敗しました')
+    newMessage.value = content // 復元
   } finally {
-    isSendingMessage.value = false
+    isSending.value = false
   }
 }
 
-function formatDate(timestamp: any) {
-  const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp)
-  return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`
-}
+onMounted(() => {
+  loadConversation()
+})
 
-function formatDateTime(timestamp: any) {
-  const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp)
-  return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
-}
+onUnmounted(() => {
+  if (unsubscribe) {
+    unsubscribe()
+  }
+})
+
+useHead({
+  title: 'メッセージ | 家具の家 No.1',
+  meta: [{ name: 'robots', content: 'noindex' }]
+})
 </script>
+
+<style scoped>
+.btn-primary {
+  @apply bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+}
+</style>

@@ -19,8 +19,8 @@ export const usePricingSettings = () => {
 
     try {
       // TODO: Firestoreから読み込む実装
-      // const { $firestore } = useNuxtApp()
-      // const docRef = doc($firestore, 'settings', 'pricing')
+      // const { $db } = useNuxtApp()
+      // const docRef = doc($db, 'settings', 'pricing')
       // const docSnap = await getDoc(docRef)
       //
       // if (docSnap.exists()) {
@@ -56,8 +56,8 @@ export const usePricingSettings = () => {
 
     try {
       // TODO: Firestoreに保存する実装
-      // const { $firestore } = useNuxtApp()
-      // const docRef = doc($firestore, 'settings', 'pricing')
+      // const { $db } = useNuxtApp()
+      // const docRef = doc($db, 'settings', 'pricing')
       // await setDoc(docRef, {
       //   ...settings,
       //   updatedAt: serverTimestamp()

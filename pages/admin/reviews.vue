@@ -126,8 +126,43 @@
             </div>
           </div>
 
-          <div>
+          <div class="mb-4">
             <p class="text-gray-800 whitespace-pre-wrap">{{ review.comment }}</p>
+          </div>
+
+          <!-- 管理者返信セクション -->
+          <div class="border-t border-green-300 pt-4 mt-4">
+            <!-- 既存の返信がある場合 -->
+            <div v-if="review.adminReply" class="bg-white rounded-lg p-4 border-l-4 border-purple-500">
+              <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-2">
+                  <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                  </svg>
+                  <span class="font-medium text-purple-800">返信済み</span>
+                  <span class="text-xs text-gray-500">{{ formatDate(review.adminRepliedAt) }}</span>
+                </div>
+                <button
+                  @click="openReplyModal(review)"
+                  class="text-sm text-purple-600 hover:underline"
+                >
+                  編集
+                </button>
+              </div>
+              <p class="text-gray-700 text-sm">{{ review.adminReply }}</p>
+            </div>
+            <!-- 返信がない場合 -->
+            <div v-else>
+              <button
+                @click="openReplyModal(review)"
+                class="flex items-center gap-2 text-sm text-purple-600 hover:text-purple-800 font-medium"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                </svg>
+                返信を追加
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -209,6 +244,62 @@
         </div>
       </div>
     </div>
+
+    <!-- 返信入力モーダル -->
+    <div
+      v-if="showReplyModal"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+      @click="closeReplyModal"
+    >
+      <div @click.stop class="bg-white rounded-xl shadow-2xl max-w-lg w-full mx-4 p-6">
+        <h3 class="text-xl font-semibold mb-4">
+          {{ selectedReviewForReply?.adminReply ? '返信を編集' : 'レビューに返信' }}
+        </h3>
+
+        <!-- 元のレビュー表示 -->
+        <div class="bg-gray-50 rounded-lg p-4 mb-4">
+          <div class="flex items-center justify-between mb-2">
+            <span class="font-medium text-gray-900">{{ selectedReviewForReply?.userName }}</span>
+            <div class="flex items-center gap-1">
+              <span v-for="star in (selectedReviewForReply?.rating || 0)" :key="star" class="text-yellow-500 text-sm">★</span>
+            </div>
+          </div>
+          <p class="text-sm text-gray-700 line-clamp-3">{{ selectedReviewForReply?.comment }}</p>
+        </div>
+
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            返信内容
+          </label>
+          <textarea
+            v-model="replyContent"
+            rows="4"
+            placeholder="レビューへの返信を入力してください"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+          ></textarea>
+          <p class="text-xs text-gray-500 mt-1">
+            返信は公開され、すべてのユーザーに表示されます。
+          </p>
+        </div>
+
+        <div class="flex gap-3">
+          <button
+            @click="closeReplyModal"
+            class="flex-1 px-4 py-2 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+          >
+            キャンセル
+          </button>
+          <button
+            @click="confirmReply"
+            :disabled="isProcessing || !replyContent.trim()"
+            class="flex-1 px-4 py-2 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"
+          >
+            {{ selectedReviewForReply?.adminReply ? '更新する' : '返信する' }}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -219,7 +310,7 @@ definePageMeta({
   middleware: 'admin'
 })
 
-const { getAllReviews, getPendingReviews, approveReview, rejectReview } = useReviews()
+const { getAllReviews, getPendingReviews, approveReview, rejectReview, replyToReview } = useReviews()
 const { logout } = useAuth()
 const router = useRouter()
 
@@ -237,6 +328,11 @@ const showRejectModal = ref(false)
 const selectedReview = ref<Review | null>(null)
 const rejectionReason = ref('')
 const isProcessing = ref(false)
+
+// 返信モーダル
+const showReplyModal = ref(false)
+const selectedReviewForReply = ref<Review | null>(null)
+const replyContent = ref('')
 
 // レビューを読み込み
 const loadReviews = async () => {
@@ -302,6 +398,38 @@ const formatDate = (timestamp: any): string => {
   if (!timestamp) return ''
   const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp)
   return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`
+}
+
+// 返信モーダルを開く
+const openReplyModal = (review: Review) => {
+  selectedReviewForReply.value = review
+  replyContent.value = review.adminReply || ''
+  showReplyModal.value = true
+}
+
+// 返信モーダルを閉じる
+const closeReplyModal = () => {
+  showReplyModal.value = false
+  selectedReviewForReply.value = null
+  replyContent.value = ''
+}
+
+// 返信確定
+const confirmReply = async () => {
+  if (!selectedReviewForReply.value?.id || !replyContent.value.trim()) return
+
+  isProcessing.value = true
+  try {
+    await replyToReview(selectedReviewForReply.value.id, replyContent.value.trim())
+    await loadReviews()
+    closeReplyModal()
+    alert('返信を保存しました')
+  } catch (error) {
+    console.error('返信エラー:', error)
+    alert('返信の保存に失敗しました')
+  } finally {
+    isProcessing.value = false
+  }
 }
 
 // ログアウト

@@ -17,14 +17,7 @@ export default defineNuxtConfig({
       sameSite: 'lax',
       secure: process.env.NODE_ENV === 'production'
     },
-    methodsToProtect: ['POST', 'PUT', 'PATCH', 'DELETE'],
-    excludedUrls: [
-      '/api/stripe/webhook', // Stripe Webhookは除外
-      ['/api/stripe/create-payment-intent.*', 'i'], // Payment Intent作成（内部認証で保護）
-      ['/api/bookings/create.*', 'i'], // 予約作成（内部認証で保護）
-      '/api/emails/send-booking-confirmation', // メール送信は内部認証で保護
-      ['/api/test/.*', 'i']  // テストAPIは除外（開発用）
-    ]
+    methodsToProtect: ['POST', 'PUT', 'PATCH', 'DELETE']
   },
 
   app: {
@@ -55,7 +48,14 @@ export default defineNuxtConfig({
         headers: {
           'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://m.stripe.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https://api.stripe.com https://m.stripe.com https://merchant-ui-api.stripe.com https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com; frame-src https://js.stripe.com https://hooks.stripe.com; worker-src 'self' blob:;"
         }
-      }
+      },
+      // CSRF除外ルート
+      '/api/stripe/webhook': { csurf: false },
+      '/api/stripe/create-payment-intent': { csurf: false },
+      '/api/bookings/create': { csurf: false },
+      '/api/emails/**': { csurf: false },
+      '/api/admin/**': { csurf: false },
+      '/api/test/**': { csurf: false }
     }
   },
 

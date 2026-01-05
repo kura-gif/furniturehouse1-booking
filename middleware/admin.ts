@@ -1,9 +1,16 @@
 export default defineNuxtRouteMiddleware(async (to, from) => {
+  // SSR時はスキップ（クライアント側で処理）
+  if (import.meta.server) {
+    return
+  }
+
   const { user, appUser, loading, isAdmin } = useAuth()
 
-  // 認証状態の読み込み中は待機
-  while (loading.value) {
+  // 認証状態の読み込み中は待機（最大10秒）
+  let loadingAttempts = 0
+  while (loading.value && loadingAttempts < 200) {
     await new Promise(resolve => setTimeout(resolve, 50))
+    loadingAttempts++
   }
 
   // 未認証の場合はログインページへ

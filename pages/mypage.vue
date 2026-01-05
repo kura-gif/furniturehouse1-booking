@@ -132,7 +132,7 @@
                   </button>
                   <button
                     v-if="booking.status === 'pending' || booking.status === 'confirmed'"
-                    @click="handleCancelBooking(booking.id)"
+                    @click="handleCancelBooking(booking)"
                     class="px-4 py-2 text-sm border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-custom"
                   >
                     予約をキャンセル
@@ -153,6 +153,116 @@
     </div>
 
     <AppFooter />
+
+    <!-- キャンセル確認モーダル -->
+    <div
+      v-if="showCancelModal && cancelTargetBooking"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      @click="closeCancelModal"
+    >
+      <div
+        class="bg-white rounded-xl p-6 max-w-lg w-full"
+        @click.stop
+      >
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-xl font-semibold text-gray-900">予約のキャンセル</h3>
+          <button
+            @click="closeCancelModal"
+            class="p-2 hover:bg-gray-100 rounded-lg transition-custom"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- 返金計算ローディング -->
+        <div v-if="isCalculatingRefund" class="text-center py-8">
+          <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+          <p class="text-gray-600 mt-3">返金額を計算中...</p>
+        </div>
+
+        <!-- 返金計算結果 -->
+        <div v-else-if="refundCalculation">
+          <!-- 予約情報 -->
+          <div class="bg-gray-50 rounded-lg p-4 mb-4">
+            <div class="grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <p class="text-gray-500">チェックイン</p>
+                <p class="font-medium">{{ formatDate(cancelTargetBooking.startDate.toDate()) }}</p>
+              </div>
+              <div>
+                <p class="text-gray-500">チェックアウト</p>
+                <p class="font-medium">{{ formatDate(cancelTargetBooking.endDate.toDate()) }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- キャンセルポリシー情報 -->
+          <div class="border border-purple-200 bg-purple-50 rounded-lg p-4 mb-4">
+            <h4 class="font-medium text-purple-900 mb-2">キャンセルポリシー</h4>
+            <p class="text-sm text-purple-800 mb-3">
+              チェックインまであと <span class="font-bold">{{ refundCalculation.daysBeforeCheckIn }}日</span>
+            </p>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-600">お支払い済み金額</span>
+                <span class="font-medium">¥{{ refundCalculation.originalAmount.toLocaleString() }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">返金率</span>
+                <span class="font-bold text-purple-700">{{ refundCalculation.refundPercentage }}%</span>
+              </div>
+              <div class="border-t border-purple-200 pt-2 mt-2">
+                <div class="flex justify-between text-base">
+                  <span class="font-medium">返金予定額</span>
+                  <span class="font-bold text-green-600">¥{{ refundCalculation.refundAmount.toLocaleString() }}</span>
+                </div>
+              </div>
+              <div v-if="refundCalculation.nonRefundableAmount > 0" class="flex justify-between text-red-600">
+                <span>返金対象外</span>
+                <span>¥{{ refundCalculation.nonRefundableAmount.toLocaleString() }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 警告 -->
+          <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+            <p class="text-sm text-yellow-800">
+              <strong>注意:</strong> キャンセル後の取り消しはできません。返金処理には数日かかる場合があります。
+            </p>
+          </div>
+
+          <!-- アクションボタン -->
+          <div class="flex gap-3">
+            <button
+              @click="closeCancelModal"
+              class="flex-1 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-custom"
+            >
+              戻る
+            </button>
+            <button
+              @click="confirmCancelBooking"
+              :disabled="isCancelling"
+              class="flex-1 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-custom disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {{ isCancelling ? 'キャンセル処理中...' : 'キャンセルを確定する' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- エラー -->
+        <div v-else-if="cancelError" class="text-center py-8">
+          <p class="text-red-600 mb-4">{{ cancelError }}</p>
+          <button
+            @click="closeCancelModal"
+            class="px-6 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition-custom"
+          >
+            閉じる
+          </button>
+        </div>
+      </div>
+    </div>
 
     <!-- レビューモーダル -->
     <div
@@ -291,6 +401,20 @@ const reviewForm = ref({
   stayType: ''
 })
 
+// キャンセルモーダル関連
+const showCancelModal = ref(false)
+const cancelTargetBooking = ref<Booking | null>(null)
+const isCalculatingRefund = ref(false)
+const isCancelling = ref(false)
+const cancelError = ref<string | null>(null)
+const refundCalculation = ref<{
+  originalAmount: number
+  refundPercentage: number
+  refundAmount: number
+  nonRefundableAmount: number
+  daysBeforeCheckIn: number
+} | null>(null)
+
 const ratingLabels: Record<number, string> = {
   1: '期待外れでした',
   2: 'いまいちでした',
@@ -344,17 +468,77 @@ const formatDate = (date: Date) => {
   return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`
 }
 
-// 予約キャンセル
-const handleCancelBooking = async (bookingId: string) => {
-  if (!confirm('本当にこの予約をキャンセルしますか？')) return
+// 予約キャンセルモーダルを開く
+const handleCancelBooking = async (booking: Booking) => {
+  cancelTargetBooking.value = booking
+  showCancelModal.value = true
+  cancelError.value = null
+  refundCalculation.value = null
+  isCalculatingRefund.value = true
 
   try {
-    await cancelBooking(bookingId)
-    alert('予約をキャンセルしました')
-    await loadBookings()
-  } catch (error) {
+    // 返金額を計算
+    const response = await $fetch('/api/bookings/calculate-refund', {
+      method: 'POST',
+      body: { bookingId: booking.id }
+    })
+
+    if (response.success && response.calculation) {
+      refundCalculation.value = {
+        originalAmount: response.calculation.originalAmount,
+        refundPercentage: response.calculation.refundPercentage,
+        refundAmount: response.calculation.refundAmount,
+        nonRefundableAmount: response.calculation.nonRefundableAmount,
+        daysBeforeCheckIn: response.calculation.daysBeforeCheckIn
+      }
+    }
+  } catch (error: any) {
+    console.error('返金計算エラー:', error)
+    cancelError.value = error.data?.message || '返金額の計算に失敗しました'
+  } finally {
+    isCalculatingRefund.value = false
+  }
+}
+
+// キャンセルモーダルを閉じる
+const closeCancelModal = () => {
+  showCancelModal.value = false
+  cancelTargetBooking.value = null
+  refundCalculation.value = null
+  cancelError.value = null
+}
+
+// キャンセルを確定
+const confirmCancelBooking = async () => {
+  if (!cancelTargetBooking.value || !user.value) return
+
+  isCancelling.value = true
+  cancelError.value = null
+
+  try {
+    const response = await $fetch('/api/bookings/guest-cancel', {
+      method: 'POST',
+      body: {
+        bookingId: cancelTargetBooking.value.id,
+        userId: user.value.uid
+      }
+    })
+
+    if (response.success) {
+      const refundInfo = response.refund
+      let message = '予約をキャンセルしました。'
+      if (refundInfo && refundInfo.processed && refundInfo.amount > 0) {
+        message += `\n¥${refundInfo.amount.toLocaleString()}の返金処理を開始しました。`
+      }
+      alert(message)
+      closeCancelModal()
+      await loadBookings()
+    }
+  } catch (error: any) {
     console.error('キャンセルエラー:', error)
-    alert('キャンセルに失敗しました')
+    cancelError.value = error.data?.message || 'キャンセル処理に失敗しました'
+  } finally {
+    isCancelling.value = false
   }
 }
 

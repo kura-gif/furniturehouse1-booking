@@ -3,22 +3,39 @@
     <AppHeader />
 
     <div class="max-w-2xl mx-auto px-4 py-16">
-      <!-- 成功 -->
+      <!-- 審査中表示 -->
       <div class="bg-white rounded-xl shadow-md p-8">
         <div class="text-center mb-8">
-          <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+          <div class="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg class="w-8 h-8 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
           </div>
 
-          <h1 class="text-3xl font-semibold text-gray-900 mb-4">予約が完了しました！</h1>
+          <h1 class="text-3xl font-semibold text-gray-900 mb-4">予約リクエストを受け付けました</h1>
           <p class="text-gray-600 mb-2">
-            ご予約ありがとうございます。
+            ご予約リクエストありがとうございます。
           </p>
-          <p class="text-sm text-gray-500">
+          <p class="text-sm text-gray-500 mb-4">
             {{ guestEmail }} 宛に確認メールをお送りしました。
           </p>
+
+          <!-- 審査中の説明 -->
+          <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 text-left mb-4">
+            <div class="flex items-start gap-3">
+              <svg class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <div>
+                <p class="text-sm font-medium text-amber-800">現在、ホストが予約内容を確認しています</p>
+                <p class="text-xs text-amber-700 mt-1">
+                  通常48時間以内に承認または却下のご連絡をいたします。<br>
+                  承認されるまでクレジットカードへの請求は行われません。
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div v-if="bookingReference" class="mt-4 inline-block bg-gray-100 px-4 py-2 rounded-lg">
             <p class="text-xs text-gray-600">予約番号</p>
             <p class="font-mono font-semibold text-lg text-gray-900">{{ bookingReference }}</p>
@@ -28,15 +45,15 @@
 
         <!-- 次のステップ -->
         <div class="bg-gray-50 rounded-xl p-6 mb-6">
-          <h3 class="font-semibold text-gray-900 mb-4">次のステップ</h3>
+          <h3 class="font-semibold text-gray-900 mb-4">今後の流れ</h3>
           <div class="space-y-3">
             <div class="flex items-start gap-3">
-              <div class="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <span class="text-xs text-purple-600 font-semibold">1</span>
+              <div class="w-6 h-6 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span class="text-xs text-amber-600 font-semibold">1</span>
               </div>
               <div>
-                <p class="text-sm font-medium text-gray-900">確認メールをチェック</p>
-                <p class="text-xs text-gray-600">{{ guestEmail }} 宛に予約詳細を送信しました</p>
+                <p class="text-sm font-medium text-gray-900">ホストが予約を確認</p>
+                <p class="text-xs text-gray-600">通常48時間以内に審査が完了します</p>
               </div>
             </div>
             <div class="flex items-start gap-3">
@@ -44,17 +61,17 @@
                 <span class="text-xs text-purple-600 font-semibold">2</span>
               </div>
               <div>
-                <p class="text-sm font-medium text-gray-900">予約内容を確認</p>
-                <p class="text-xs text-gray-600">メール内のリンクからいつでも確認できます</p>
+                <p class="text-sm font-medium text-gray-900">審査結果のご連絡</p>
+                <p class="text-xs text-gray-600">{{ guestEmail }} 宛にメールでお知らせします</p>
               </div>
             </div>
             <div class="flex items-start gap-3">
-              <div class="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <span class="text-xs text-purple-600 font-semibold">3</span>
+              <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span class="text-xs text-green-600 font-semibold">3</span>
               </div>
               <div>
-                <p class="text-sm font-medium text-gray-900">アカウント作成（任意）</p>
-                <p class="text-xs text-gray-600">予約の変更・キャンセル、ホストとのメッセージに便利です</p>
+                <p class="text-sm font-medium text-gray-900">予約確定・決済完了</p>
+                <p class="text-xs text-gray-600">承認後に決済が確定し、予約が完了します</p>
               </div>
             </div>
           </div>
@@ -108,8 +125,8 @@
         <!-- メール確認の案内 -->
         <div class="mt-6 pt-6 border-t border-gray-200">
           <p class="text-sm text-gray-600 text-center">
-            📧 予約確認メールに記載されているリンクからも、<br>
-            いつでも予約内容を確認できます。
+            審査結果はメールでお知らせします。<br>
+            予約確認メールに記載されているリンクから、いつでも予約内容を確認できます。
           </p>
         </div>
       </div>
@@ -167,7 +184,7 @@ const goToSignup = () => {
 
 // SEO設定
 useHead({
-  title: '予約完了 | 家具の家 No.1',
+  title: '予約リクエスト受付完了 | 家具の家 No.1',
   meta: [
     { name: 'robots', content: 'noindex, nofollow' }
   ]

@@ -8,7 +8,24 @@ import type {
 } from '~/types'
 
 /**
+ * 日付をYYYY-MM-DD形式の文字列に変換（ローカルタイムゾーン）
+ */
+function formatDateToYYYYMMDD(date: Date): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+/**
  * 日付から曜日タイプを判定（金曜・土曜・祝前日 = weekend）
+ *
+ * 割増料金の対象:
+ * - 金曜日: 翌日が土曜日（週末）のため
+ * - 土曜日: 翌日が日曜日（週末）のため
+ * - 祝日の前日: 翌日が祝日のため
+ *
+ * 注意: 祝日自体には割増料金は適用されない（翌日が平日の場合）
  */
 export function getEnhancedDayType(
   date: Date,
@@ -22,13 +39,15 @@ export function getEnhancedDayType(
   }
 
   // 祝日カレンダーがある場合、祝前日もチェック
-  if (holidayCalendar) {
+  if (holidayCalendar && holidayCalendar.length > 0) {
     const nextDay = new Date(date)
     nextDay.setDate(date.getDate() + 1)
-    const nextDayStr = nextDay.toISOString().split('T')[0]
+    // ローカルタイムゾーンで日付文字列を生成（UTCではなく）
+    const nextDayStr = formatDateToYYYYMMDD(nextDay)
 
     for (const cal of holidayCalendar) {
-      if (cal.holidays.includes(nextDayStr)) {
+      if (cal.holidays && cal.holidays.includes(nextDayStr)) {
+        console.log(`🎌 祝日前日判定: ${formatDateToYYYYMMDD(date)} の翌日 ${nextDayStr} は祝日です`)
         return 'weekend'
       }
     }
@@ -139,6 +158,15 @@ export function calculateGuestCountCharges(
 
 /**
  * 子供料金を計算
+ *
+ * 管理画面からのデータ形式:
+ * - minAge/maxAge: 年齢範囲
+ * - priceRate: 0〜1の値（0=無料、0.5=50%）
+ *
+ * 従来の形式も互換性のためサポート:
+ * - ageFrom/ageTo: 年齢範囲
+ * - discountType: 'free' | 'percentage'
+ * - discountValue: 割引率（50=50%）
  */
 export function calculateChildCharges(
   childrenAges: number[],
@@ -161,12 +189,27 @@ export function calculateChildCharges(
     let isFree = false
 
     for (const rule of childPricingRules) {
-      if (age >= rule.ageFrom && age <= rule.ageTo) {
-        if (rule.discountType === 'free') {
+      // 両方の形式に対応（minAge/maxAge または ageFrom/ageTo）
+      const minAge = rule.minAge ?? rule.ageFrom ?? 0
+      const maxAge = rule.maxAge ?? rule.ageTo ?? 0
+
+      if (age >= minAge && age <= maxAge) {
+        // priceRate形式（管理画面から保存されたデータ）
+        if (rule.priceRate !== undefined) {
+          if (rule.priceRate === 0) {
+            isFree = true
+            childCharge = 0
+          } else {
+            // priceRate: 0.5 = 大人料金の50%
+            childCharge = Math.floor(adultPrice * rule.priceRate)
+          }
+        }
+        // discountType形式（従来形式の互換性）
+        else if (rule.discountType === 'free') {
           isFree = true
           childCharge = 0
-        } else if (rule.discountType === 'percentage') {
-          // 割引率を適用（例: 50% = 大人料金の50%を請求）
+        } else if (rule.discountType === 'percentage' && rule.discountValue !== undefined) {
+          // discountValue: 50 = 大人料金の50%を請求
           childCharge = Math.floor(adultPrice * (rule.discountValue / 100))
         }
         break
@@ -226,12 +269,13 @@ export function calculateEnhancedPrice(
     // 基本料金を計算
     const basePrice = pricingSetting.basePriceAdult
     const seasonMultiplier = pricingSetting.seasonMultipliers[seasonType]
-    const dayTypeSurcharge = pricingSetting.dayTypeSurcharges[dayType]
+    const dayTypeMultiplier = pricingSetting.dayTypeMultipliers?.[dayType] ??
+                              (dayType === 'weekend' ? 1.3 : 1.0)
 
     // シーズン倍率を適用した基本料金
     const basePriceAfterSeason = Math.floor(basePrice * seasonMultiplier)
-    // 曜日追加料金を加算
-    const basePriceAfterAdjustments = basePriceAfterSeason + dayTypeSurcharge
+    // 曜日倍率を適用
+    const basePriceAfterAdjustments = Math.floor(basePriceAfterSeason * dayTypeMultiplier)
 
     // 人数別追加料金を計算
     const guestCountCharges = calculateGuestCountCharges(
@@ -273,7 +317,7 @@ export function calculateEnhancedPrice(
       dayType,
       basePrice,
       seasonMultiplier,
-      dayTypeSurcharge,
+      dayTypeMultiplier,
       basePriceAfterAdjustments,
       guestCountCharges,
       childCharges,
@@ -362,10 +406,10 @@ export function createDefaultEnhancedPricingSetting(): EnhancedPricingSetting {
       off: 0.7
     },
 
-    // 曜日タイプ別追加料金
-    dayTypeSurcharges: {
-      weekday: 0,
-      weekend: 10000
+    // 曜日タイプ別料金倍率（1.0 = 追加なし、1.3 = 30%増し）
+    dayTypeMultipliers: {
+      weekday: 1.0,
+      weekend: 1.3
     },
 
     // 人数別追加料金設定
@@ -398,9 +442,10 @@ export function createDefaultEnhancedPricingSetting(): EnhancedPricingSetting {
     taxRate: 0.1,
 
     // 子供料金ルール
+    // 0〜6歳: 無料、7〜15歳: 大人料金の50%
     childPricingRules: [
-      { ageFrom: 0, ageTo: 5, discountType: 'free', discountValue: 0 },
-      { ageFrom: 6, ageTo: 15, discountType: 'percentage', discountValue: 50 }
+      { minAge: 0, maxAge: 6, priceRate: 0 },
+      { minAge: 7, maxAge: 15, priceRate: 0.5 }
     ],
 
     createdAt: null as any, // デモ用
@@ -418,12 +463,11 @@ async function loadEnhancedPricingSettingsFromFirestore(): Promise<EnhancedPrici
     const { $db } = useNuxtApp()
     if (!$db) return null
 
-    const { collection, query, where, getDocs, orderBy, limit } = await import('firebase/firestore')
+    const { collection, query, where, getDocs, limit } = await import('firebase/firestore')
 
     const q = query(
       collection($db, 'enhancedPricingSettings'),
-      where('type', '==', 'stay'),
-      orderBy('updatedAt', 'desc'),
+      where('isActive', '==', true),
       limit(1)
     )
 
@@ -431,13 +475,16 @@ async function loadEnhancedPricingSettingsFromFirestore(): Promise<EnhancedPrici
 
     if (!snapshot.empty) {
       const doc = snapshot.docs[0]
+      console.log('✅ Loaded pricing settings from Firestore:', doc.id)
       return {
         id: doc.id,
         ...doc.data()
       } as EnhancedPricingSetting
+    } else {
+      console.warn('⚠️ No active pricing settings found in Firestore')
     }
   } catch (e) {
-    console.error('Firestoreから料金設定の読み込みエラー:', e)
+    console.error('❌ Firestoreから料金設定の読み込みエラー:', e)
   }
 
   return null
@@ -525,6 +572,11 @@ export const useEnhancedPricing = () => {
         pricingSetting.value = settings
         // LocalStorageにもバックアップ
         saveEnhancedPricingSettingsToLocalStorage(settings)
+        console.log('📥 Firestore loaded settings:', {
+          hasHolidayCalendar: !!settings.holidayCalendar,
+          holidayCalendarLength: settings.holidayCalendar?.length || 0,
+          holidayCalendar: settings.holidayCalendar
+        })
       }
     } catch (e: any) {
       console.error('料金設定の読み込みエラー:', e)
@@ -560,15 +612,76 @@ export const useEnhancedPricing = () => {
     adultCount: number,
     childrenAges: number[] = [],
     couponDiscountRate: number = 0
-  ): EnhancedPriceCalculation => {
-    return calculateEnhancedPrice(
-      checkInDate,
-      checkOutDate,
-      adultCount,
-      childrenAges,
-      pricingSetting.value,
-      couponDiscountRate
-    )
+  ): EnhancedPriceCalculation | null => {
+    try {
+      const checkInStr = formatDateToYYYYMMDD(checkInDate)
+      console.log('🔍 calculatePrice called:', {
+        checkInDate: checkInStr,
+        checkOutDate: formatDateToYYYYMMDD(checkOutDate),
+        adultCount,
+        basePrice: pricingSetting.value.basePrice,
+        hasDayTypePricing: !!pricingSetting.value.dayTypePricing,
+        hasSeasonPeriods: !!pricingSetting.value.seasonPeriods
+      })
+
+      // 新しいインターフェース（EnhancedPricingSetting）を古いインターフェースに変換
+      const weekendMultiplier = pricingSetting.value.dayTypePricing?.weekendMultiplier || 1.3
+      const holidayCalendarData = pricingSetting.value.holidayCalendar || []
+
+      // 祝日データの詳細をログ
+      const allHolidays = holidayCalendarData.flatMap((c: any) => c.holidays || [])
+      console.log('🗓️ Holiday calendar data:', {
+        hasData: holidayCalendarData.length > 0,
+        years: holidayCalendarData.map((c: any) => c.year),
+        totalHolidays: allHolidays.length,
+        holidays: allHolidays.slice(0, 10) // 最初の10件だけ表示
+      })
+
+      // チェックイン日の翌日が祝日かどうかをチェック
+      const nextDay = new Date(checkInDate)
+      nextDay.setDate(checkInDate.getDate() + 1)
+      const nextDayStr = formatDateToYYYYMMDD(nextDay)
+      const isNextDayHoliday = allHolidays.includes(nextDayStr)
+      console.log(`📅 ${checkInStr} の翌日 ${nextDayStr} は祝日: ${isNextDayHoliday}`)
+
+      const convertedSetting: any = {
+        ...pricingSetting.value,
+        basePriceAdult: pricingSetting.value.basePrice || 35000,
+        seasonMultipliers: {
+          regular: 1.0,
+          high: 1.2,
+          off: 0.7
+        },
+        dayTypeMultipliers: {
+          weekday: 1.0,
+          weekend: weekendMultiplier
+        },
+        seasonPeriods: pricingSetting.value.seasonPeriods || [],
+        holidayCalendar: holidayCalendarData,
+        cleaningFee: 5000,
+        taxRate: 0.1
+      }
+
+      const result = calculateEnhancedPrice(
+        checkInDate,
+        checkOutDate,
+        adultCount,
+        childrenAges,
+        convertedSetting,
+        couponDiscountRate
+      )
+
+      console.log('💰 calculatePrice result:', {
+        totalAmount: result.totalAmount,
+        averagePricePerNight: result.summary?.averagePricePerNight,
+        numberOfNights: result.numberOfNights,
+        subtotal: result.subtotal
+      })
+      return result
+    } catch (error) {
+      console.error('❌ 料金計算エラー:', error)
+      return null
+    }
   }
 
   const savePricing = (settings: EnhancedPricingSetting) => {

@@ -90,7 +90,7 @@
                   />
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">大人（人数）</label>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">大人（16歳以上）</label>
                   <select
                     v-model.number="adults"
                     class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -104,9 +104,21 @@
                   </select>
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">乳幼児（人数）</label>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">子ども（7〜15歳・50%）</label>
                   <select
                     v-model.number="children"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  >
+                    <option :value="0">0人</option>
+                    <option :value="1">1人</option>
+                    <option :value="2">2人</option>
+                    <option :value="3">3人</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">乳幼児（0〜6歳・無料）</label>
+                  <select
+                    v-model.number="infants"
                     class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   >
                     <option :value="0">0人</option>
@@ -136,7 +148,11 @@
                   </div>
                   <div class="flex justify-between">
                     <span class="text-gray-600">宿泊人数</span>
-                    <span class="text-gray-900">大人{{ adults }}人、乳幼児{{ children }}人</span>
+                    <span class="text-gray-900">
+                      大人{{ adults }}人
+                      <span v-if="children > 0">、子ども{{ children }}人</span>
+                      <span v-if="infants > 0">、乳幼児{{ infants }}人</span>
+                    </span>
                   </div>
                 </div>
               </div>
@@ -157,7 +173,6 @@
                       <div class="text-xs text-gray-500 mt-0.5">
                         {{ night.seasonType === 'high' ? 'ハイ' : night.seasonType === 'off' ? 'オフ' : '通常' }}シーズン
                         ・{{ night.dayType === 'weekend' ? '休日前日' : '平日' }}
-                        {{ night.nightRateDescription }}
                       </div>
                     </div>
                     <span class="text-gray-900 ml-2">¥{{ night.nightTotal.toLocaleString() }}</span>
@@ -197,12 +212,8 @@
                 <!-- 料金サマリー -->
                 <div v-if="priceCalculation.summary" class="text-xs text-gray-500 pt-2 border-t border-gray-100">
                   <div class="flex justify-between">
-                    <span>1泊あたり平均</span>
-                    <span>¥{{ priceCalculation.summary.averagePricePerNight.toLocaleString() }}</span>
-                  </div>
-                  <div class="flex justify-between">
-                    <span>1人あたり平均</span>
-                    <span>¥{{ priceCalculation.summary.averagePricePerPerson.toLocaleString() }}</span>
+                    <span>1人1泊あたり平均</span>
+                    <span>¥{{ Math.floor(totalAmount / (adults + children + infants) / numberOfNights).toLocaleString() }}</span>
                   </div>
                 </div>
               </div>
@@ -215,10 +226,20 @@
 
               <!-- キャンセルポリシー -->
               <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h3 class="font-medium text-gray-900 mb-2">キャンセル無料</h3>
-                <p class="text-sm text-gray-700">
-                  {{ cancellationDeadline }}までにキャンセルすれば、全額が返金されます。
-                </p>
+                <div class="flex items-center gap-2 mb-2">
+                  <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                  <h3 class="font-medium text-gray-900">キャンセルポリシー</h3>
+                </div>
+                <div v-if="cancellationPolicyDescription" class="text-sm text-gray-700 space-y-1">
+                  <p v-for="(line, index) in cancellationPolicyDescription.split('\n')" :key="index">
+                    {{ line }}
+                  </p>
+                </div>
+                <div v-else class="text-sm text-gray-700">
+                  <p>{{ cancellationDeadline }}までにキャンセルすれば、全額が返金されます。</p>
+                </div>
               </div>
             </div>
           </div>
@@ -360,7 +381,11 @@
             <!-- ゲスト -->
             <div class="mb-6 pb-6 border-b border-gray-200">
               <h4 class="font-semibold text-gray-900 mb-3">ゲスト</h4>
-              <p class="text-sm text-gray-900">大人{{ adults }}人、乳幼児{{ children }}人</p>
+              <p class="text-sm text-gray-900">
+                大人{{ adults }}人
+                <span v-if="children > 0">、子ども{{ children }}人</span>
+                <span v-if="infants > 0">、乳幼児{{ infants }}人</span>
+              </p>
             </div>
 
             <!-- 料金の詳細 -->
@@ -412,7 +437,11 @@
           </div>
           <div class="flex justify-between text-sm">
             <span class="text-gray-600">宿泊人数</span>
-            <span class="font-medium text-gray-900">大人{{ adults }}名、子ども{{ children }}名</span>
+            <span class="font-medium text-gray-900">
+              大人{{ adults }}名
+              <span v-if="children > 0">、子ども{{ children }}名</span>
+              <span v-if="infants > 0">、乳幼児{{ infants }}名</span>
+            </span>
           </div>
           <div class="border-t pt-3 flex justify-between">
             <span class="font-semibold text-gray-900">合計金額</span>
@@ -460,6 +489,7 @@ const router = useRouter()
 const { createBooking } = useBookings()
 const { createPaymentIntent, initializeElements, confirmCardPayment } = useStripePayment()
 const { calculatePrice, pricingSetting, loadFromFirestore } = useEnhancedPricing()
+const { getActivePolicy, generatePolicyDescription } = useCancellationPolicy()
 
 // パンくずリスト
 const breadcrumbItems = [
@@ -472,10 +502,35 @@ const checkInDate = ref(route.query.checkIn as string || '')
 const checkOutDate = ref(route.query.checkOut as string || '')
 const adults = ref(parseInt(route.query.adults as string) || 1)
 const children = ref(parseInt(route.query.children as string) || 0)
+const infants = ref(parseInt(route.query.infants as string) || 0)
 
-// 料金設定を読み込み
+// 料金設定とキャンセルポリシーを読み込み
 onMounted(async () => {
   await loadFromFirestore()
+
+  // キャンセルポリシーを取得
+  try {
+    const policy = await getActivePolicy()
+    if (policy) {
+      cancellationPolicyDescription.value = generatePolicyDescription(policy.rules)
+    }
+  } catch (error) {
+    console.error('キャンセルポリシー取得エラー:', error)
+  }
+})
+
+// 子供の年齢リストを生成（7〜15歳の子供 + 0〜6歳の乳幼児）
+const childrenAges = computed(() => {
+  const ages: number[] = []
+  // 子ども（7〜15歳）は中央値の11歳として計算
+  for (let i = 0; i < children.value; i++) {
+    ages.push(11)
+  }
+  // 乳幼児（0〜6歳）は中央値の3歳として計算
+  for (let i = 0; i < infants.value; i++) {
+    ages.push(3)
+  }
+  return ages
 })
 
 // 料金計算（拡張版）
@@ -491,7 +546,7 @@ const priceCalculation = computed(() => {
     checkIn,
     checkOut,
     adults.value,
-    [], // 子供の年齢リスト（現状は未対応）
+    childrenAges.value, // 子供の年齢リスト
     0   // クーポン割引率
   )
 })
@@ -533,6 +588,9 @@ const isSubmitting = ref(false)
 const showConfirmation = ref(false)
 const isProcessing = ref(false)
 const showEditForm = ref(false)
+
+// キャンセルポリシー
+const cancellationPolicyDescription = ref('')
 
 const cancellationDeadline = computed(() => {
   if (!checkInDate.value) return ''
@@ -671,7 +729,7 @@ const proceedToPayment = async () => {
           guestPhone: guestPhone.value,
           checkIn: checkInDate.value,
           checkOut: checkOutDate.value,
-          guests: `大人${adults.value}人、乳幼児${children.value}人`,
+          guests: `大人${adults.value}人${children.value > 0 ? `、子ども${children.value}人` : ''}${infants.value > 0 ? `、乳幼児${infants.value}人` : ''}`,
           totalAmount: totalAmount.value.toString()
         }
       }

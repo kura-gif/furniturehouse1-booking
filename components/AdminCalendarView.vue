@@ -91,6 +91,11 @@
             {{ getBlockedReason(date.date) }}
           </div>
         </div>
+
+        <!-- 料金表示（予約もブロックもない場合） -->
+        <div v-if="!date.booking && !date.isBlocked && date.isCurrentMonth && date.price" class="text-xs font-semibold text-purple-600 mt-1">
+          ¥{{ formatPrice(date.price) }}
+        </div>
       </div>
     </div>
 
@@ -239,6 +244,7 @@ interface CalendarDate {
   isHoliday: boolean
   holidayName: string | null
   booking?: Booking
+  price: number | null
 }
 
 interface Props {
@@ -248,14 +254,19 @@ interface Props {
 const props = defineProps<Props>()
 
 const { blockedDates, loadBlockedDates, isDateBlocked, getBlockedReason } = useBlockedDates()
+const { calculatePrice, loadFromFirestore } = useEnhancedPricing()
 
 const weekDays = ['日', '月', '火', '水', '木', '金', '土']
 const currentDate = ref(new Date())
 const selectedBooking = ref<Booking | null>(null)
 
-// ブロック期間を読み込み
-onMounted(() => {
-  loadBlockedDates()
+// ブロック期間と料金設定を読み込み
+onMounted(async () => {
+  await Promise.all([
+    loadBlockedDates(),
+    loadFromFirestore()
+  ])
+  console.log('✅ AdminCalendarView: Loaded blocked dates and pricing settings')
 })
 
 const currentMonthYear = computed(() => {
@@ -312,6 +323,26 @@ function createCalendarDate(date: Date, isCurrentMonth: boolean): CalendarDate {
     return date >= startDate && date < endDate && b.status !== 'cancelled'
   })
 
+  // 料金を計算（予約もブロックもない場合のみ）
+  const isPast = date < today
+  const blocked = isDateBlocked(date)
+  let price: number | null = null
+
+  if (isCurrentMonth && !blocked && !isPast && !booking) {
+    try {
+      const nextDay = new Date(date)
+      nextDay.setDate(nextDay.getDate() + 1)
+      // 大人2名の基準料金を表示
+      const priceCalc = calculatePrice(date, nextDay, 2, [])
+      if (priceCalc && priceCalc.summary?.averagePricePerNight) {
+        price = Math.floor(priceCalc.summary.averagePricePerNight)
+      }
+    } catch (error) {
+      console.error('料金計算エラー:', error)
+      price = null
+    }
+  }
+
   return {
     date,
     dateString,
@@ -323,7 +354,8 @@ function createCalendarDate(date: Date, isCurrentMonth: boolean): CalendarDate {
     isSaturday: isSaturday(date),
     isHoliday: isHoliday(date),
     holidayName: getHolidayName(date),
-    booking
+    booking,
+    price
   }
 }
 
@@ -350,6 +382,10 @@ function nextMonth() {
 function formatDate(timestamp: any) {
   const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp)
   return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`
+}
+
+function formatPrice(price: number): string {
+  return price.toLocaleString()
 }
 
 function getStatusLabel(status: BookingStatus) {

@@ -3,10 +3,11 @@
  * 決済イベントを非同期で処理
  *
  * 処理するイベント:
- * - payment_intent.succeeded: 決済成功
+ * - payment_intent.amount_capturable_updated: 与信確保成功（審査フロー）
+ * - payment_intent.succeeded: 決済成功（審査承認後のcapture）
  * - payment_intent.payment_failed: 決済失敗
  * - charge.refunded: 返金処理
- * - payment_intent.canceled: 決済キャンセル
+ * - payment_intent.canceled: 決済キャンセル（審査却下）
  */
 
 import Stripe from 'stripe'
@@ -51,7 +52,16 @@ export default defineEventHandler(async (event) => {
     const db = getFirestoreAdmin()
 
     switch (stripeEvent.type) {
+      case 'payment_intent.amount_capturable_updated':
+        // 与信確保成功（審査フロー: カード認証成功、審査待ち）
+        await handleAuthorizationSuccess(
+          stripeEvent.data.object as Stripe.PaymentIntent,
+          db
+        )
+        break
+
       case 'payment_intent.succeeded':
+        // 決済成功（審査承認後のcaptureによる確定）
         await handlePaymentSuccess(
           stripeEvent.data.object as Stripe.PaymentIntent,
           db
@@ -116,13 +126,15 @@ export default defineEventHandler(async (event) => {
 })
 
 /**
- * 決済成功時の処理
+ * 与信確保成功時の処理（審査フロー）
+ * カード認証が成功し、審査待ち状態になる
  */
-async function handlePaymentSuccess(
+async function handleAuthorizationSuccess(
   paymentIntent: Stripe.PaymentIntent,
   db: FirebaseFirestore.Firestore
 ) {
-  console.log('💳 Payment succeeded:', paymentIntent.id)
+  const config = useRuntimeConfig()
+  console.log('🔒 Authorization succeeded:', paymentIntent.id)
 
   // Payment IntentIDで予約を検索
   const bookingQuery = await db
@@ -139,7 +151,106 @@ async function handlePaymentSuccess(
   const bookingDoc = bookingQuery.docs[0]
   const bookingData = bookingDoc.data()
 
-  // 予約ステータスを更新
+  // 予約ステータスを「審査中」に更新
+  await bookingDoc.ref.update({
+    status: 'pending_review',
+    paymentStatus: 'authorized',
+    authorizedAt: FieldValue.serverTimestamp(),
+    updatedAt: FieldValue.serverTimestamp(),
+  })
+
+  console.log('✅ Booking pending review:', bookingDoc.id)
+
+  // ゲストへ予約リクエスト受付メール送信（審査中の旨を通知）
+  try {
+    const checkInDate = bookingData.checkInDate?.toDate?.() || new Date(bookingData.checkInDate)
+    const checkOutDate = bookingData.checkOutDate?.toDate?.() || new Date(bookingData.checkOutDate)
+    const formatDate = (date: Date) => `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`
+
+    const baseUrl = config.public.siteUrl || 'http://localhost:3000'
+    await $fetch(`${baseUrl}/api/emails/send-booking-confirmation`, {
+      method: 'POST',
+      headers: {
+        'x-internal-secret': config.internalApiSecret
+      },
+      body: {
+        to: bookingData.guestEmail,
+        bookingId: bookingDoc.id,
+        bookingReference: bookingData.bookingReference,
+        bookingToken: bookingData.bookingToken,
+        guestName: bookingData.guestName,
+        checkInDate: formatDate(checkInDate),
+        checkOutDate: formatDate(checkOutDate),
+        totalAmount: bookingData.totalAmount,
+        isPendingReview: true // 審査中フラグ
+      }
+    })
+    console.log('✅ Booking request email sent to:', bookingData.guestEmail)
+
+    // 管理者への新規予約リクエスト通知
+    await $fetch(`${baseUrl}/api/emails/send-admin-notification`, {
+      method: 'POST',
+      headers: {
+        'x-internal-secret': config.internalApiSecret
+      },
+      body: {
+        type: 'new_booking_request',
+        bookingId: bookingDoc.id,
+        bookingReference: bookingData.bookingReference,
+        guestName: bookingData.guestName,
+        guestEmail: bookingData.guestEmail,
+        guestPhone: bookingData.guestPhone,
+        checkInDate: formatDate(checkInDate),
+        checkOutDate: formatDate(checkOutDate),
+        guestCount: bookingData.guestCount,
+        totalAmount: bookingData.totalAmount,
+        notes: bookingData.notes
+      }
+    })
+    console.log('✅ Admin notification sent for review')
+  } catch (emailError: any) {
+    console.error('⚠️ Email sending failed:', emailError.message)
+    await db.collection('emailLogs').add({
+      type: 'booking_request_email_failed',
+      bookingId: bookingDoc.id,
+      error: emailError.message,
+      timestamp: FieldValue.serverTimestamp(),
+    })
+  }
+}
+
+/**
+ * 決済成功時の処理（審査承認後のcapture）
+ * 審査承認API経由でcaptureされた後に発火
+ */
+async function handlePaymentSuccess(
+  paymentIntent: Stripe.PaymentIntent,
+  db: FirebaseFirestore.Firestore
+) {
+  console.log('💳 Payment captured/succeeded:', paymentIntent.id)
+
+  // Payment IntentIDで予約を検索
+  const bookingQuery = await db
+    .collection('bookings')
+    .where('stripePaymentIntentId', '==', paymentIntent.id)
+    .limit(1)
+    .get()
+
+  if (bookingQuery.empty) {
+    console.warn('⚠️ Booking not found for payment intent:', paymentIntent.id)
+    return
+  }
+
+  const bookingDoc = bookingQuery.docs[0]
+  const bookingData = bookingDoc.data()
+
+  // 既にconfirmedの場合はスキップ（承認APIで既に更新済み）
+  if (bookingData.status === 'confirmed' && bookingData.paymentStatus === 'paid') {
+    console.log('ℹ️ Booking already confirmed, skipping webhook update')
+    return
+  }
+
+  // 予約ステータスを更新（フォールバック）
   await bookingDoc.ref.update({
     status: 'confirmed',
     paymentStatus: 'paid',
@@ -147,10 +258,7 @@ async function handlePaymentSuccess(
     updatedAt: FieldValue.serverTimestamp(),
   })
 
-  console.log('✅ Booking confirmed:', bookingDoc.id)
-
-  // TODO: 確認メールを送信
-  // await sendBookingConfirmationEmail(bookingData)
+  console.log('✅ Booking confirmed via webhook:', bookingDoc.id)
 }
 
 /**
@@ -196,6 +304,7 @@ async function handleRefund(
   charge: Stripe.Charge,
   db: FirebaseFirestore.Firestore
 ) {
+  const config = useRuntimeConfig()
   console.log('💰 Refund processed:', charge.id)
 
   const paymentIntentId = typeof charge.payment_intent === 'string'
@@ -219,6 +328,7 @@ async function handleRefund(
   }
 
   const bookingDoc = bookingQuery.docs[0]
+  const bookingData = bookingDoc.data()
 
   // 予約ステータスを更新
   await bookingDoc.ref.update({
@@ -231,8 +341,44 @@ async function handleRefund(
 
   console.log('✅ Booking refunded:', bookingDoc.id)
 
-  // TODO: 返金完了メールを送信
-  // await sendRefundConfirmationEmail(bookingDoc.data())
+  // 返金完了メールを送信
+  try {
+    const baseUrl = config.public.siteUrl || 'http://localhost:3000'
+
+    // ゲストへ返金通知メール送信
+    await $fetch(`${baseUrl}/api/emails/send-refund-confirmation`, {
+      method: 'POST',
+      headers: {
+        'x-internal-secret': config.internalApiSecret
+      },
+      body: {
+        to: bookingData.guestEmail,
+        bookingReference: bookingData.bookingReference,
+        guestName: bookingData.guestName,
+        refundAmount: charge.amount_refunded
+      }
+    })
+    console.log('✅ Refund confirmation email sent to:', bookingData.guestEmail)
+
+    // 管理者へ返金完了通知
+    await $fetch(`${baseUrl}/api/emails/send-admin-notification`, {
+      method: 'POST',
+      headers: {
+        'x-internal-secret': config.internalApiSecret
+      },
+      body: {
+        type: 'refund_completed',
+        bookingId: bookingDoc.id,
+        bookingReference: bookingData.bookingReference,
+        guestName: bookingData.guestName,
+        guestEmail: bookingData.guestEmail,
+        refundAmount: charge.amount_refunded
+      }
+    })
+    console.log('✅ Admin refund notification sent')
+  } catch (emailError: any) {
+    console.error('⚠️ Refund email sending failed:', emailError.message)
+  }
 }
 
 /**

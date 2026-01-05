@@ -12,8 +12,14 @@
         </button>
       </div>
 
+      <!-- ローディング -->
+      <div v-if="isLoading" class="text-center py-12">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto"></div>
+        <p class="text-gray-500 mt-2">読み込み中...</p>
+      </div>
+
       <!-- クーポンリスト -->
-      <div class="overflow-x-auto">
+      <div v-else-if="coupons.length > 0" class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
@@ -70,13 +76,15 @@
                 </button>
                 <button
                   @click="toggleCoupon(coupon)"
-                  class="text-blue-600 hover:text-blue-800"
+                  :disabled="isSaving"
+                  class="text-blue-600 hover:text-blue-800 disabled:opacity-50"
                 >
                   {{ coupon.isActive ? '無効化' : '有効化' }}
                 </button>
                 <button
                   @click="deleteCoupon(coupon.id)"
-                  class="text-red-600 hover:text-red-800"
+                  :disabled="isSaving"
+                  class="text-red-600 hover:text-red-800 disabled:opacity-50"
                 >
                   削除
                 </button>
@@ -86,7 +94,7 @@
         </table>
       </div>
 
-      <div v-if="coupons.length === 0" class="text-center py-12 text-gray-500">
+      <div v-else class="text-center py-12 text-gray-500">
         クーポンがありません。新規作成してください。
       </div>
     </div>
@@ -261,15 +269,17 @@
             <button
               type="button"
               @click="closeModal"
-              class="px-4 py-2 border rounded-lg hover:bg-gray-50"
+              :disabled="isSaving"
+              class="px-4 py-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50"
             >
               キャンセル
             </button>
             <button
               type="submit"
-              class="btn-primary px-6"
+              :disabled="isSaving"
+              class="btn-primary px-6 disabled:opacity-50"
             >
-              {{ editingCoupon ? '更新' : '作成' }}
+              {{ isSaving ? '保存中...' : (editingCoupon ? '更新' : '作成') }}
             </button>
           </div>
         </form>
@@ -280,10 +290,25 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
+import {
+  collection,
+  getDocs,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+  query,
+  orderBy,
+  Timestamp
+} from 'firebase/firestore'
 import type { Coupon } from '~/types'
+
+const { $firestore } = useNuxtApp()
 
 // クーポンリスト
 const coupons = ref<Coupon[]>([])
+const isLoading = ref(false)
+const isSaving = ref(false)
 
 // モーダル表示
 const showModal = ref(false)
@@ -302,27 +327,26 @@ const couponForm = reactive({
   isActive: true
 })
 
-// 初期化時にローカルストレージから読み込み
+// 初期化時にFirestoreから読み込み
 onMounted(() => {
   loadCoupons()
 })
 
-function loadCoupons() {
+async function loadCoupons() {
+  isLoading.value = true
   try {
-    const stored = localStorage.getItem('coupons')
-    if (stored) {
-      coupons.value = JSON.parse(stored)
-    }
+    const couponsRef = collection($firestore, 'coupons')
+    const q = query(couponsRef, orderBy('createdAt', 'desc'))
+    const snapshot = await getDocs(q)
+    coupons.value = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as Coupon[]
   } catch (e) {
     console.error('クーポンの読み込みエラー:', e)
-  }
-}
-
-function saveCoupons() {
-  try {
-    localStorage.setItem('coupons', JSON.stringify(coupons.value))
-  } catch (e) {
-    console.error('クーポンの保存エラー:', e)
+    alert('クーポンの読み込みに失敗しました')
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -339,8 +363,17 @@ function editCoupon(coupon: Coupon) {
   couponForm.discountValue = coupon.discountValue
   couponForm.minAmount = coupon.minAmount
   couponForm.maxDiscount = coupon.maxDiscount
-  couponForm.validFrom = new Date(coupon.validFrom.toDate()).toISOString().split('T')[0]
-  couponForm.validUntil = new Date(coupon.validUntil.toDate()).toISOString().split('T')[0]
+
+  // Timestampを日付文字列に変換
+  const validFrom = coupon.validFrom instanceof Timestamp
+    ? coupon.validFrom.toDate()
+    : new Date(coupon.validFrom as any)
+  const validUntil = coupon.validUntil instanceof Timestamp
+    ? coupon.validUntil.toDate()
+    : new Date(coupon.validUntil as any)
+
+  couponForm.validFrom = validFrom.toISOString().split('T')[0]
+  couponForm.validUntil = validUntil.toISOString().split('T')[0]
   couponForm.usageLimit = coupon.usageLimit
   couponForm.isActive = coupon.isActive
   showModal.value = true
@@ -363,57 +396,85 @@ function resetForm() {
   couponForm.isActive = true
 }
 
-function saveCoupon() {
-  const newCoupon: Coupon = {
-    id: editingCoupon.value?.id || `coupon-${Date.now()}`,
-    code: couponForm.code.toUpperCase(),
-    discountType: couponForm.discountType,
-    discountValue: couponForm.discountValue,
-    minAmount: couponForm.minAmount,
-    maxDiscount: couponForm.maxDiscount,
-    validFrom: { toDate: () => new Date(couponForm.validFrom) } as any,
-    validUntil: { toDate: () => new Date(couponForm.validUntil) } as any,
-    usageLimit: couponForm.usageLimit,
-    usageCount: editingCoupon.value?.usageCount || 0,
-    isActive: couponForm.isActive,
-    createdAt: editingCoupon.value?.createdAt || { toDate: () => new Date() } as any,
-    updatedAt: { toDate: () => new Date() } as any
-  }
-
-  if (editingCoupon.value) {
-    // 更新
-    const index = coupons.value.findIndex(c => c.id === editingCoupon.value!.id)
-    if (index !== -1) {
-      coupons.value[index] = newCoupon
+async function saveCoupon() {
+  isSaving.value = true
+  try {
+    const couponData = {
+      code: couponForm.code.toUpperCase(),
+      discountType: couponForm.discountType,
+      discountValue: couponForm.discountValue,
+      minAmount: couponForm.minAmount || null,
+      maxDiscount: couponForm.maxDiscount || null,
+      validFrom: Timestamp.fromDate(new Date(couponForm.validFrom)),
+      validUntil: Timestamp.fromDate(new Date(couponForm.validUntil + 'T23:59:59')),
+      usageLimit: couponForm.usageLimit || null,
+      isActive: couponForm.isActive,
+      updatedAt: Timestamp.now()
     }
-  } else {
-    // 新規作成
-    coupons.value.push(newCoupon)
+
+    if (editingCoupon.value) {
+      // 更新
+      const couponRef = doc($firestore, 'coupons', editingCoupon.value.id)
+      await updateDoc(couponRef, couponData)
+      alert(`クーポン「${couponData.code}」を更新しました`)
+    } else {
+      // 新規作成
+      await addDoc(collection($firestore, 'coupons'), {
+        ...couponData,
+        usageCount: 0,
+        createdAt: Timestamp.now()
+      })
+      alert(`クーポン「${couponData.code}」を作成しました`)
+    }
+
+    await loadCoupons()
+    closeModal()
+  } catch (e) {
+    console.error('クーポン保存エラー:', e)
+    alert('クーポンの保存に失敗しました')
+  } finally {
+    isSaving.value = false
   }
-
-  saveCoupons()
-  closeModal()
-  alert(`クーポン「${newCoupon.code}」を${editingCoupon.value ? '更新' : '作成'}しました`)
 }
 
-function toggleCoupon(coupon: Coupon) {
-  coupon.isActive = !coupon.isActive
-  saveCoupons()
+async function toggleCoupon(coupon: Coupon) {
+  isSaving.value = true
+  try {
+    const couponRef = doc($firestore, 'coupons', coupon.id)
+    await updateDoc(couponRef, {
+      isActive: !coupon.isActive,
+      updatedAt: Timestamp.now()
+    })
+    await loadCoupons()
+  } catch (e) {
+    console.error('クーポン更新エラー:', e)
+    alert('クーポンの更新に失敗しました')
+  } finally {
+    isSaving.value = false
+  }
 }
 
-function deleteCoupon(id: string) {
+async function deleteCoupon(id: string) {
   if (!confirm('このクーポンを削除しますか？')) return
 
-  const index = coupons.value.findIndex(c => c.id === id)
-  if (index !== -1) {
-    coupons.value.splice(index, 1)
-    saveCoupons()
+  isSaving.value = true
+  try {
+    await deleteDoc(doc($firestore, 'coupons', id))
+    await loadCoupons()
     alert('クーポンを削除しました')
+  } catch (e) {
+    console.error('クーポン削除エラー:', e)
+    alert('クーポンの削除に失敗しました')
+  } finally {
+    isSaving.value = false
   }
 }
 
 function formatDate(timestamp: any): string {
-  const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp)
+  if (!timestamp) return '-'
+  const date = timestamp instanceof Timestamp
+    ? timestamp.toDate()
+    : (timestamp.toDate ? timestamp.toDate() : new Date(timestamp))
   return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`
 }
 </script>

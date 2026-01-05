@@ -99,7 +99,7 @@
 
   /* ボタンスタイル */
   .btn-primary {
-    @apply inline-block font-semibold text-center rounded-lg border-none cursor-pointer;
+    @apply inline-block py-4 px-8 font-semibold text-center rounded-lg border-none cursor-pointer;
     background: var(--gradient-primary);
     color: white;
     transition: all var(--transition-smooth);
@@ -115,7 +115,7 @@
   }
 
   .btn-secondary {
-    @apply inline-block font-semibold text-center rounded-lg cursor-pointer;
+    @apply inline-block py-4 px-8 font-semibold text-center rounded-lg cursor-pointer;
     background: white;
     color: var(--color-text-primary);
     border: 2px solid #667eea;

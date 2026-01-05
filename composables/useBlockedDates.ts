@@ -26,7 +26,7 @@ export function useBlockedDates() {
       loading.value = true
       error.value = null
 
-      const docRef = await addDoc(collection($db, 'blocked_dates'), {
+      const docRef = await addDoc(collection($db, 'blockedDates'), {
         startDate: Timestamp.fromDate(data.startDate),
         endDate: Timestamp.fromDate(data.endDate),
         reason: data.reason,
@@ -57,7 +57,7 @@ export function useBlockedDates() {
       loading.value = true
       error.value = null
 
-      await deleteDoc(doc($db, 'blocked_dates', id))
+      await deleteDoc(doc($db, 'blockedDates', id))
       console.log('✅ Blocked date deleted:', id)
       await loadBlockedDates()
     } catch (e: any) {
@@ -83,7 +83,7 @@ export function useBlockedDates() {
       error.value = null
 
       const q = query(
-        collection($db, 'blocked_dates'),
+        collection($db, 'blockedDates'),
         orderBy('startDate', 'asc')
       )
 

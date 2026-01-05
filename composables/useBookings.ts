@@ -186,6 +186,21 @@ export const useBookings = () => {
         status,
         updatedAt: Timestamp.now()
       })
+
+      // 予約が確定された場合、清掃タスクを自動生成
+      if (status === 'confirmed') {
+        try {
+          const booking = await getBooking(bookingId)
+          if (booking) {
+            const { createCleaningTasks } = useCleaningTasks()
+            await createCleaningTasks(booking)
+            console.log('✅ 予約確定に伴い清掃タスクを自動生成しました')
+          }
+        } catch (taskError) {
+          // タスク生成エラーは予約確定の処理を止めない
+          console.error('清掃タスク自動生成エラー（処理は続行）:', taskError)
+        }
+      }
     } catch (error) {
       console.error('Update booking status error:', error)
       throw new Error('予約ステータスの更新に失敗しました')

@@ -157,7 +157,7 @@ const emit = defineEmits<{
 }>()
 
 const { blockedDates, loadBlockedDates, isDateBlocked } = useBlockedDates()
-const { calculatePrice } = useEnhancedPricing()
+const { calculatePrice, loadFromFirestore } = useEnhancedPricing()
 
 const weekDays = ['日', '月', '火', '水', '木', '金', '土']
 const currentMonth = ref(new Date())
@@ -173,9 +173,13 @@ watch(() => props.modelCheckOut, (newVal) => {
   checkOutDate.value = newVal || ''
 })
 
-// Load blocked dates on mount
-onMounted(() => {
-  loadBlockedDates()
+// Load blocked dates and pricing settings on mount
+onMounted(async () => {
+  await Promise.all([
+    loadBlockedDates(),
+    loadFromFirestore()
+  ])
+  console.log('✅ PricingCalendar: Loaded blocked dates and pricing settings')
 })
 
 const currentMonthName = computed(() => {
@@ -243,12 +247,17 @@ function createCalendarDate(date: Date, isCurrentMonth: boolean): CalendarDate {
   // Calculate price for this date
   let price: number | null = null
   if (isCurrentMonth && !blocked && !isPast) {
-    const nextDay = new Date(date)
-    nextDay.setDate(nextDay.getDate() + 1)
-    // childrenAgesは空配列として渡す（子供の年齢情報がない場合）
-    const priceCalc = calculatePrice(date, nextDay, props.adults, [])
-    if (priceCalc) {
-      price = priceCalc.averagePricePerNight
+    try {
+      const nextDay = new Date(date)
+      nextDay.setDate(nextDay.getDate() + 1)
+      // childrenAgesは空配列として渡す（子供の年齢情報がない場合）
+      const priceCalc = calculatePrice(date, nextDay, props.adults, [])
+      if (priceCalc && priceCalc.summary?.averagePricePerNight) {
+        price = Math.floor(priceCalc.summary.averagePricePerNight)
+      }
+    } catch (error) {
+      console.error('料金計算エラー:', error)
+      price = null
     }
   }
 
