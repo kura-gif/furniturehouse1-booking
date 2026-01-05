@@ -8,7 +8,22 @@ export type BookingType = 'stay' | 'workshop'
 /**
  * 予約ステータス
  */
-export type BookingStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'payment_failed' | 'refunded'
+export type BookingStatus = 'pending' | 'pending_review' | 'confirmed' | 'cancelled' | 'completed' | 'payment_failed' | 'refunded' | 'rejected' | 'expired'
+
+/**
+ * 審査ステータス
+ */
+export type BookingReviewStatus = 'pending_review' | 'approved' | 'rejected' | 'expired'
+
+/**
+ * 却下理由カテゴリ
+ */
+export type RejectionCategory = 'schedule_conflict' | 'capacity_exceeded' | 'maintenance' | 'other'
+
+/**
+ * 予約ステータス（簡易版 - 後方互換性）
+ */
+export type SimpleBookingStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed'
 
 /**
  * 支払いステータス
@@ -26,6 +41,8 @@ export interface Booking {
   type: BookingType
   checkInDate: Timestamp
   checkOutDate: Timestamp
+  startDate?: Timestamp // checkInDateのエイリアス（後方互換性）
+  endDate?: Timestamp // checkOutDateのエイリアス（後方互換性）
   guestCount: number
   guestName: string
   guestEmail: string
@@ -43,9 +60,37 @@ export interface Booking {
   refundedAt?: Timestamp // 返金日時
   refundAmount?: number // 返金額
   canceledAt?: Timestamp // キャンセル日時
+  // 審査関連フィールド
+  reviewStatus?: BookingReviewStatus // 審査ステータス
+  reviewDeadline?: Timestamp // 審査期限（48時間後）
+  reviewedAt?: Timestamp // 審査完了日時
+  reviewedBy?: string // 審査した管理者ID
+  reviewedByName?: string // 審査した管理者名
+  rejectionReason?: string // 却下理由（メッセージ）
+  rejectionCategory?: RejectionCategory // 却下カテゴリ
   createdAt: Timestamp
   updatedAt: Timestamp
 }
+
+/**
+ * 審査ログ
+ */
+export interface ReviewLog {
+  id: string
+  bookingId: string
+  bookingReference: string
+  action: 'approved' | 'rejected' | 'expired'
+  reason?: string
+  category?: RejectionCategory
+  adminId: string
+  adminName: string
+  createdAt: Timestamp
+}
+
+/**
+ * ユーザーロール
+ */
+export type UserRole = 'admin' | 'user' | 'supporter'
 
 /**
  * ユーザー情報
@@ -56,9 +101,13 @@ export interface User {
   email: string
   displayName: string
   phone?: string
-  role: 'admin' | 'user'
+  role: UserRole
   invitedBy?: string // 招待した管理者のUID（新規追加時）
   lastLoginAt?: Timestamp // 最終ログイン日時
+  // サポーター固有のプロパティ（オプショナル）
+  isActive?: boolean // サポーターが有効かどうか
+  hourlyRate?: number // 時給
+  transportationFee?: number // 交通費
   createdAt: Timestamp
   updatedAt: Timestamp
 }
@@ -138,6 +187,7 @@ export interface SeasonPeriod {
   startDate: string // MM-DD形式
   endDate: string // MM-DD形式
   description?: string
+  multiplier?: number // シーズン倍率（オプション）
 }
 
 /**
@@ -195,8 +245,10 @@ export interface EmailTemplate {
  */
 export interface CreateBookingRequest {
   type: BookingType
-  checkInDate: Date
-  checkOutDate: Date
+  checkInDate?: Date
+  checkOutDate?: Date
+  startDate?: Date // checkInDateのエイリアス（後方互換性）
+  endDate?: Date // checkOutDateのエイリアス（後方互換性）
   guestCount: number
   guestName: string
   guestEmail: string
@@ -414,4 +466,345 @@ export interface SentEmail {
   sentAt: Timestamp
   status: 'sent' | 'failed'
   error?: string
+}
+
+/**
+ * 清掃タスクステータス
+ */
+export type CleaningTaskStatus = 'pending' | 'assigned' | 'in_progress' | 'completed' | 'cancelled'
+
+/**
+ * 清掃タスクタイプ
+ */
+export type CleaningTaskType = 'pre_checkin' | 'post_checkout'
+
+/**
+ * チェックリスト項目（新形式）
+ */
+export interface ChecklistItem {
+  id?: string
+  item?: string // レガシー互換
+  label?: string // 新形式
+  completed: boolean
+  isCustom?: boolean
+  createdBy?: string
+  createdAt?: Timestamp
+}
+
+/**
+ * 清掃写真
+ */
+export interface CleaningPhoto {
+  id: string
+  url: string
+  storagePath: string
+  uploadedAt: Timestamp
+  uploadedBy: string
+}
+
+/**
+ * 使用備品
+ */
+export interface UsedSupply {
+  id?: string
+  name: string
+  supplyName?: string
+  quantity: number
+}
+
+/**
+ * 報酬情報
+ */
+export interface Compensation {
+  hourlyRate: number
+  hoursWorked?: number
+  transportationFee: number
+  totalAmount: number
+  calculatedAmount?: number
+  isPaid: boolean
+  paidAt?: Timestamp
+}
+
+/**
+ * 清掃タスク
+ */
+export interface CleaningTask {
+  id: string
+  bookingId: string
+  bookingReference?: string
+  taskType: CleaningTaskType
+  type?: CleaningTaskType // 後方互換性
+  status: CleaningTaskStatus
+  scheduledDate: Timestamp
+  estimatedDuration: number // 予定作業時間（分）
+  actualDuration?: number // 実際の作業時間（分）
+  actualHours?: number // 実際の作業時間（時間）
+  guestCount?: number // 宿泊人数
+  assignedTo?: string // サポーターID
+  assignedToName?: string // サポーター名
+  startTime?: Timestamp
+  endTime?: Timestamp
+  startedAt?: Timestamp
+  completedAt?: Timestamp
+  checklist: ChecklistItem[]
+  photos?: CleaningPhoto[]
+  photoRequestedByAdmin?: boolean
+  suppliesUsed?: UsedSupply[]
+  usedSupplies?: UsedSupply[] // 後方互換性
+  notes?: string
+  adminNotes?: string
+  compensation?: Compensation
+  createdAt: Timestamp
+  updatedAt: Timestamp
+}
+
+/**
+ * 人数別料金設定
+ */
+export interface GuestCountPricing {
+  guestCount: number
+  pricePerNight: number
+  // 拡張版プロパティ（オプション）
+  baseGuestCount?: number // 基本人数（例: 2人）
+  thirdGuestRate?: number // 3人目の料金率
+  additionalGuestRates?: {
+    fourth: number
+    fifth: number
+    sixth: number
+  }
+}
+
+/**
+ * 連泊料金設定
+ */
+export interface MultiNightPricing {
+  nightCount: number
+  discountPercentage: number
+  // 拡張版プロパティ（オプション）
+  rates?: {
+    night1: number
+    night2: number
+    night3: number
+    night4: number
+    night5: number
+    night6Plus: number
+  }
+}
+
+/**
+ * 子供料金ルール
+ */
+export interface ChildPricingRule {
+  ageFrom?: number
+  ageTo?: number
+  discountType?: 'free' | 'percentage'
+  discountValue?: number
+  // 代替プロパティ名（互換性のため）
+  minAge?: number
+  maxAge?: number
+  priceRate?: number
+}
+
+/**
+ * 祝日カレンダー
+ */
+export interface HolidayCalendar {
+  year: number
+  holidays: string[] // YYYY-MM-DD形式
+}
+
+/**
+ * 拡張価格設定
+ */
+export interface EnhancedPricingSetting {
+  id: string
+  name?: string
+  type: BookingType
+  isActive?: boolean
+  seasonPeriods: SeasonPeriod[]
+  guestCountPricing?: GuestCountPricing | GuestCountPricing[] | any
+  multiNightPricing?: MultiNightPricing | MultiNightPricing[] | any
+  weekendMultiplier?: number
+  createdAt: Timestamp | null | any
+  updatedAt: Timestamp | null | any
+  // 拡張版プロパティ（オプション）
+  basePrice?: number // 基本料金
+  basePriceAdult?: number // 大人基本料金
+  seasonMultipliers?: {
+    regular: number
+    high: number
+    off: number
+  }
+  dayTypePricing?: {
+    weekday?: number
+    weekend?: number
+    weekendSurcharge?: number  // 旧形式（固定金額）- 後方互換性のため残す
+    weekendMultiplier?: number // 新形式（倍率）- 1.3 = 30%増し
+  }
+  dayTypeSurcharges?: {
+    weekday: number
+    weekend: number
+  }
+  dayTypeMultipliers?: {
+    weekday: number  // 1.0 = 追加なし
+    weekend: number  // 1.3 = 30%増し
+  }
+  cleaningFee?: number
+  taxRate?: number
+  childPricingRules?: ChildPricingRule[]
+  holidayCalendar?: HolidayCalendar[]
+}
+
+/**
+ * 拡張版毎泊明細
+ */
+export interface EnhancedNightlyBreakdown {
+  date: string
+  seasonType: SeasonType
+  dayType: DayType
+  baseRate?: number
+  guestAdjustment?: number
+  weekendMultiplier?: number
+  finalRate?: number
+  description: string
+  // 拡張版プロパティ（オプション）
+  nightNumber?: number
+  basePrice?: number
+  seasonMultiplier?: number
+  dayTypeSurcharge?: number   // 旧形式（固定金額）- 後方互換性のため
+  dayTypeMultiplier?: number  // 新形式（倍率）
+  basePriceAfterAdjustments?: number
+  guestCountCharges?: {
+    guest3rd?: number
+    guest4th?: number
+    guest5th?: number
+    guest6th?: number
+    total: number
+  }
+  childCharges?: {
+    freeChildren: number
+    discountedChildren: number
+    total: number
+  }
+  nightRate?: number
+  nightRateDescription?: string
+  subtotalBeforeNightRate?: number
+  nightTotal?: number
+}
+
+/**
+ * 拡張価格計算結果
+ */
+export interface EnhancedPriceCalculation {
+  baseAmount?: number
+  discountAmount?: number
+  totalAmount: number
+  breakdown?: {
+    numberOfNights: number
+    guestCount: number
+    nightlyBreakdown: EnhancedNightlyBreakdown[]
+    subtotal: number
+    multiNightDiscount?: number
+    couponDiscount?: number
+  }
+  // 拡張版プロパティ（オプション）
+  checkInDate?: Date
+  checkOutDate?: Date
+  numberOfNights?: number
+  adultCount?: number
+  childrenAges?: number[]
+  totalGuestCount?: number
+  nightlyBreakdown?: EnhancedNightlyBreakdown[]
+  subtotal?: number
+  cleaningFee?: number
+  subtotalBeforeTax?: number
+  tax?: number
+  couponDiscount?: number
+  totalPrice?: number
+  summary?: {
+    averagePricePerNight: number
+    averagePricePerPerson: number
+  }
+}
+
+/**
+ * 会話ステータス
+ */
+export type ConversationStatus = 'open' | 'closed'
+
+/**
+ * 会話スレッド
+ */
+export interface Conversation {
+  id: string
+  bookingId?: string           // 予約紐付け（予約前は null）
+  bookingReference?: string    // 予約番号
+  guestEmail: string           // ゲストのメール
+  guestName: string            // ゲスト名
+  guestUserId?: string         // ログインユーザーの場合
+  subject?: string             // 件名（予約前の問い合わせ用）
+  status: ConversationStatus   // 会話ステータス
+  lastMessageAt: Timestamp     // 最終メッセージ日時
+  lastMessagePreview?: string  // 最終メッセージプレビュー
+  unreadByAdmin: number        // 管理者未読数
+  unreadByGuest: number        // ゲスト未読数
+  createdAt: Timestamp
+  updatedAt: Timestamp
+}
+
+/**
+ * メッセージ送信者タイプ
+ */
+export type MessageSenderType = 'guest' | 'admin'
+
+/**
+ * メッセージ
+ */
+export interface Message {
+  id: string
+  conversationId: string
+  senderType: MessageSenderType
+  senderName: string
+  senderId?: string            // ユーザーID
+  content: string
+  attachments?: {              // 添付ファイル（画像等）
+    url: string
+    type: string
+    name: string
+  }[]
+  isRead: boolean
+  createdAt: Timestamp
+}
+
+/**
+ * キャンセルポリシールール
+ */
+export interface CancellationPolicyRule {
+  daysBeforeCheckIn: number  // チェックイン何日前まで
+  refundPercentage: number   // 返金率（0-100）
+}
+
+/**
+ * キャンセルポリシー設定
+ */
+export interface CancellationPolicy {
+  id?: string
+  name: string                        // ポリシー名（例: 標準、柔軟）
+  description?: string                // 説明文
+  rules: CancellationPolicyRule[]     // ルール（日数順に並べる）
+  isActive: boolean                   // 有効かどうか
+  createdAt?: Timestamp
+  updatedAt?: Timestamp
+}
+
+/**
+ * 返金計算結果
+ */
+export interface RefundCalculation {
+  originalAmount: number              // 元の金額
+  refundPercentage: number            // 返金率
+  refundAmount: number                // 返金額
+  daysBeforeCheckIn: number           // チェックイン何日前か
+  appliedRule: CancellationPolicyRule // 適用されたルール
+  isCancellable: boolean              // キャンセル可能か
 }
