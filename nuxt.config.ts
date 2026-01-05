@@ -55,7 +55,8 @@ export default defineNuxtConfig({
       '/api/bookings/create': { csurf: false },
       '/api/emails/**': { csurf: false },
       '/api/admin/**': { csurf: false },
-      '/api/test/**': { csurf: false }
+      '/api/test/**': { csurf: false },
+      '/api/public/**': { csurf: false }
     }
   },
 
