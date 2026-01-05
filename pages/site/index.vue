@@ -221,7 +221,7 @@ useHead({
 <style scoped>
 /* ベース */
 .site-page {
-  font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Tsukushi Gothic', 'TsukushiGothic', 'A-OTF 筑紫ゴシック Pr6N', '筑紫ゴシック', 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
   color: #231815;
   line-height: 1.8;
   font-weight: 300;
