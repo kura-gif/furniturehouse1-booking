@@ -3,10 +3,10 @@
     <!-- ヘッダー -->
     <header class="site-header">
       <div class="site-header-inner">
-        <a href="/site" class="site-logo">
+        <a href="/" class="site-logo">
           <img src="/images/hero/title.svg" alt="家具の家 No.1" class="site-logo-img" />
         </a>
-        <a href="https://www.instagram.com/" target="_blank" rel="noopener" class="site-instagram">
+        <a href="https://www.instagram.com/furniture.house.1/" target="_blank" rel="noopener" class="site-instagram">
           <svg viewBox="0 0 24 24" width="20" height="20">
             <defs>
               <linearGradient id="instagram-gradient" x1="0%" y1="100%" x2="100%" y2="0%">
