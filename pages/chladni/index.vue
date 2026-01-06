@@ -30,6 +30,9 @@
 
     <!-- ヒーローセクション -->
     <section class="chladni-hero">
+      <video class="chladni-hero-video" autoplay muted loop playsinline>
+        <source src="/images/chladni/hero.mp4" type="video/mp4" />
+      </video>
       <div class="chladni-hero-overlay"></div>
       <div class="chladni-hero-content">
         <h1 class="chladni-hero-title">静かな振動は、組織を強くする。</h1>
@@ -238,6 +241,8 @@ const closeMobileMenu = () => {
   mobileMenuOpen.value = false
 }
 
+const router = useRouter()
+
 const submitForm = async () => {
   if (!form.privacyAgreed) {
     alert('プライバシーポリシーに同意してください。')
@@ -245,16 +250,19 @@ const submitForm = async () => {
   }
   isSubmitting.value = true
   try {
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    alert('お問い合わせを送信しました。')
-    form.name = ''
-    form.company = ''
-    form.email = ''
-    form.phone = ''
-    form.message = ''
-    form.privacyAgreed = false
+    await $fetch('/api/chladni/contact', {
+      method: 'POST',
+      body: {
+        name: form.name,
+        company: form.company,
+        email: form.email,
+        phone: form.phone,
+        message: form.message
+      }
+    })
+    router.push('/chladni/contact-complete')
   } catch {
-    alert('送信に失敗しました。')
+    alert('送信に失敗しました。もう一度お試しください。')
   } finally {
     isSubmitting.value = false
   }
@@ -282,7 +290,7 @@ useHead({
   font-family: 'Zen Kaku Gothic New', 'Noto Sans JP', sans-serif;
   color: #1a1a1a;
   line-height: 1.8;
-  font-size: 15px;
+  font-size: 16px;
   background: #fff;
 }
 *, *::before, *::after { box-sizing: border-box; }
@@ -306,7 +314,7 @@ useHead({
   justify-content: space-between;
 }
 .chladni-logo {
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 700;
   color: #1a1a1a;
   text-decoration: none;
@@ -314,7 +322,7 @@ useHead({
 }
 .chladni-nav { display: flex; gap: 48px; }
 .chladni-nav-link {
-  font-size: 14px;
+  font-size: 15px;
   color: #1a1a1a;
   text-decoration: none;
   letter-spacing: 1px;
@@ -371,10 +379,22 @@ useHead({
   position: relative;
   height: 80vh;
   min-height: 480px;
-  background: url('/images/chladni/hero.jpg') center/cover;
+  background: #000;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+}
+.chladni-hero-video {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  min-width: 100%;
+  min-height: 100%;
+  width: auto;
+  height: auto;
+  transform: translate(-50%, -50%);
+  object-fit: cover;
 }
 .chladni-hero-overlay {
   position: absolute;
@@ -389,14 +409,14 @@ useHead({
 }
 .chladni-hero-title {
   font-family: 'Shippori Mincho', 'Noto Serif JP', serif;
-  font-size: 36px;
+  font-size: 40px;
   font-weight: 500;
   color: #fff;
   letter-spacing: 6px;
 }
 @media (max-width: 768px) {
   .chladni-hero { min-height: 500px; }
-  .chladni-hero-title { font-size: 24px; letter-spacing: 2px; }
+  .chladni-hero-title { font-size: 26px; letter-spacing: 2px; }
 }
 
 .chladni-section { padding: 100px 40px; }
@@ -409,7 +429,7 @@ useHead({
 .chladni-section-label {
   display: flex;
   flex-direction: column;
-  font-size: 14px;
+  font-size: 15px;
   letter-spacing: 2px;
   padding-right: 20px;
   border-right: 1px solid #ddd;
@@ -430,7 +450,7 @@ useHead({
 .chladni-greeting-content { flex: 1; }
 .chladni-greeting-title {
   font-family: 'Shippori Mincho', 'Noto Serif JP', serif;
-  font-size: 28px;
+  font-size: 31px;
   font-weight: 500;
   margin-bottom: 40px;
   letter-spacing: 3px;
@@ -462,7 +482,7 @@ useHead({
 .chladni-work-item { margin-bottom: 60px; }
 .chladni-work-item:last-child { margin-bottom: 0; }
 .chladni-work-number {
-  font-size: 18px;
+  font-size: 20px;
   color: #1e3a8a;
   margin-bottom: 8px;
   font-weight: 500;
@@ -478,14 +498,14 @@ useHead({
 }
 .chladni-work-title {
   font-family: 'Shippori Mincho', 'Noto Serif JP', serif;
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 500;
   margin-bottom: 16px;
   letter-spacing: 3px;
 }
-.chladni-work-desc { font-size: 14px; color: #666; }
+.chladni-work-desc { font-size: 15px; color: #666; }
 @media (max-width: 768px) {
-  .chladni-work-title { font-size: 18px; }
+  .chladni-work-title { font-size: 20px; }
 }
 
 .chladni-company-content { flex: 1; }
@@ -519,8 +539,8 @@ useHead({
 .chladni-profile-image { flex-shrink: 0; width: 180px; }
 .chladni-profile-image img { width: 100%; border-radius: 4px; }
 .chladni-profile-info { flex: 1; }
-.chladni-profile-name { font-size: 14px; font-weight: 500; margin-bottom: 16px; }
-.chladni-profile-text { font-size: 13px; line-height: 2; color: #333; }
+.chladni-profile-name { font-size: 15px; font-weight: 500; margin-bottom: 16px; }
+.chladni-profile-text { font-size: 14px; line-height: 2; color: #333; }
 @media (max-width: 768px) {
   .chladni-profile { flex-direction: column; padding: 20px; }
   .chladni-profile-image { width: 120px; }
@@ -532,27 +552,27 @@ useHead({
   padding: 16px 0;
   border-bottom: 1px solid #eee;
 }
-.chladni-company-label { width: 100px; font-size: 14px; color: #666; }
-.chladni-company-value { flex: 1; font-size: 14px; }
+.chladni-company-label { width: 100px; font-size: 15px; color: #666; }
+.chladni-company-value { flex: 1; font-size: 15px; }
 
 .chladni-contact { background: #f9f9f9; }
 .chladni-contact-inner { max-width: 600px; margin: 0 auto; text-align: center; }
 .chladni-contact-title {
   font-family: 'Shippori Mincho', 'Noto Serif JP', serif;
-  font-size: 28px;
+  font-size: 31px;
   font-weight: 500;
   margin-bottom: 24px;
   letter-spacing: 3px;
 }
-.chladni-contact-desc { font-size: 14px; color: #666; margin-bottom: 8px; }
+.chladni-contact-desc { font-size: 15px; color: #666; margin-bottom: 8px; }
 .chladni-form { margin-top: 50px; text-align: left; }
 .chladni-form-group { margin-bottom: 30px; }
-.chladni-form-label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 10px; }
+.chladni-form-label { display: block; font-size: 15px; font-weight: 500; margin-bottom: 10px; }
 .chladni-required {
   display: inline-block;
   background: #1e3a8a;
   color: #fff;
-  font-size: 10px;
+  font-size: 11px;
   padding: 2px 8px;
   border-radius: 2px;
   margin-left: 8px;
@@ -560,7 +580,7 @@ useHead({
 .chladni-form-input, .chladni-form-textarea {
   width: 100%;
   padding: 14px 16px;
-  font-size: 14px;
+  font-size: 15px;
   border: 1px solid #ddd;
   border-radius: 4px;
   background: #fff;
@@ -572,8 +592,8 @@ useHead({
 }
 .chladni-form-textarea { resize: vertical; min-height: 150px; }
 .chladni-privacy-check { text-align: left; }
-.chladni-privacy-link { display: block; font-size: 13px; margin-bottom: 12px; text-decoration: underline; }
-.chladni-checkbox-label { display: flex; align-items: center; gap: 10px; font-size: 13px; cursor: pointer; }
+.chladni-privacy-link { display: block; font-size: 14px; margin-bottom: 12px; text-decoration: underline; }
+.chladni-checkbox-label { display: flex; align-items: center; gap: 10px; font-size: 14px; cursor: pointer; }
 .chladni-checkbox-label input { width: 18px; height: 18px; }
 .chladni-submit-btn {
   display: block;
@@ -597,9 +617,9 @@ useHead({
   text-align: center;
 }
 .chladni-footer-nav { display: flex; justify-content: center; gap: 40px; margin-bottom: 24px; }
-.chladni-footer-nav a { font-size: 13px; color: #fff; text-decoration: none; }
+.chladni-footer-nav a { font-size: 14px; color: #fff; text-decoration: none; }
 .chladni-footer-nav a:hover { opacity: 0.7; }
-.chladni-footer-privacy { font-size: 12px; color: #999; text-decoration: none; }
+.chladni-footer-privacy { font-size: 13px; color: #999; text-decoration: none; }
 .chladni-footer-privacy:hover { color: #fff; }
 @media (max-width: 768px) {
   .chladni-footer { padding: 40px 20px; }

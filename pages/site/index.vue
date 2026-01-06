@@ -167,7 +167,7 @@
         <span class="site-footer-title">家具の家 No.1</span>
         <div class="site-footer-right">
           <a href="#" class="site-footer-contact">法人利用のお問合せ</a>
-          <p class="site-footer-credit">運営：家具の家 no.1 運営委員会 ＋ <a href="https://chladni-co.studio.site/" target="_blank" rel="noopener" class="site-footer-link">株式会社クラドニ</a></p>
+          <p class="site-footer-credit">運営：家具の家 no.1 運営委員会 ＋ <a href="https://furniturehouse1.com/chladni" class="site-footer-link">株式会社クラドニ</a></p>
         </div>
       </div>
     </footer>
