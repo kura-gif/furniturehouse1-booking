@@ -127,22 +127,60 @@ export const useBookings = () => {
     }
   }
 
-  // ユーザーの予約一覧を取得
+  // ユーザーの予約一覧を取得（userIdまたはguestEmailで検索）
   const getUserBookings = async (userId: string): Promise<Booking[]> => {
     if (!$db) throw new Error('Firestore is not initialized')
 
     try {
-      const q = query(
+      // userIdで検索
+      const userIdQuery = query(
         collection($db, 'bookings'),
         where('userId', '==', userId),
         orderBy('createdAt', 'desc')
       )
 
-      const querySnapshot = await getDocs(q)
-      return querySnapshot.docs.map(doc => ({
+      const userIdSnapshot = await getDocs(userIdQuery)
+      const bookingsByUserId = userIdSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       })) as Booking[]
+
+      // guestEmailでも検索（ユーザーのメールアドレスを取得）
+      const userEmail = user.value?.email
+      if (userEmail) {
+        const emailQuery = query(
+          collection($db, 'bookings'),
+          where('guestEmail', '==', userEmail),
+          orderBy('createdAt', 'desc')
+        )
+
+        const emailSnapshot = await getDocs(emailQuery)
+        const bookingsByEmail = emailSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as Booking[]
+
+        // 重複を除去して結合
+        const allBookings = [...bookingsByUserId]
+        const existingIds = new Set(allBookings.map(b => b.id))
+
+        for (const booking of bookingsByEmail) {
+          if (!existingIds.has(booking.id)) {
+            allBookings.push(booking)
+          }
+        }
+
+        // 作成日時でソート
+        allBookings.sort((a, b) => {
+          const aTime = a.createdAt?.toDate?.()?.getTime() || 0
+          const bTime = b.createdAt?.toDate?.()?.getTime() || 0
+          return bTime - aTime
+        })
+
+        return allBookings
+      }
+
+      return bookingsByUserId
     } catch (error) {
       console.error('Get user bookings error:', error)
       throw new Error('予約の取得に失敗しました')
