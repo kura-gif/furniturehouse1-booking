@@ -29,20 +29,6 @@
         <transition name="fade" mode="out-in">
           <img :key="currentImageIndex" :src="heroImages[currentImageIndex]" :alt="`家具の家 No.1 写真${currentImageIndex + 1}`" class="site-hero-image" />
         </transition>
-        <div class="site-hero-nav">
-          <button class="site-hero-nav-btn" @click="nextImage" aria-label="次の画像">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M19 12H5M12 19l-7-7 7-7"/>
-            </svg>
-          </button>
-          <button class="site-hero-nav-btn" :class="{ active: autoplay }" @click="toggleAutoplay" aria-label="自動再生">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-              <rect x="4" y="4" width="3" height="16" rx="1"/>
-              <rect x="10.5" y="6" width="3" height="12" rx="1"/>
-              <rect x="17" y="2" width="3" height="20" rx="1"/>
-            </svg>
-          </button>
-        </div>
       </div>
     </section>
 
@@ -90,24 +76,6 @@
               <img src="/images/hero/09.webp" alt="家具を残した基礎と床の修繕課程" />
               <p class="site-image-caption">家具を残した基礎と床の修繕課程</p>
             </div>
-          </div>
-        </div>
-        <!-- ナビゲーションボタン -->
-        <div class="site-structure-nav">
-          <p class="site-structure-nav-credit">家具の家No.1 運営委員会</p>
-          <div class="site-structure-nav-btns">
-            <button class="site-structure-nav-btn" aria-label="次へ">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M5 12h14M12 5l7 7-7 7"/>
-              </svg>
-            </button>
-            <button class="site-structure-nav-btn" aria-label="メニュー">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-                <rect x="4" y="4" width="3" height="16" rx="1"/>
-                <rect x="10.5" y="6" width="3" height="12" rx="1"/>
-                <rect x="17" y="2" width="3" height="20" rx="1"/>
-              </svg>
-            </button>
           </div>
         </div>
       </div>
@@ -254,15 +222,6 @@ let autoplayInterval: ReturnType<typeof setInterval> | null = null
 
 const nextImage = () => {
   currentImageIndex.value = (currentImageIndex.value + 1) % heroImages.length
-}
-
-const toggleAutoplay = () => {
-  autoplay.value = !autoplay.value
-  if (autoplay.value) {
-    startAutoplay()
-  } else {
-    stopAutoplay()
-  }
 }
 
 const startAutoplay = () => {
