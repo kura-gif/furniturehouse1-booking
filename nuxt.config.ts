@@ -52,6 +52,7 @@ export default defineNuxtConfig({
       // CSRF除外ルート
       '/api/stripe/webhook': { csurf: false },
       '/api/stripe/create-payment-intent': { csurf: false },
+      '/api/stripe/create-payment-intent-secure': { csurf: false },
       '/api/bookings/create': { csurf: false },
       '/api/emails/**': { csurf: false },
       '/api/admin/**': { csurf: false },
