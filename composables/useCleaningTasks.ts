@@ -202,6 +202,7 @@ export const useCleaningTasks = () => {
 
       await updateDoc(taskRef, {
         assignedTo: supporterId,
+        assignedToUid: supporterData.uid || '', // Firebase AuthのUID（セキュリティルール用）
         assignedToName: supporterName,
         status: 'assigned',
         'compensation.hourlyRate': supporterData.hourlyRate || 0,
@@ -240,6 +241,7 @@ export const useCleaningTasks = () => {
 
       await updateDoc(taskRef, {
         assignedTo: null,
+        assignedToUid: null,
         assignedToName: null,
         status: 'pending',
         'compensation.hourlyRate': 0,

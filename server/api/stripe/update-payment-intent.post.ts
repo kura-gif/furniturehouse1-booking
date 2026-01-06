@@ -32,7 +32,8 @@ export default defineEventHandler(async (event) => {
       'checkIn',
       'checkOut',
       'guests',
-      'totalAmount'
+      'totalAmount',
+      'options'
     ]
     const metadataKeys = Object.keys(metadata || {})
     const invalidKeys = metadataKeys.filter(key => !allowedKeys.includes(key))

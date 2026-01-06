@@ -3,10 +3,21 @@
     <!-- ヘッダー -->
     <header class="site-header">
       <div class="site-header-inner">
-        <a href="/site" class="site-logo">家具の家 No.1</a>
+        <a href="/site" class="site-logo">
+          <img src="/images/hero/title.svg" alt="家具の家 No.1" class="site-logo-img" />
+        </a>
         <a href="https://www.instagram.com/" target="_blank" rel="noopener" class="site-instagram">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+          <svg viewBox="0 0 24 24" width="20" height="20">
+            <defs>
+              <linearGradient id="instagram-gradient" x1="0%" y1="100%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:#FFDC80"/>
+                <stop offset="25%" style="stop-color:#F77737"/>
+                <stop offset="50%" style="stop-color:#E1306C"/>
+                <stop offset="75%" style="stop-color:#C13584"/>
+                <stop offset="100%" style="stop-color:#405DE6"/>
+              </linearGradient>
+            </defs>
+            <path fill="url(#instagram-gradient)" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
           </svg>
         </a>
       </div>
@@ -39,7 +50,7 @@
     <section class="site-stay-section">
       <div class="site-stay-inner">
         <div class="site-stay-image">
-          <img src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600&h=800&fit=crop" alt="家具の家 内観" />
+          <img src="/images/hero/07.jpg" alt="家具の家 内観" />
         </div>
         <div class="site-stay-content">
           <h2 class="site-stay-title">家具の家 No.1に滞在する</h2>
@@ -59,77 +70,124 @@
     <!-- 構造体セクション -->
     <section class="site-structure-section">
       <div class="site-structure-inner">
-        <div class="site-structure-content">
-          <h2 class="site-structure-title">風の通う家<br>構造体としての家具</h2>
+        <h2 class="site-structure-title">風の通う家<br>構造体としての家具</h2>
+        <div class="site-structure-flow">
           <div class="site-structure-text">
-            <p>私たちの「家具の家 No.1」との出会いは、2023年の夏のことでした。山中湖の森の中にひっそりと佇むその空間に、私たちは自然と引き寄せられました。初めて足を踏み入れたとき、目に飛び込んできたのは、整然と並ぶユニット家具と、その上に軽やかに載る屋根。家具がそのまま家を支えている──それは建築というより、空間に浮かぶ「構造そのもの」のようでした。</p>
+            <p>私たちの「家具の家 No.1」との出会いは、2023年の夏のことでした。山中湖の森の中にひっそりと佇むその空間に、私たちは自然と引き寄せられました。初めて足を踏み入れたとき、目に飛び込んできたのは、整然と並ぶユニット家具と、その上に軽やかに載る屋根。家具がそのまま家を支えている——それは建築というより、空間に浮かぶ「構造そのもの」のようでした。</p>
             <p>この家は1990年代に設計されました。設計者は、後に世界的に活躍する建築家として知られる人物です。この建物を特徴づけるのは、家具ユニットがそのまま構造体となっていること。家具は屋根を支え、壁となり、空間を仕切っています。</p>
-            <p>この家が建つ山中湖の別荘地は、かつて某自動車メーカーの経営者がまとめて開発した区画です。当時としては先進的な設計で、多くの著名建築家による実験的な住宅が建てられました。そんな中、この建築家にとっても初期の代表作となるこの家は、独自の構法と美しさで注目を集めました。</p>
+            <p>この家が建つ山中湖の別荘地は、かつて日本を代表するクリエイターたちが自らの居場所を設けて別荘を建てた場所でしたが、老朽化により徐々にその姿を消そうとしています。そんな中、この建築家によって設計された3棟のうち、2棟は老朽化で取り壊されてしまいました。</p>
+            <p>「家具の家 No.1」も、修復を必要としていました。湿度の高い山中湖の環境が、長年にわたり基礎部分に影響を及ぼしていたのです。2024年の冬、私たちは、屋根と家具の構造体を残したまま、腐食が進んだ基礎と床をすべて入れ替えるという修復作業を行いました。家具が宙に浮いたまま床を解体した姿は、この家の構造を体現するようでもありました。</p>
+            <p>実際にこの家で時間を過ごしてみると、空気の流れや光の移ろい、そして音の吸い込み方までが、家具によって誘われていることに気づかされます。内と外の境界は限りなくゆるやかで、風は自由に通り抜け、建築は静かに呼吸しているように感じられます。</p>
+            <p>人が使い、風が動き、建築が呼吸する——そんな体験に、私たちは心を奪われました。ただ眺めるだけでなく、実際に泊まり、静かな時間の流れのなかで、構造体としての家具に囲まれる不思議な感覚を、多くの人に体験してもらいただきたい。そうすればこの家は、腐ちることなく、これからも長く息づいていくことでしょう。</p>
+            <p class="site-structure-credit">家具の家No.1 運営委員会</p>
+          </div>
+          <div class="site-structure-images">
+            <div class="site-structure-figure">
+              <img src="/images/hero/08.webp" alt="家具が構造体として機能する" />
+              <p class="site-image-caption">家具が構造体として機能する</p>
+            </div>
+            <div class="site-structure-figure">
+              <img src="/images/hero/09.webp" alt="家具を残した基礎と床の修繕課程" />
+              <p class="site-image-caption">家具を残した基礎と床の修繕課程</p>
+            </div>
           </div>
         </div>
-        <div class="site-structure-image">
-          <img src="https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=400" alt="家具と建築との修練継承" />
+        <!-- ナビゲーションボタン -->
+        <div class="site-structure-nav">
+          <p class="site-structure-nav-credit">家具の家No.1 運営委員会</p>
+          <div class="site-structure-nav-btns">
+            <button class="site-structure-nav-btn" aria-label="次へ">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </button>
+            <button class="site-structure-nav-btn" aria-label="メニュー">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                <rect x="4" y="4" width="3" height="16" rx="1"/>
+                <rect x="10.5" y="6" width="3" height="12" rx="1"/>
+                <rect x="17" y="2" width="3" height="20" rx="1"/>
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- 体験セクション -->
-    <section class="site-experience-section">
-      <div class="site-experience-inner">
-        <div class="site-experience-text">
-          <p>わたり光風部分に影響を及ぼしていたのです。2024年の冬、私たちは、屋根と家具の構造体を残したまま、環境が選んだ建築と調和し、すべての人を迎え入れるという修復作業を行いました。家具が家に寄りそえば注目を維持した姿は、この家の構造を体現するうえでのあらゆものです。</p>
-          <p>実際にこの家で時間を過ごしてみると、空気の流れや光の移ろい、そして音の響き方までが、家具によって謳われていることに気づかされます。内と外の境界は限りなくゆるやかで、風は自由に通り抜け、建築は静かに呼吸しているように感じられます。</p>
-          <p>人が使い、風が動き、建築が呼吸する——そんな体験に、私たちは心を奪われました。ただ泊まるだけでなく、実際に、静かな時間の流れのなかで、構造体としての家具に囲まれる不思議な時間を、多くの人に体験してもらいたかったし、そうすればこの家は、居心地というとなく、これからも長く息づいていくことでしょう。</p>
-        </div>
-        <div class="site-experience-image">
-          <img src="https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=400" alt="家具を活した建築との修練継承" />
+    <!-- 上部ギャラリー（4枚横一列） -->
+    <section class="site-gallery-section">
+      <div class="site-gallery-grid">
+        <div v-for="(img, index) in galleryTopImages" :key="index" class="site-gallery-item">
+          <img :src="img.src" :alt="img.alt" />
         </div>
       </div>
-      <p class="site-experience-credit">家具の家No.1 運営委員会</p>
     </section>
 
     <!-- 施設情報セクション -->
     <section class="site-facility-section">
       <div class="site-facility-inner">
         <h2 class="site-facility-title">施設情報</h2>
-        <div class="site-facility-table">
-          <div class="site-facility-row">
-            <span class="site-facility-label">用途</span>
-            <span class="site-facility-value">保養所</span>
+        <div class="site-facility-columns">
+          <div class="site-facility-column">
+            <div class="site-facility-row">
+              <span class="site-facility-label">用途</span>
+              <span class="site-facility-value">保養所</span>
+            </div>
+            <div class="site-facility-row">
+              <span class="site-facility-label">設計</span>
+              <span class="site-facility-value">坂茂建築設計</span>
+            </div>
+            <div class="site-facility-row">
+              <span class="site-facility-label">所在</span>
+              <span class="site-facility-value">山梨県 山中湖村</span>
+            </div>
+            <div class="site-facility-row">
+              <span class="site-facility-label">竣工</span>
+              <span class="site-facility-value">1995年</span>
+            </div>
           </div>
-          <div class="site-facility-row">
-            <span class="site-facility-label">構造</span>
-            <span class="site-facility-value">木造平屋</span>
-          </div>
-          <div class="site-facility-row">
-            <span class="site-facility-label">設計</span>
-            <span class="site-facility-value">坂茂建築設計</span>
-          </div>
-          <div class="site-facility-row">
-            <span class="site-facility-label">面積</span>
-            <span class="site-facility-value">約100㎡</span>
-          </div>
-          <div class="site-facility-row">
-            <span class="site-facility-label">所在</span>
-            <span class="site-facility-value">山梨県 山中湖村</span>
-          </div>
-          <div class="site-facility-row">
-            <span class="site-facility-label">間取</span>
-            <span class="site-facility-value">リビングキッチン、お風呂トイレ、和室（寝室3名様まで）、洋室（寝室3名様まで）</span>
-          </div>
-          <div class="site-facility-row">
-            <span class="site-facility-label">竣工</span>
-            <span class="site-facility-value">1995年</span>
+          <div class="site-facility-column">
+            <div class="site-facility-row">
+              <span class="site-facility-label">構造</span>
+              <span class="site-facility-value">木造平屋</span>
+            </div>
+            <div class="site-facility-row">
+              <span class="site-facility-label">面積</span>
+              <span class="site-facility-value">約100㎡</span>
+            </div>
+            <div class="site-facility-row">
+              <span class="site-facility-label">間取</span>
+              <span class="site-facility-value">リビングキッチン、お風呂トイレ、和室、洋室</span>
+            </div>
           </div>
         </div>
         <p class="site-facility-notice">※冬季休業中のため、2026年1月31日予約開始、予約可能日4月1日以降となります。</p>
       </div>
     </section>
 
-    <!-- ギャラリーセクション -->
+    <!-- 中間ギャラリー（4枚横一列） -->
     <section class="site-gallery-section">
       <div class="site-gallery-grid">
-        <div v-for="(img, index) in galleryImages" :key="index" class="site-gallery-item">
+        <div v-for="(img, index) in galleryMiddleImages" :key="index" class="site-gallery-item">
+          <img :src="img.src" :alt="img.alt" />
+        </div>
+      </div>
+    </section>
+
+    <!-- 別荘地について -->
+    <section class="site-resort-section">
+      <div class="site-resort-inner">
+        <h2 class="site-resort-title">別荘地について</h2>
+        <div class="site-resort-text">
+          <p>雄大な富士山と山中湖を臨むこの別荘地は、1960年代後半に開発されました。この地が特徴されるのは、当時日本を代表するクリエイターたちが、近代日本を代表する建築家や、後に世界的な評価を得る若き建築家達に、自身の別荘を創造的な実験の機会として設計を依頼し、さらには分野を超え互いに刺激し合うコミュニティを形成していたことでした。</p>
+          <p>しかし時が経つにつれ、これらの貴重な建築群は少しずつ姿を消し、それに伴い、その記憶や文化的価値もまた失われつつあります。この地の持つ豊かな物語と、それが日本のクリエイティブシーンに与えた影響を深く認識し、未来へと語り継いでいくことが私たちの願いです。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 下部ギャラリー（10枚、5x2グリッド） -->
+    <section class="site-gallery-section">
+      <div class="site-gallery-grid-10">
+        <div v-for="(img, index) in galleryBottomImages" :key="index" class="site-gallery-item-10">
           <img :src="img.src" :alt="img.alt" />
         </div>
       </div>
@@ -138,29 +196,56 @@
     <!-- フッター -->
     <footer class="site-footer">
       <div class="site-footer-inner">
-        <p class="site-footer-copyright">© 2024 Furniture House No.1</p>
+        <span class="site-footer-title">家具の家 No.1</span>
+        <div class="site-footer-right">
+          <a href="#" class="site-footer-contact">法人利用のお問合せ</a>
+          <p class="site-footer-credit">運営：家具の家 no.1 運営委員会 ＋ 株式会社クラドニ</p>
+        </div>
       </div>
     </footer>
+
   </div>
 </template>
 
 <script setup lang="ts">
 // 画像スライダー
 const heroImages = [
-  'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&h=800&fit=crop',
-  'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&h=800&fit=crop',
-  'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1200&h=800&fit=crop',
-  'https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=1200&h=800&fit=crop',
-  'https://images.unsplash.com/photo-1600573472592-401b489a3cdc?w=1200&h=800&fit=crop',
+  '/images/hero/01.jpg',
+  '/images/hero/02.jpg',
+  '/images/hero/03.jpg',
+  '/images/hero/04.jpg',
+  '/images/hero/05.jpg',
+  '/images/hero/06.jpg',
 ]
 
-const galleryImages = [
-  { src: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600', alt: '内観1' },
-  { src: 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=600', alt: '内観2' },
-  { src: 'https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=600', alt: '内観3' },
-  { src: 'https://images.unsplash.com/photo-1600573472592-401b489a3cdc?w=600', alt: '外観1' },
-  { src: 'https://images.unsplash.com/photo-1600566752355-35792bedcfea?w=600', alt: '外観2' },
-  { src: 'https://images.unsplash.com/photo-1600585154363-67eb9e2e2099?w=600', alt: 'テラス' },
+// 上部ギャラリー（4枚）
+const galleryTopImages = [
+  { src: '/images/hero/gallery-1.jpg', alt: '内観1' },
+  { src: '/images/hero/gallery-2.png', alt: '内観2' },
+  { src: '/images/hero/gallery-3.jpg', alt: '内観3' },
+  { src: '/images/hero/gallery-4.png', alt: '内観4' },
+]
+
+// 中間ギャラリー（4枚）
+const galleryMiddleImages = [
+  { src: '/images/hero/gallery-5.jpg', alt: '外観1' },
+  { src: '/images/hero/gallery-6.jpg', alt: '外観2' },
+  { src: '/images/hero/gallery-7.jpg', alt: '外観3' },
+  { src: '/images/hero/gallery-8.jpg', alt: '外観4' },
+]
+
+// 下部ギャラリー（10枚、5x2グリッド）
+const galleryBottomImages = [
+  { src: '/images/hero/gallery-1.jpg', alt: '写真1' },
+  { src: '/images/hero/gallery-2.png', alt: '写真2' },
+  { src: '/images/hero/gallery-3.jpg', alt: '写真3' },
+  { src: '/images/hero/gallery-4.png', alt: '写真4' },
+  { src: '/images/hero/gallery-5.jpg', alt: '写真5' },
+  { src: '/images/hero/gallery-6.jpg', alt: '写真6' },
+  { src: '/images/hero/gallery-7.jpg', alt: '写真7' },
+  { src: '/images/hero/gallery-8.jpg', alt: '写真8' },
+  { src: '/images/hero/gallery-1.jpg', alt: '写真9' },
+  { src: '/images/hero/gallery-2.png', alt: '写真10' },
 ]
 
 const currentImageIndex = ref(0)
@@ -214,6 +299,12 @@ useHead({
     { name: 'description', content: '家具が家を支える「体験する建築」。静かな時間の中で構造体に囲まれる不思議な宿泊体験。' },
     { property: 'og:title', content: '家具の家 No.1' },
     { property: 'og:description', content: '家具が家を支える「体験する建築」。静かな時間の中で構造体に囲まれる不思議な宿泊体験。' },
+  ],
+  link: [
+    { rel: 'icon', type: 'image/png', href: '/favicon.png' },
+    { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+    { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
+    { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&family=Zen+Kaku+Gothic+New:wght@400;500&display=swap' }
   ]
 })
 </script>
@@ -221,13 +312,21 @@ useHead({
 <style scoped>
 /* ベース */
 .site-page {
-  font-family: 'Tsukushi Gothic', 'TsukushiGothic', 'A-OTF 筑紫ゴシック Pr6N', '筑紫ゴシック', 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
   color: #231815;
-  line-height: 1.8;
-  font-weight: 300;
-  font-size: 14px;
+  line-height: 2.2;
+  font-weight: 400;
+  font-size: 16px;
   background-color: #ffffff;
   -webkit-font-smoothing: antialiased;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
 /* ヘッダー */
@@ -244,48 +343,56 @@ useHead({
 .site-header-inner {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 18px 24px;
+  padding: 0 24px;
+  height: 100px;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
 .site-logo {
-  font-size: 15px;
-  font-weight: 400;
-  letter-spacing: 0.5px;
-  color: #231815;
+  display: flex;
+  align-items: center;
   text-decoration: none;
 }
 
+.site-logo-img {
+  width: 175px;
+  height: auto;
+}
+
 .site-instagram {
-  color: #231815;
-  opacity: 0.6;
-  transition: opacity 0.3s;
   display: flex;
   align-items: center;
+  transition: opacity 0.3s;
 }
 
 .site-instagram:hover {
-  opacity: 1;
+  opacity: 0.7;
 }
 
 /* ヒーロー */
 .site-hero {
-  padding-top: 60px;
+  padding-top: 100px;
+  width: 100%;
 }
 
 .site-hero-main {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 5;
+  height: 640px;
   overflow: hidden;
   background: #f5f5f5;
 }
 
 @media (max-width: 768px) {
+  .site-hero {
+    padding-top: 80px;
+  }
+
   .site-hero-main {
-    aspect-ratio: 16 / 9;
+    height: 400px;
+    width: 100%;
   }
 }
 
@@ -382,8 +489,10 @@ useHead({
 
 /* 滞在セクション */
 .site-stay-section {
+  width: 100%;
   background-color: #eeeeee;
-  padding: 80px 120px 100px;
+  padding: 104px 120px 120px 120px;
+  box-sizing: border-box;
 }
 
 @media (max-width: 1024px) {
@@ -392,30 +501,41 @@ useHead({
   }
 }
 
+@media (max-width: 768px) {
+  .site-stay-section {
+    padding: 60px 24px;
+    width: 100%;
+  }
+}
+
 .site-stay-inner {
-  max-width: 1100px;
-  margin: 0 auto;
+  max-width: 100%;
+  width: 100%;
   display: flex;
-  gap: 80px;
+  flex-direction: row;
+  gap: 72px;
   align-items: flex-start;
+  justify-content: flex-start;
 }
 
 @media (max-width: 768px) {
   .site-stay-inner {
     flex-direction: column;
     gap: 40px;
+    width: 100%;
   }
 }
 
 .site-stay-image {
   flex-shrink: 0;
-  width: 340px;
+  width: 50%;
+  margin: 0;
+  padding: 0;
 }
 
 @media (max-width: 768px) {
   .site-stay-image {
     width: 100%;
-    max-width: 340px;
   }
 }
 
@@ -427,27 +547,31 @@ useHead({
 
 .site-stay-content {
   flex: 1;
+  height: auto;
+  margin-top: 40px;
 }
 
 .site-stay-title {
-  font-size: 28px;
-  font-weight: 400;
-  letter-spacing: 1px;
+  font-family: 'Zen Kaku Gothic New', 'Noto Sans JP', sans-serif;
+  font-size: 40px;
+  font-weight: 500;
+  letter-spacing: 0;
   margin-bottom: 40px;
-  color: #231815;
+  color: #333333;
   line-height: 1.4;
 }
 
 .site-stay-text p {
-  font-size: 15px;
+  font-size: 16px;
   line-height: 2.2;
   margin-bottom: 8px;
   color: #231815;
-  font-weight: 300;
+  font-weight: 400;
 }
 
 .site-stay-notice {
-  font-size: 14px;
+  font-size: 16px;
+  font-weight: 600;
   color: #666;
   margin-top: 40px;
   margin-bottom: 32px;
@@ -473,200 +597,189 @@ useHead({
 /* 構造体セクション */
 .site-structure-section {
   background-color: #ffffff;
-  padding: 80px 120px 60px;
+  padding: 104px 120px 0 120px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 0;
 }
 
 @media (max-width: 1024px) {
   .site-structure-section {
-    padding: 60px 24px;
+    padding: 60px 24px 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .site-structure-section {
+    padding: 40px 24px 0;
+    width: 100%;
+  }
+
+  .site-structure-inner {
+    width: 100%;
+  }
+
+  .site-structure-title {
+    font-size: 32px;
+    margin-bottom: 32px;
+  }
+
+  .site-structure-flow {
+    display: block;
+    width: 100%;
+  }
+
+  .site-structure-text {
+    width: 100%;
+    display: block;
+  }
+
+  .site-structure-images {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin-top: 32px;
+  }
+
+  .site-structure-figure {
+    width: 100%;
+  }
+
+  .site-structure-figure img {
+    width: 100%;
+    height: auto;
   }
 }
 
 .site-structure-inner {
-  max-width: 1100px;
-  margin: 0 auto;
+  width: 100%;
+  max-width: none;
+  margin: 0;
   display: flex;
-  gap: 80px;
+  flex-direction: column;
   align-items: flex-start;
-}
-
-@media (max-width: 768px) {
-  .site-structure-inner {
-    flex-direction: column;
-    gap: 40px;
-  }
-}
-
-.site-structure-content {
-  flex: 1;
+  gap: 0;
 }
 
 .site-structure-title {
-  font-size: 28px;
-  font-weight: 400;
+  font-family: 'Zen Kaku Gothic New', 'Noto Sans JP', sans-serif;
+  font-size: 48px;
+  font-weight: 500;
   line-height: 1.4;
-  letter-spacing: 1px;
+  letter-spacing: 0;
   margin-bottom: 40px;
-  color: #231815;
+  color: #333333;
+  text-align: left;
+}
+
+.site-structure-flow {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  gap: 72px;
+  align-items: flex-start;
+  justify-content: flex-start;
+  margin: 0;
+  padding: 0;
+}
+
+.site-structure-text {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  margin: 0;
+  padding: 0;
 }
 
 .site-structure-text p {
-  font-size: 15px;
+  font-size: 16px;
   line-height: 2.2;
-  margin-bottom: 8px;
+  margin-bottom: 24px;
   color: #231815;
-  font-weight: 300;
+  font-weight: 400;
 }
 
-.site-structure-image {
-  flex-shrink: 0;
-  width: 340px;
-}
-
-@media (max-width: 768px) {
-  .site-structure-image {
-    width: 100%;
-    max-width: 340px;
-  }
-}
-
-.site-structure-image img {
-  width: 100%;
-  height: auto;
-}
-
-/* 体験セクション */
-.site-experience-section {
-  background-color: #ffffff;
-  padding: 40px 120px 60px;
-}
-
-@media (max-width: 1024px) {
-  .site-experience-section {
-    padding: 40px 24px 60px;
-  }
-}
-
-.site-experience-inner {
-  max-width: 1100px;
-  margin: 0 auto;
-  display: flex;
-  gap: 80px;
-  align-items: flex-start;
-}
-
-@media (max-width: 768px) {
-  .site-experience-inner {
-    flex-direction: column;
-    gap: 40px;
-  }
-}
-
-.site-experience-text {
+.site-structure-images {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  align-items: flex-end;
+  justify-content: flex-start;
+  margin: 0;
+  padding: 0;
 }
 
-.site-experience-text p {
-  font-size: 15px;
-  line-height: 2.2;
-  margin-bottom: 8px;
-  color: #231815;
-  font-weight: 300;
+.site-structure-figure {
+  width: 100%;
 }
 
-.site-experience-image {
-  flex-shrink: 0;
-  width: 340px;
-}
-
-@media (max-width: 768px) {
-  .site-experience-image {
-    width: 100%;
-    max-width: 340px;
-  }
-}
-
-.site-experience-image img {
+.site-structure-figure img {
   width: 100%;
   height: auto;
 }
 
-.site-experience-credit {
-  max-width: 1000px;
-  margin: 40px auto 0;
-  padding: 0 80px;
+.site-image-caption {
+  font-size: 13px;
+  color: #666;
+  margin-top: 12px;
+  line-height: 1.6;
+}
+
+.site-structure-text .site-structure-credit {
+  display: none;
+}
+
+/* 構造体セクション ナビゲーション */
+.site-structure-nav {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 0 80px;
+  gap: 16px;
+}
+
+.site-structure-nav-credit {
   font-size: 13px;
   color: #666;
   text-align: center;
 }
 
-@media (max-width: 1024px) {
-  .site-experience-credit {
-    padding: 0 24px;
-  }
+.site-structure-nav-btns {
+  display: flex;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 6px 10px;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-/* 施設情報セクション */
-.site-facility-section {
-  background-color: #ffffff;
-  padding: 80px 80px;
-  border-top: 1px solid #eee;
-  border-bottom: 1px solid #eee;
-}
-
-@media (max-width: 1024px) {
-  .site-facility-section {
-    padding: 60px 24px;
-  }
-}
-
-.site-facility-inner {
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.site-facility-title {
-  font-size: 16px;
-  font-weight: 400;
-  margin-bottom: 32px;
+.site-structure-nav-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: #231815;
+  border-radius: 50%;
+  transition: background 0.3s;
+  opacity: 0.7;
 }
 
-.site-facility-table {
-  display: grid;
-  grid-template-columns: 60px 1fr 60px 1fr;
-  gap: 0;
-  border-top: 1px solid #ddd;
-}
-
-@media (max-width: 768px) {
-  .site-facility-table {
-    grid-template-columns: 60px 1fr;
-  }
-}
-
-.site-facility-row {
-  display: contents;
-}
-
-.site-facility-label {
-  padding: 12px 16px 12px 0;
-  font-size: 13px;
-  color: #666;
-  border-bottom: 1px solid #ddd;
-}
-
-.site-facility-value {
-  padding: 12px 24px 12px 0;
-  font-size: 13px;
-  color: #231815;
-  border-bottom: 1px solid #ddd;
-}
-
-.site-facility-notice {
-  margin-top: 24px;
-  font-size: 12px;
-  color: #999;
+.site-structure-nav-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+  opacity: 1;
 }
 
 /* ギャラリーセクション */
@@ -676,24 +789,23 @@ useHead({
 
 .site-gallery-grid {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 0;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
   .site-gallery-grid {
     grid-template-columns: repeat(3, 1fr);
   }
-}
 
-@media (max-width: 640px) {
-  .site-gallery-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .site-gallery-item {
+    height: auto;
+    aspect-ratio: 1 / 1;
   }
 }
 
 .site-gallery-item {
-  aspect-ratio: 1;
+  height: 560px;
   overflow: hidden;
 }
 
@@ -708,19 +820,239 @@ useHead({
   transform: scale(1.05);
 }
 
+/* 下部ギャラリー（10枚、5x2グリッド） */
+.site-gallery-grid-10 {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0;
+}
+
+@media (max-width: 768px) {
+  .site-gallery-grid-10 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.site-gallery-item-10 {
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+}
+
+.site-gallery-item-10 img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.site-gallery-item-10:hover img {
+  transform: scale(1.05);
+}
+
+/* 施設情報セクション */
+.site-facility-section {
+  background-color: #ffffff;
+  padding: 104px 0 104px 0;
+  display: flex;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .site-facility-section {
+    padding: 60px 24px;
+  }
+}
+
+.site-facility-inner {
+  width: 60%;
+  max-width: none;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .site-facility-inner {
+    width: 100%;
+  }
+}
+
+.site-facility-title {
+  font-family: 'Zen Kaku Gothic New', 'Noto Sans JP', sans-serif;
+  font-size: 32px;
+  font-weight: 400;
+  margin-bottom: 32px;
+  color: #231815;
+}
+
+.site-facility-columns {
+  display: flex;
+  gap: 64px;
+  margin-top: 48px;
+}
+
+@media (max-width: 768px) {
+  .site-facility-columns {
+    flex-direction: column;
+    gap: 0;
+    margin-top: 24px;
+  }
+
+  .site-facility-column:first-child,
+  .site-facility-column:last-child {
+    min-width: auto;
+  }
+
+  .site-facility-label {
+    width: 80px;
+    margin-right: 48px;
+  }
+
+  .site-facility-notice {
+    text-align: left;
+    margin-top: 32px;
+  }
+}
+
+.site-facility-column:first-child {
+  flex: 0 0 auto;
+  min-width: 280px;
+}
+
+.site-facility-column:last-child {
+  flex: 1;
+}
+
+.site-facility-row {
+  display: flex;
+  padding: 8px 0;
+}
+
+.site-facility-label {
+  width: 56px;
+  flex-shrink: 0;
+  font-size: 16px;
+  line-height: 2.2;
+  font-weight: 400;
+  color: #231815;
+  margin-right: 40px;
+}
+
+.site-facility-value {
+  font-size: 16px;
+  line-height: 2.2;
+  font-weight: 400;
+  color: #231815;
+}
+
+.site-facility-notice {
+  margin-top: 48px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #666;
+  text-align: center;
+}
+
+/* 別荘地セクション */
+.site-resort-section {
+  background-color: #ffffff;
+  padding: 80px 80px;
+}
+
+@media (max-width: 768px) {
+  .site-resort-section {
+    padding: 40px 24px;
+  }
+}
+
+.site-resort-inner {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .site-resort-inner {
+    max-width: none;
+  }
+
+  .site-resort-title {
+    font-size: 24px;
+  }
+}
+
+.site-resort-title {
+  font-family: 'Zen Kaku Gothic New', 'Noto Sans JP', sans-serif;
+  font-size: 32px;
+  font-weight: 400;
+  line-height: 1.4;
+  margin-bottom: 32px;
+  color: #231815;
+}
+
+.site-resort-text p {
+  font-size: 16px;
+  line-height: 2.2;
+  margin-bottom: 24px;
+  color: #231815;
+  font-weight: 400;
+}
+
 /* フッター */
 .site-footer {
-  padding: 30px 24px;
-  background-color: #f8f8f8;
+  padding: 40px 80px;
+  background-color: #ffffff;
+}
+
+@media (max-width: 1024px) {
+  .site-footer {
+    padding: 40px 24px;
+  }
 }
 
 .site-footer-inner {
   max-width: 1280px;
   margin: 0 auto;
-  text-align: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
 }
 
-.site-footer-copyright {
+@media (max-width: 768px) {
+  .site-footer-inner {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+}
+
+.site-footer-title {
+  font-family: 'Zen Kaku Gothic New', 'Noto Sans JP', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: #231815;
+}
+
+.site-footer-right {
+  text-align: right;
+}
+
+@media (max-width: 768px) {
+  .site-footer-right {
+    text-align: left;
+  }
+}
+
+.site-footer-contact {
+  font-size: 13px;
+  color: #666;
+  text-decoration: none;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.site-footer-contact:hover {
+  text-decoration: underline;
+}
+
+.site-footer-credit {
   font-size: 11px;
   color: #999;
 }

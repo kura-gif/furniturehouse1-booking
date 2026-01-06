@@ -40,9 +40,8 @@ export default defineEventHandler(async (event) => {
 
     console.log('✅ サポーターアカウント作成:', userRecord.uid)
 
-    // 2. usersコレクションにユーザー情報を保存
-    const userDoc = await db.collection('users').add({
-      uid: userRecord.uid,
+    // 2. usersコレクションにユーザー情報を保存（ドキュメントIDをuidに設定）
+    await db.collection('users').doc(userRecord.uid).set({
       email,
       displayName,
       phone: phone || '',
@@ -52,12 +51,12 @@ export default defineEventHandler(async (event) => {
       updatedAt: Timestamp.now()
     })
 
-    console.log('✅ ユーザー情報をFirestoreに保存:', userDoc.id)
+    console.log('✅ ユーザー情報をFirestoreに保存:', userRecord.uid)
 
     // 3. supportersコレクションにサポーター固有情報を保存
     const supporterDoc = await db.collection('supporters').add({
       uid: userRecord.uid,
-      userId: userDoc.id,
+      userId: userRecord.uid,
       email,
       name: displayName,
       phone: phone || '',
@@ -73,7 +72,7 @@ export default defineEventHandler(async (event) => {
     return {
       success: true,
       userId: userRecord.uid,
-      userDocId: userDoc.id,
+      userDocId: userRecord.uid,
       supporterDocId: supporterDoc.id
     }
   } catch (error: any) {

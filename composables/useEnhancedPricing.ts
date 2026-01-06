@@ -244,10 +244,22 @@ export function calculateEnhancedPrice(
   pricingSetting: EnhancedPricingSetting,
   couponDiscountRate: number = 0
 ): EnhancedPriceCalculation {
+  // デバッグ: 日付を確認
+  console.log('[calculatePriceInternal] checkInDate:', checkInDate, checkInDate?.getTime?.())
+  console.log('[calculatePriceInternal] checkOutDate:', checkOutDate, checkOutDate?.getTime?.())
+
+  // 日付が有効でない場合のチェック
+  if (!checkInDate || !checkOutDate || isNaN(checkInDate.getTime()) || isNaN(checkOutDate.getTime())) {
+    console.error('[calculatePriceInternal] 無効な日付オブジェクト')
+    throw new Error('無効な日付範囲です')
+  }
+
   // 泊数を計算
   const numberOfNights = Math.ceil(
     (checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)
   )
+
+  console.log('[calculatePriceInternal] numberOfNights:', numberOfNights)
 
   if (numberOfNights <= 0) {
     throw new Error('無効な日付範囲です')
