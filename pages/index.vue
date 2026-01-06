@@ -1,1078 +1,1270 @@
 <template>
-  <div class="site-page">
+  <div class="min-h-screen bg-white">
     <!-- ヘッダー -->
-    <header class="site-header">
-      <div class="site-header-inner">
-        <a href="/" class="site-logo">
-          <img src="/images/hero/title.svg" alt="家具の家 No.1" class="site-logo-img" />
-        </a>
-        <a href="https://www.instagram.com/furniture.house.1/" target="_blank" rel="noopener" class="site-instagram">
-          <svg viewBox="0 0 24 24" width="20" height="20">
-            <defs>
-              <linearGradient id="instagram-gradient" x1="0%" y1="100%" x2="100%" y2="0%">
-                <stop offset="0%" style="stop-color:#FFDC80"/>
-                <stop offset="25%" style="stop-color:#F77737"/>
-                <stop offset="50%" style="stop-color:#E1306C"/>
-                <stop offset="75%" style="stop-color:#C13584"/>
-                <stop offset="100%" style="stop-color:#405DE6"/>
-              </linearGradient>
-            </defs>
-            <path fill="url(#instagram-gradient)" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-          </svg>
-        </a>
-      </div>
-    </header>
+    <AppHeader />
 
-    <!-- ヒーローセクション -->
-    <section class="site-hero">
-      <div class="site-hero-main">
-        <transition name="fade" mode="out-in">
-          <img :key="currentImageIndex" :src="heroImages[currentImageIndex]" :alt="`家具の家 No.1 写真${currentImageIndex + 1}`" class="site-hero-image" />
-        </transition>
-        <div class="site-hero-nav">
-          <button class="site-hero-nav-btn" @click="nextImage" aria-label="次の画像">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M19 12H5M12 19l-7-7 7-7"/>
+    <!-- メインコンテンツ -->
+    <div class="max-w-[1280px] mx-auto px-6 md:px-12 py-8">
+      <!-- 画像ギャラリー -->
+      <div class="mb-8">
+        <div class="grid grid-cols-4 gap-2 h-[400px] md:h-[500px] rounded-lg overflow-hidden relative">
+          <!-- メイン画像 (左側大きく) -->
+          <div
+            @click="openPhotoTour(0)"
+            class="col-span-4 md:col-span-2 row-span-2 relative group cursor-pointer"
+          >
+            <div
+              class="w-full h-full bg-cover bg-center transition-transform duration-300 group-hover:scale-105"
+              :style="`background-image: url('${displayPhotos[0]?.url || images.gallery[0]?.src}');`"
+            ></div>
+          </div>
+          <!-- サブ画像 (右側4枚) -->
+          <div
+            v-for="(photo, index) in (displayPhotos.length > 0 ? displayPhotos.slice(1, 5) : images.gallery.slice(1, 5))"
+            :key="(photo as any).id || (photo as any).src || index"
+            @click="openPhotoTour(index + 1)"
+            class="hidden md:block col-span-1 relative group cursor-pointer overflow-hidden"
+          >
+            <div
+              class="w-full h-full bg-cover bg-center transition-transform duration-300 group-hover:scale-105"
+              :style="`background-image: url('${(photo as any).url || (photo as any).src}');`"
+            ></div>
+          </div>
+
+          <!-- すべての写真を表示ボタン -->
+          <button
+            @click="openPhotoTour(0)"
+            class="absolute bottom-4 right-4 px-4 py-2 bg-white border border-gray-900 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center gap-2"
+            type="button"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            すべての写真を表示
+          </button>
+        </div>
+      </div>
+
+      <!-- 写真ツアーモーダル -->
+      <div v-if="showPhotoTour" class="fixed inset-0 z-50 bg-black" @click="closePhotoTour">
+        <!-- ヘッダー -->
+        <div class="absolute top-0 left-0 right-0 bg-gradient-to-b from-black to-transparent z-10 p-4 flex items-center justify-between">
+          <button @click="closePhotoTour" class="p-2 text-white hover:bg-white/10 rounded-full transition-colors" type="button">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
-          <button class="site-hero-nav-btn" :class="{ active: autoplay }" @click="toggleAutoplay" aria-label="自動再生">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-              <rect x="4" y="4" width="3" height="16" rx="1"/>
-              <rect x="10.5" y="6" width="3" height="12" rx="1"/>
-              <rect x="17" y="2" width="3" height="20" rx="1"/>
+          <div class="text-white text-sm">
+            {{ currentPhotoIndex + 1 }} / {{ displayPhotos.length }}
+          </div>
+          <button @click="sharePhoto" class="p-2 text-white hover:bg-white/10 rounded-full transition-colors" type="button">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
             </svg>
           </button>
         </div>
-      </div>
-    </section>
 
-    <!-- 滞在セクション -->
-    <section class="site-stay-section">
-      <div class="site-stay-inner">
-        <div class="site-stay-image">
-          <img src="/images/hero/07.jpg" alt="家具の家 内観" />
-        </div>
-        <div class="site-stay-content">
-          <h2 class="site-stay-title">家具の家 No.1に滞在する</h2>
-          <div class="site-stay-text">
-            <p>この家は、「体験する建築」です。</p>
-            <p>見て、触れて、過ごすことで、少しずつその輪郭が浮かび上がってきます。</p>
-            <p>家具が家を支え、静かに風が通う空間。<br>最初は気づかなかったような音や気配、温度の違いに、ふと身体が反応する瞬間があります。</p>
-            <p>何かを特別にしようとしなくても、ここでの時間は、感覚を研ぎ澄まし、豊かなものとなる。</p>
-            <p>ここでは、そんな体験をより深く味わうための、いくつかのヒントをご紹介します。</p>
-          </div>
-          <p class="site-stay-notice">※冬季休業中のため、2026年1月31日予約開始、予約可能日4月1日以降となります。</p>
-          <a href="/booking-full" class="site-stay-btn">宿泊のご案内</a>
-        </div>
-      </div>
-    </section>
-
-    <!-- 構造体セクション -->
-    <section class="site-structure-section">
-      <div class="site-structure-inner">
-        <h2 class="site-structure-title">風の通う家<br>構造体としての家具</h2>
-        <div class="site-structure-flow">
-          <div class="site-structure-text">
-            <p>私たちの「家具の家 No.1」との出会いは、2023年の夏のことでした。山中湖の森の中にひっそりと佇むその空間に、私たちは自然と引き寄せられました。初めて足を踏み入れたとき、目に飛び込んできたのは、整然と並ぶユニット家具と、その上に軽やかに載る屋根。家具がそのまま家を支えている——それは建築というより、空間に浮かぶ「構造そのもの」のようでした。</p>
-            <p>この家は1990年代に設計されました。設計者は、後に世界的に活躍する建築家として知られる人物です。この建物を特徴づけるのは、家具ユニットがそのまま構造体となっていること。家具は屋根を支え、壁となり、空間を仕切っています。</p>
-            <p>この家が建つ山中湖の別荘地は、かつて日本を代表するクリエイターたちが自らの居場所を設けて別荘を建てた場所でしたが、老朽化により徐々にその姿を消そうとしています。そんな中、この建築家によって設計された3棟のうち、2棟は老朽化で取り壊されてしまいました。</p>
-            <p>「家具の家 No.1」も、修復を必要としていました。湿度の高い山中湖の環境が、長年にわたり基礎部分に影響を及ぼしていたのです。2024年の冬、私たちは、屋根と家具の構造体を残したまま、腐食が進んだ基礎と床をすべて入れ替えるという修復作業を行いました。家具が宙に浮いたまま床を解体した姿は、この家の構造を体現するようでもありました。</p>
-            <p>実際にこの家で時間を過ごしてみると、空気の流れや光の移ろい、そして音の吸い込み方までが、家具によって誘われていることに気づかされます。内と外の境界は限りなくゆるやかで、風は自由に通り抜け、建築は静かに呼吸しているように感じられます。</p>
-            <p>人が使い、風が動き、建築が呼吸する——そんな体験に、私たちは心を奪われました。ただ眺めるだけでなく、実際に泊まり、静かな時間の流れのなかで、構造体としての家具に囲まれる不思議な感覚を、多くの人に体験してもらいただきたい。そうすればこの家は、腐ちることなく、これからも長く息づいていくことでしょう。</p>
-            <p class="site-structure-credit">家具の家No.1 運営委員会</p>
-          </div>
-          <div class="site-structure-images">
-            <div class="site-structure-figure">
-              <img src="/images/hero/08.webp" alt="家具が構造体として機能する" />
-              <p class="site-image-caption">家具が構造体として機能する</p>
-            </div>
-            <div class="site-structure-figure">
-              <img src="/images/hero/09.webp" alt="家具を残した基礎と床の修繕課程" />
-              <p class="site-image-caption">家具を残した基礎と床の修繕課程</p>
-            </div>
-          </div>
-        </div>
-        <!-- ナビゲーションボタン -->
-        <div class="site-structure-nav">
-          <p class="site-structure-nav-credit">家具の家No.1 運営委員会</p>
-          <div class="site-structure-nav-btns">
-            <button class="site-structure-nav-btn" aria-label="次へ">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M5 12h14M12 5l7 7-7 7"/>
+        <!-- 写真表示エリア -->
+        <div class="absolute inset-0 flex items-center justify-center p-4 pt-20 pb-32">
+          <div @click.stop class="relative max-w-6xl max-h-full w-full flex items-center justify-center">
+            <!-- 前へボタン -->
+            <button
+              v-if="currentPhotoIndex > 0"
+              @click="previousPhoto"
+              class="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white/90 hover:bg-white rounded-full transition-colors z-10"
+              type="button"
+            >
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
               </svg>
             </button>
-            <button class="site-structure-nav-btn" aria-label="メニュー">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-                <rect x="4" y="4" width="3" height="16" rx="1"/>
-                <rect x="10.5" y="6" width="3" height="12" rx="1"/>
-                <rect x="17" y="2" width="3" height="20" rx="1"/>
+
+            <!-- 写真 -->
+            <img
+              :src="displayPhotos[currentPhotoIndex]?.url"
+              :alt="displayPhotos[currentPhotoIndex]?.title"
+              class="max-w-full max-h-full object-contain"
+            />
+
+            <!-- 次へボタン -->
+            <button
+              v-if="currentPhotoIndex < displayPhotos.length - 1"
+              @click="nextPhoto"
+              class="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white/90 hover:bg-white rounded-full transition-colors z-10"
+              type="button"
+            >
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
               </svg>
             </button>
           </div>
         </div>
-      </div>
-    </section>
 
-    <!-- 上部ギャラリー（4枚横一列） -->
-    <section class="site-gallery-section">
-      <div class="site-gallery-grid">
-        <div v-for="(img, index) in galleryTopImages" :key="index" class="site-gallery-item">
-          <img :src="img.src" :alt="img.alt" />
-        </div>
-      </div>
-    </section>
-
-    <!-- 施設情報セクション -->
-    <section class="site-facility-section">
-      <div class="site-facility-inner">
-        <h2 class="site-facility-title">施設情報</h2>
-        <div class="site-facility-columns">
-          <div class="site-facility-column">
-            <div class="site-facility-row">
-              <span class="site-facility-label">用途</span>
-              <span class="site-facility-value">保養所</span>
-            </div>
-            <div class="site-facility-row">
-              <span class="site-facility-label">設計</span>
-              <span class="site-facility-value">坂茂建築設計</span>
-            </div>
-            <div class="site-facility-row">
-              <span class="site-facility-label">所在</span>
-              <span class="site-facility-value">山梨県 山中湖村</span>
-            </div>
-            <div class="site-facility-row">
-              <span class="site-facility-label">竣工</span>
-              <span class="site-facility-value">1995年</span>
-            </div>
+        <!-- フッター：写真情報 & カテゴリタブ -->
+        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent z-10 p-6">
+          <!-- 写真情報 -->
+          <div class="text-white mb-6 max-w-6xl mx-auto">
+            <h3 class="text-xl font-medium mb-1">{{ displayPhotos[currentPhotoIndex]?.title }}</h3>
+            <p v-if="displayPhotos[currentPhotoIndex]?.description" class="text-sm text-gray-300">
+              {{ displayPhotos[currentPhotoIndex]?.description }}
+            </p>
           </div>
-          <div class="site-facility-column">
-            <div class="site-facility-row">
-              <span class="site-facility-label">構造</span>
-              <span class="site-facility-value">木造平屋</span>
-            </div>
-            <div class="site-facility-row">
-              <span class="site-facility-label">面積</span>
-              <span class="site-facility-value">約100㎡</span>
-            </div>
-            <div class="site-facility-row">
-              <span class="site-facility-label">間取</span>
-              <span class="site-facility-value">リビングキッチン、お風呂トイレ、和室、洋室</span>
-            </div>
+
+          <!-- カテゴリタブ -->
+          <div class="flex gap-2 overflow-x-auto pb-2 max-w-6xl mx-auto">
+            <button
+              @click="filterPhotosByCategory('all')"
+              :class="[
+                'px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors',
+                selectedPhotoCategory === 'all' ? 'bg-white text-gray-900' : 'bg-white/20 text-white hover:bg-white/30'
+              ]"
+              type="button"
+            >
+              すべて ({{ displayPhotos.length }})
+            </button>
+            <button
+              v-for="(label, key) in photoCategories"
+              :key="key"
+              @click="filterPhotosByCategory(key)"
+              :class="[
+                'px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors',
+                selectedPhotoCategory === key ? 'bg-white text-gray-900' : 'bg-white/20 text-white hover:bg-white/30'
+              ]"
+              type="button"
+            >
+              {{ label }} ({{ getPhotosCountByCategory(key) }})
+            </button>
           </div>
         </div>
-        <p class="site-facility-notice">※冬季休業中のため、2026年1月31日予約開始、予約可能日4月1日以降となります。</p>
       </div>
-    </section>
 
-    <!-- 中間ギャラリー（4枚横一列） -->
-    <section class="site-gallery-section">
-      <div class="site-gallery-grid">
-        <div v-for="(img, index) in galleryMiddleImages" :key="index" class="site-gallery-item">
-          <img :src="img.src" :alt="img.alt" />
+      <!-- メインコンテンツエリア（左: 詳細情報、右: 予約カード） -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <!-- 左側: 詳細情報 -->
+        <div class="lg:col-span-2 space-y-10">
+          <!-- 基本情報 -->
+          <section class="pb-8 border-b border-gray-200">
+            <h2 class="text-2xl font-medium mb-4" style="color: #231815; font-weight: 500;">
+              1日1組限定・完全貸切の建築体験
+            </h2>
+            <p class="text-base text-gray-700 mb-4" style="line-height: 1.8;">
+              世界的建築家・坂茂が1995年に設計した「家具の家 No.1」。家具そのものが構造体となる革新的な建築に、実際に宿泊できる貴重な体験です。
+            </p>
+            <div class="flex flex-wrap gap-4 text-sm text-gray-600">
+              <div class="flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <span>最大6名</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                <span>約100㎡</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+                </svg>
+                <span>寝室2室（和室・洋室）</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- 設備・アメニティ -->
+          <section class="pb-8 border-b border-gray-200">
+            <h2 class="text-xl font-medium mb-6" style="color: #231815; font-weight: 500;">
+              提供設備
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div
+                v-for="amenity in displayedAmenities"
+                :key="amenity.id"
+                class="flex items-start gap-3"
+              >
+                <component :is="getIconComponent(amenity.icon)" class="w-6 h-6 text-gray-700 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p class="font-medium text-gray-900">{{ amenity.name }}</p>
+                  <p v-if="amenity.description" class="text-sm text-gray-600">{{ amenity.description }}</p>
+                </div>
+              </div>
+            </div>
+
+            <button
+              @click="showAllAmenities = true"
+              class="mt-6 px-6 py-3 border-2 border-gray-900 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+              type="button"
+            >
+              設備をすべて表示
+            </button>
+          </section>
+
+          <!-- アメニティモーダル -->
+          <div v-if="showAllAmenities" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" @click="showAllAmenities = false">
+            <div @click.stop class="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto m-4">
+              <!-- モーダルヘッダー -->
+              <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+                <h3 class="text-xl font-medium" style="color: #231815;">提供設備・アメニティ</h3>
+                <button @click="showAllAmenities = false" class="p-2 hover:bg-gray-100 rounded-full" type="button">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <!-- モーダルコンテンツ -->
+              <div class="p-6">
+                <div
+                  v-for="(categoryAmenities, category) in amenitiesByCategory"
+                  :key="category"
+                  class="mb-8 last:mb-0"
+                >
+                  <h4 class="text-lg font-medium mb-4" style="color: #231815;">
+                    {{ amenityCategories[category] }}
+                  </h4>
+                  <div class="space-y-4">
+                    <div
+                      v-for="amenity in categoryAmenities"
+                      :key="amenity.id"
+                      class="flex items-start gap-4 pb-4 border-b border-gray-100 last:border-0"
+                    >
+                      <component :is="getIconComponent(amenity.icon)" class="w-7 h-7 text-gray-700 flex-shrink-0" />
+                      <div class="flex-1">
+                        <p class="font-medium text-gray-900">{{ amenity.name }}</p>
+                        <p v-if="amenity.description" class="text-sm text-gray-600 mt-1">{{ amenity.description }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- レビュー -->
+          <section class="pb-8 border-b border-gray-200">
+            <div class="flex items-center justify-between mb-6">
+              <div class="flex items-center gap-3">
+                <div class="flex items-center gap-1">
+                  <svg class="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                  <span class="text-xl font-medium">{{ averageRating > 0 ? averageRating.toFixed(1) : '5.0' }}</span>
+                </div>
+                <span class="text-gray-600">（{{ approvedReviews.length }}件のレビュー）</span>
+              </div>
+              <NuxtLink
+                v-if="user"
+                to="/reviews/new"
+                class="px-4 py-2 text-sm font-medium text-white rounded-lg transition-all hover:opacity-90"
+                style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"
+              >
+                レビューを書く
+              </NuxtLink>
+            </div>
+
+            <div v-if="approvedReviews.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div
+                v-for="review in approvedReviews.slice(0, 4)"
+                :key="review.id"
+                class="space-y-2"
+              >
+                <div class="flex items-center justify-between">
+                  <p class="font-medium text-gray-900">{{ review.userName }}</p>
+                  <p class="text-sm text-gray-500">{{ review.stayDate || formatReviewDate(review.createdAt) }}</p>
+                </div>
+                <div class="flex items-center gap-1">
+                  <span v-for="star in review.rating" :key="star" class="text-yellow-500">★</span>
+                </div>
+                <p class="text-sm text-gray-700 line-clamp-3" style="line-height: 1.6;">
+                  {{ review.comment }}
+                </p>
+              </div>
+            </div>
+            <div v-else class="text-center py-8 text-gray-500">
+              <p>まだレビューがありません</p>
+            </div>
+
+            <NuxtLink
+              v-if="approvedReviews.length > 4"
+              to="/reviews"
+              class="mt-6 text-base font-medium underline hover:text-gray-600 transition-colors inline-block"
+            >
+              すべてのレビューを表示
+            </NuxtLink>
+          </section>
+
+          <!-- 注意事項 -->
+          <section class="pb-8">
+            <h2 class="text-xl font-medium mb-6" style="color: #231815; font-weight: 500;">
+              ご利用上の注意
+            </h2>
+            <ul class="space-y-3 text-sm text-gray-700">
+              <li class="flex items-start gap-3">
+                <span class="text-gray-400 mt-1">•</span>
+                <span>チェックイン: 15:00〜18:00 / チェックアウト: 〜11:00</span>
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="text-gray-400 mt-1">•</span>
+                <span>建築物保護のため、土足厳禁・禁煙です</span>
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="text-gray-400 mt-1">•</span>
+                <span>ペット同伴不可</span>
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="text-gray-400 mt-1">•</span>
+                <span>イベント・パーティー利用不可</span>
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="text-gray-400 mt-1">•</span>
+                <span>送迎サービスはございません</span>
+              </li>
+            </ul>
+          </section>
+        </div>
+
+        <!-- 右側: 予約カード（スティッキー） -->
+        <div class="lg:col-span-1">
+          <div class="sticky top-24">
+            <div class="border border-gray-300 rounded-xl p-6 shadow-lg">
+              <div class="mb-6">
+                <div class="flex items-baseline gap-2 mb-2">
+                  <span class="text-2xl font-medium" style="color: #231815;">¥{{ totalPrice.toLocaleString() }}</span>
+                  <span class="text-gray-600">（{{ nights }}泊）</span>
+                </div>
+                <div class="flex items-center gap-2 text-sm">
+                  <div class="flex items-center gap-1">
+                    <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                    <span class="font-medium">{{ averageRating > 0 ? averageRating.toFixed(1) : '5.0' }}</span>
+                  </div>
+                  <span class="text-gray-500">（{{ approvedReviews.length }}件）</span>
+                </div>
+              </div>
+
+              <!-- 日付・人数選択フォーム -->
+              <div class="border border-gray-300 rounded-lg mb-4 relative">
+                <!-- チェックイン・チェックアウト -->
+                <div class="grid grid-cols-2 border-b border-gray-300">
+                  <button
+                    @click="showCalendar = !showCalendar"
+                    class="p-3 border-r border-gray-300 text-left hover:bg-gray-50 transition-colors"
+                    type="button"
+                  >
+                    <label class="block text-xs font-semibold mb-1">チェックイン</label>
+                    <span class="text-sm text-gray-700">{{ checkInDate ? formatDate(checkInDate) : '日付を選択' }}</span>
+                  </button>
+                  <button
+                    @click="showCalendar = !showCalendar"
+                    class="p-3 text-left hover:bg-gray-50 transition-colors"
+                    type="button"
+                  >
+                    <label class="block text-xs font-semibold mb-1">チェックアウト</label>
+                    <span class="text-sm text-gray-700">{{ checkOutDate ? formatDate(checkOutDate) : '日付を選択' }}</span>
+                  </button>
+                </div>
+
+                <!-- カレンダーモーダル -->
+                <div v-if="showCalendar" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-25 p-4" @click="showCalendar = false">
+                  <div @click.stop class="bg-white rounded-xl shadow-2xl border border-gray-200 p-4 md:p-6 w-full max-w-[340px] md:max-w-[700px]">
+                  <!-- カレンダーヘッダー -->
+                  <div class="flex items-center justify-between mb-4 md:mb-6">
+                    <button @click="previousMonth" class="p-2 hover:bg-gray-100 rounded-full transition-colors" type="button">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                      </svg>
+                    </button>
+                    <div class="flex gap-4 md:gap-12">
+                      <span class="font-semibold text-sm md:text-base">{{ currentMonthName }}</span>
+                      <span class="font-semibold text-sm md:text-base hidden md:block">{{ nextMonthName }}</span>
+                    </div>
+                    <button @click="nextMonth" class="p-2 hover:bg-gray-100 rounded-full transition-colors" type="button">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <!-- カレンダー（モバイル: 1ヶ月、デスクトップ: 2ヶ月） -->
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12">
+                    <!-- 当月 -->
+                    <div>
+                      <div class="grid grid-cols-7 gap-1 mb-2">
+                        <div v-for="day in ['日', '月', '火', '水', '木', '金', '土']" :key="day" class="text-center text-xs font-semibold text-gray-600 py-2">
+                          {{ day }}
+                        </div>
+                      </div>
+                      <div class="grid grid-cols-7 gap-1">
+                        <button
+                          v-for="date in currentMonthDates"
+                          :key="date.key"
+                          @click="selectDate(date)"
+                          :disabled="date.disabled"
+                          :class="[
+                            'aspect-square flex items-center justify-center text-sm rounded-full transition-all',
+                            date.disabled ? 'text-gray-300 cursor-not-allowed' : 'hover:border-2 hover:border-gray-900',
+                            date.isSelected ? 'bg-gray-900 text-white' : '',
+                            date.isInRange ? 'bg-gray-100' : '',
+                            date.isEmpty ? 'invisible' : ''
+                          ]"
+                          type="button"
+                        >
+                          {{ date.day }}
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- 翌月（デスクトップのみ表示） -->
+                    <div class="hidden md:block">
+                      <div class="grid grid-cols-7 gap-1 mb-2">
+                        <div v-for="day in ['日', '月', '火', '水', '木', '金', '土']" :key="day" class="text-center text-xs font-semibold text-gray-600 py-2">
+                          {{ day }}
+                        </div>
+                      </div>
+                      <div class="grid grid-cols-7 gap-1">
+                        <button
+                          v-for="date in nextMonthDates"
+                          :key="date.key"
+                          @click="selectDate(date)"
+                          :disabled="date.disabled"
+                          :class="[
+                            'aspect-square flex items-center justify-center text-sm rounded-full transition-all',
+                            date.disabled ? 'text-gray-300 cursor-not-allowed' : 'hover:border-2 hover:border-gray-900',
+                            date.isSelected ? 'bg-gray-900 text-white' : '',
+                            date.isInRange ? 'bg-gray-100' : '',
+                            date.isEmpty ? 'invisible' : ''
+                          ]"
+                          type="button"
+                        >
+                          {{ date.day }}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- カレンダーフッター -->
+                  <div class="flex items-center justify-between mt-4 md:mt-6 pt-4 md:pt-6 border-t border-gray-200">
+                    <button @click="clearDates" class="text-sm font-medium underline hover:text-gray-600" type="button">
+                      日付をクリア
+                    </button>
+                    <button @click="showCalendar = false" class="px-6 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors" type="button">
+                      閉じる
+                    </button>
+                  </div>
+                  </div>
+                </div>
+
+                <!-- 人数選択 -->
+                <div class="p-3">
+                  <button
+                    @click="showGuestPicker = !showGuestPicker"
+                    class="w-full flex items-center justify-between"
+                    type="button"
+                  >
+                    <div class="text-left">
+                      <label class="block text-xs font-semibold mb-1">人数</label>
+                      <span class="text-sm">{{ totalGuests }}人</span>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  <!-- ゲスト数選択ドロップダウン -->
+                  <div v-if="showGuestPicker" class="mt-4 space-y-4">
+                    <!-- 大人（16歳以上） -->
+                    <div class="flex items-center justify-between">
+                      <div>
+                        <p class="font-medium text-sm">大人</p>
+                        <p class="text-xs text-gray-500">16歳以上</p>
+                      </div>
+                      <div class="flex items-center gap-3">
+                        <button
+                          @click="adults > 1 && adults--"
+                          :disabled="adults <= 1"
+                          class="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:border-gray-900 disabled:opacity-30 disabled:cursor-not-allowed"
+                          type="button"
+                        >
+                          <span class="text-lg">−</span>
+                        </button>
+                        <span class="w-6 text-center">{{ adults }}</span>
+                        <button
+                          @click="adults < 4 && adults++"
+                          :disabled="totalGuests >= 4"
+                          class="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:border-gray-900 disabled:opacity-30 disabled:cursor-not-allowed"
+                          type="button"
+                        >
+                          <span class="text-lg">+</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- 子ども（7〜15歳） -->
+                    <div class="flex items-center justify-between">
+                      <div>
+                        <p class="font-medium text-sm">子ども</p>
+                        <p class="text-xs text-gray-500">7〜15歳（大人料金の50%）</p>
+                      </div>
+                      <div class="flex items-center gap-3">
+                        <button
+                          @click="children > 0 && children--"
+                          :disabled="children <= 0"
+                          class="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:border-gray-900 disabled:opacity-30 disabled:cursor-not-allowed"
+                          type="button"
+                        >
+                          <span class="text-lg">−</span>
+                        </button>
+                        <span class="w-6 text-center">{{ children }}</span>
+                        <button
+                          @click="children++"
+                          :disabled="totalGuests >= 4"
+                          class="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:border-gray-900 disabled:opacity-30 disabled:cursor-not-allowed"
+                          type="button"
+                        >
+                          <span class="text-lg">+</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- 乳幼児（0〜6歳） -->
+                    <div class="flex items-center justify-between">
+                      <div>
+                        <p class="font-medium text-sm">乳幼児</p>
+                        <p class="text-xs text-gray-500">0〜6歳（無料）</p>
+                      </div>
+                      <div class="flex items-center gap-3">
+                        <button
+                          @click="infants > 0 && infants--"
+                          :disabled="infants <= 0"
+                          class="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:border-gray-900 disabled:opacity-30 disabled:cursor-not-allowed"
+                          type="button"
+                        >
+                          <span class="text-lg">−</span>
+                        </button>
+                        <span class="w-6 text-center">{{ infants }}</span>
+                        <button
+                          @click="infants++"
+                          :disabled="totalGuests >= 4"
+                          class="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:border-gray-900 disabled:opacity-30 disabled:cursor-not-allowed"
+                          type="button"
+                        >
+                          <span class="text-lg">+</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <p class="text-xs text-gray-500">最大6名まで</p>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                @click="handleReservation"
+                class="block w-full py-3 px-6 text-center text-white font-medium rounded-lg transition-all transform hover:-translate-y-0.5 hover:shadow-xl"
+                style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"
+                type="button"
+              >
+                予約する
+              </button>
+
+              <p class="text-center text-sm text-gray-500 mt-4">
+                予約確定前に料金は発生しません
+              </p>
+
+              <div v-if="nights > 0" class="mt-6 pt-6 border-t border-gray-200 space-y-3 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-gray-600">¥30,000 × {{ nights }}泊</span>
+                  <span class="text-gray-900">¥{{ (30000 * nights).toLocaleString() }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">清掃料金</span>
+                  <span class="text-gray-900">¥5,000</span>
+                </div>
+                <div class="flex justify-between pt-3 border-t border-gray-200 font-medium">
+                  <span>合計</span>
+                  <span>¥{{ totalPrice.toLocaleString() }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- アクセス情報カード -->
+            <div class="mt-6 border border-gray-300 rounded-xl p-6">
+              <h3 class="font-medium mb-4" style="color: #231815;">アクセス</h3>
+              <div class="space-y-3 text-sm text-gray-700">
+                <div class="flex items-start gap-3">
+                  <svg class="w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <div>
+                    <p class="font-medium text-gray-900">山中湖エリア</p>
+                    <p class="text-gray-600 mt-1">詳細住所は予約確定後にお知らせ</p>
+                  </div>
+                </div>
+                <div class="flex items-start gap-3">
+                  <svg class="w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <div>
+                    <p class="font-medium text-gray-900">お車の場合</p>
+                    <p class="text-gray-600 mt-1">東京から約2時間<br />中央道 山中湖ICより15分</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </section>
 
-    <!-- 別荘地について -->
-    <section class="site-resort-section">
-      <div class="site-resort-inner">
-        <h2 class="site-resort-title">別荘地について</h2>
-        <div class="site-resort-text">
-          <p>雄大な富士山と山中湖を臨むこの別荘地は、1960年代後半に開発されました。この地が特徴されるのは、当時日本を代表するクリエイターたちが、近代日本を代表する建築家や、後に世界的な評価を得る若き建築家達に、自身の別荘を創造的な実験の機会として設計を依頼し、さらには分野を超え互いに刺激し合うコミュニティを形成していたことでした。</p>
-          <p>しかし時が経つにつれ、これらの貴重な建築群は少しずつ姿を消し、それに伴い、その記憶や文化的価値もまた失われつつあります。この地の持つ豊かな物語と、それが日本のクリエイティブシーンに与えた影響を深く認識し、未来へと語り継いでいくことが私たちの願いです。</p>
+      <!-- 施設情報 -->
+      <section class="mt-16 pt-8 border-t border-gray-200">
+        <h2 class="text-2xl font-medium mb-8 text-center" style="color: #231815; font-weight: 500;">
+          施設情報
+        </h2>
+        <div class="max-w-3xl mx-auto">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 text-sm">
+            <div class="flex justify-between py-3 border-b border-gray-200">
+              <span class="text-gray-600">用途</span>
+              <span class="text-gray-900 font-medium">保養所</span>
+            </div>
+            <div class="flex justify-between py-3 border-b border-gray-200">
+              <span class="text-gray-600">設計</span>
+              <span class="text-gray-900 font-medium">坂茂建築設計</span>
+            </div>
+            <div class="flex justify-between py-3 border-b border-gray-200">
+              <span class="text-gray-600">所在</span>
+              <span class="text-gray-900 font-medium">山梨県 山中湖村</span>
+            </div>
+            <div class="flex justify-between py-3 border-b border-gray-200">
+              <span class="text-gray-600">竣工</span>
+              <span class="text-gray-900 font-medium">1995年</span>
+            </div>
+            <div class="flex justify-between py-3 border-b border-gray-200">
+              <span class="text-gray-600">構造</span>
+              <span class="text-gray-900 font-medium">木造平屋</span>
+            </div>
+            <div class="flex justify-between py-3 border-b border-gray-200">
+              <span class="text-gray-600">面積</span>
+              <span class="text-gray-900 font-medium">約100㎡</span>
+            </div>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- 下部ギャラリー（10枚、5x2グリッド） -->
-    <section class="site-gallery-section">
-      <div class="site-gallery-grid-10">
-        <div v-for="(img, index) in galleryBottomImages" :key="index" class="site-gallery-item-10">
-          <img :src="img.src" :alt="img.alt" />
+      <!-- キャンセルポリシー & ハウスルール -->
+      <section class="mt-16 pt-8 border-t border-gray-200">
+        <h2 class="text-2xl font-medium mb-8" style="color: #231815; font-weight: 500;">
+          知っておきたいこと
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <!-- キャンセルポリシー -->
+          <div>
+            <h3 class="text-base font-medium mb-4" style="color: #231815;">キャンセルポリシー</h3>
+            <div class="space-y-3 text-sm text-gray-700">
+              <p>利用日の<strong>3日前まで</strong>：無料キャンセル</p>
+              <p>利用日の<strong>2日前〜当日</strong>：100%</p>
+              <p><strong>無断キャンセル</strong>：100%</p>
+              <NuxtLink to="/cancellation-policy" class="text-sm font-medium underline hover:text-gray-600 mt-4 transition-colors inline-block">
+                詳細を見る
+              </NuxtLink>
+            </div>
+          </div>
+
+          <!-- ハウスルール -->
+          <div>
+            <h3 class="text-base font-medium mb-4" style="color: #231815;">ハウスルール</h3>
+            <div class="space-y-3 text-sm text-gray-700">
+              <p>チェックイン：{{ facilitySettings.checkInTime }}〜</p>
+              <p>チェックアウト：{{ facilitySettings.checkOutTime }}まで</p>
+              <p>最大宿泊人数：{{ facilitySettings.maxGuests }}名</p>
+              <p>ペット同伴不可</p>
+              <p>喫煙不可</p>
+              <NuxtLink to="/house-rules" class="text-sm font-medium underline hover:text-gray-600 mt-4 transition-colors inline-block">
+                詳細を見る
+              </NuxtLink>
+            </div>
+          </div>
+
+          <!-- 周辺情報・おすすめスポット -->
+          <div>
+            <h3 class="text-base font-medium mb-4" style="color: #231815;">周辺情報・おすすめスポット</h3>
+            <div class="space-y-3 text-sm text-gray-700">
+              <p>レストラン・飲食店</p>
+              <p>観光スポット</p>
+              <p>コンビニ・スーパー</p>
+              <p>アクセス情報</p>
+              <NuxtLink to="/neighborhood" class="text-sm font-medium underline hover:text-gray-600 mt-4 transition-colors inline-block">
+                詳細を見る
+              </NuxtLink>
+            </div>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      <!-- プライバシーポリシー & 法的事項 -->
+      <section class="mt-12 pt-8 border-t border-gray-200">
+        <div class="max-w-3xl text-sm text-gray-600 space-y-4">
+          <p>
+            ご予約の際は、
+            <a href="/terms" class="underline hover:text-gray-900 transition-colors">利用規約</a>、
+            <a href="/privacy" class="underline hover:text-gray-900 transition-colors">プライバシーポリシー</a>、
+            <a href="/cancellation-policy" class="underline hover:text-gray-900 transition-colors">キャンセルポリシー</a>
+            に同意したものとみなされます。
+          </p>
+          <p>
+            この宿泊施設は貴重な建築物であり、特別な保護を必要とします。ご利用の際は建築物の保全にご協力いただきますようお願いいたします。
+          </p>
+        </div>
+      </section>
+
+      <!-- CTAセクション -->
+      <section class="mt-16 mb-12 py-12 px-8 rounded-2xl text-center" style="background: linear-gradient(135deg, #f8f7f5 0%, #ebe8e6 100%);">
+        <h2 class="text-2xl md:text-3xl font-medium mb-4" style="color: #231815; font-weight: 500;">
+          体験する建築で、特別な時間を
+        </h2>
+        <p class="text-gray-700 mb-8 max-w-2xl mx-auto" style="line-height: 1.8;">
+          家具が家を支え、風が通り抜ける空間。<br />
+          1日1組限定で、この唯一無二の建築体験をお楽しみいただけます。
+        </p>
+        <button
+          @click="goToBooking"
+          class="inline-block py-4 px-12 text-white font-medium rounded-lg transition-all transform hover:-translate-y-1 hover:shadow-xl text-lg cursor-pointer"
+          style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"
+        >
+          宿泊予約へ進む
+        </button>
+      </section>
+    </div>
 
     <!-- フッター -->
-    <footer class="site-footer">
-      <div class="site-footer-inner">
-        <span class="site-footer-title">家具の家 No.1</span>
-        <div class="site-footer-right">
-          <a href="#" class="site-footer-contact">法人利用のお問合せ</a>
-          <p class="site-footer-credit">運営：家具の家 no.1 運営委員会 ＋ <a href="https://chladni-co.studio.site/" target="_blank" rel="noopener" class="site-footer-link">株式会社クラドニ</a></p>
-        </div>
-      </div>
-    </footer>
-
+    <AppFooter />
   </div>
 </template>
 
 <script setup lang="ts">
-// 画像スライダー
-const heroImages = [
-  '/images/hero/01.jpg',
-  '/images/hero/02.jpg',
-  '/images/hero/03.jpg',
-  '/images/hero/04.jpg',
-  '/images/hero/05.jpg',
-  '/images/hero/06.jpg',
-]
-
-// 上部ギャラリー（4枚）
-const galleryTopImages = [
-  { src: '/images/hero/gallery-1.jpg', alt: '内観1' },
-  { src: '/images/hero/gallery-2.png', alt: '内観2' },
-  { src: '/images/hero/gallery-3.jpg', alt: '内観3' },
-  { src: '/images/hero/gallery-4.png', alt: '内観4' },
-]
-
-// 中間ギャラリー（4枚）
-const galleryMiddleImages = [
-  { src: '/images/hero/gallery-5.jpg', alt: '外観1' },
-  { src: '/images/hero/gallery-6.jpg', alt: '外観2' },
-  { src: '/images/hero/gallery-7.jpg', alt: '外観3' },
-  { src: '/images/hero/gallery-8.jpg', alt: '外観4' },
-]
-
-// 下部ギャラリー（10枚、5x2グリッド）
-const galleryBottomImages = [
-  { src: '/images/hero/gallery-1.jpg', alt: '写真1' },
-  { src: '/images/hero/gallery-2.png', alt: '写真2' },
-  { src: '/images/hero/gallery-3.jpg', alt: '写真3' },
-  { src: '/images/hero/gallery-4.png', alt: '写真4' },
-  { src: '/images/hero/gallery-5.jpg', alt: '写真5' },
-  { src: '/images/hero/gallery-6.jpg', alt: '写真6' },
-  { src: '/images/hero/gallery-7.jpg', alt: '写真7' },
-  { src: '/images/hero/gallery-8.jpg', alt: '写真8' },
-  { src: '/images/hero/gallery-1.jpg', alt: '写真9' },
-  { src: '/images/hero/gallery-2.png', alt: '写真10' },
-]
-
-const currentImageIndex = ref(0)
-const autoplay = ref(true)
-let autoplayInterval: ReturnType<typeof setInterval> | null = null
-
-const nextImage = () => {
-  currentImageIndex.value = (currentImageIndex.value + 1) % heroImages.length
-}
-
-const toggleAutoplay = () => {
-  autoplay.value = !autoplay.value
-  if (autoplay.value) {
-    startAutoplay()
-  } else {
-    stopAutoplay()
-  }
-}
-
-const startAutoplay = () => {
-  if (autoplayInterval) return
-  autoplayInterval = setInterval(() => {
-    nextImage()
-  }, 5000)
-}
-
-const stopAutoplay = () => {
-  if (autoplayInterval) {
-    clearInterval(autoplayInterval)
-    autoplayInterval = null
-  }
-}
-
-onMounted(() => {
-  if (autoplay.value) {
-    startAutoplay()
-  }
-})
-
-onUnmounted(() => {
-  stopAutoplay()
-})
+import { images } from '~/config/images'
+import { amenityCategories, type Amenity } from '~/config/amenities'
+import { photoCategories, type Photo, type PhotoCategory } from '~/config/photos'
+import {
+  WifiIcon,
+  TruckIcon,
+  SunIcon,
+  FireIcon,
+  BeakerIcon,
+  CubeIcon,
+  Square3Stack3DIcon,
+  ShoppingBagIcon,
+  HomeIcon,
+  HomeModernIcon,
+  DocumentIcon,
+  BoltIcon,
+  ArrowsUpDownIcon,
+  RectangleStackIcon,
+  TvIcon,
+  BookOpenIcon,
+  SparklesIcon,
+  PhotoIcon,
+  BellAlertIcon,
+  ShieldCheckIcon,
+  HeartIcon,
+  WrenchScrewdriverIcon,
+  ArrowPathIcon,
+  ScissorsIcon,
+  FolderIcon,
+  CircleStackIcon
+} from '@heroicons/vue/24/outline'
 
 definePageMeta({
   layout: false
 })
 
+const { getAvailableAmenities: fetchAvailableAmenities } = useAmenities()
+const { getVisiblePhotos } = usePhotos()
+const { getApprovedReviews, getAverageRating } = useReviews()
+const { user } = useAuth()
+
+// レビュー管理
+const approvedReviews = ref<any[]>([])
+const averageRating = ref(0)
+
+// 施設設定（知っておきたいこと用）
+const facilitySettings = ref({
+  checkInTime: '15:00',
+  checkOutTime: '11:00',
+  houseRules: '',
+  maxGuests: 6
+})
+
+// 施設設定を読み込み
+const loadFacilitySettings = async () => {
+  try {
+    const response = await fetch('/api/public/settings')
+    if (response.ok) {
+      const data = await response.json()
+      if (data.success && data.settings) {
+        facilitySettings.value = data.settings
+      }
+    }
+  } catch (error) {
+    console.error('施設設定の取得に失敗:', error)
+  }
+}
+
+// レビューデータを読み込み
+const loadReviews = async () => {
+  try {
+    approvedReviews.value = await getApprovedReviews()
+    averageRating.value = await getAverageRating()
+  } catch (error) {
+    console.error('レビューの取得に失敗:', error)
+  }
+}
+
+// 日付をフォーマット
+const formatReviewDate = (timestamp: any): string => {
+  if (!timestamp) return ''
+  const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp)
+  return `${date.getFullYear()}年${date.getMonth() + 1}月`
+}
+
+// アイコンマッピング
+const iconComponents: Record<string, any> = {
+  // 基本設備
+  wifi: WifiIcon,
+  truck: TruckIcon,
+  sun: SunIcon,
+  fire: FireIcon,
+  bolt: BoltIcon,
+
+  // キッチン・調理
+  beaker: BeakerIcon,
+  cube: CubeIcon, // 冷蔵庫
+  'square-3-stack-3d': Square3Stack3DIcon, // 電子レンジ
+  cup: BeakerIcon, // コーヒーメーカー
+  'shopping-bag': ShoppingBagIcon, // 食器
+  'wrench-screwdriver': WrenchScrewdriverIcon, // キッチンツール
+  'circle-stack': CircleStackIcon, // 食器とカトラリー
+
+  // バスルーム
+  home: HomeIcon, // 浴室
+  'arrow-path': ArrowPathIcon, // 洗濯機・乾燥機
+  scissors: ScissorsIcon, // ヘアドライヤー（代替）
+
+  // 寝室・リネン
+  'home-modern': HomeModernIcon,
+  document: DocumentIcon, // タオル
+  'arrows-up-down': ArrowsUpDownIcon, // ハンガー
+  'rectangle-stack': RectangleStackIcon, // 遮光カーテン・シーツ
+  folder: FolderIcon, // バスタオル（代替）
+
+  // エンターテインメント
+  tv: TvIcon,
+  'book-open': BookOpenIcon,
+
+  // 屋外・景観
+  sparkles: SparklesIcon,
+  photo: PhotoIcon,
+
+  // 安全設備
+  'bell-alert': BellAlertIcon,
+  'shield-check': ShieldCheckIcon,
+  heart: HeartIcon
+}
+
+const getIconComponent = (iconName: string) => {
+  return iconComponents[iconName] || BeakerIcon
+}
+
+// アメニティ管理
+const showAllAmenities = ref(false)
+const availableAmenities = ref<Amenity[]>([])
+const displayedAmenities = computed(() => availableAmenities.value.slice(0, 6)) // 最初の6つのみ表示
+
+// カテゴリ別にグループ化
+const amenitiesByCategory = computed(() => {
+  const grouped: Record<string, Amenity[]> = {}
+  availableAmenities.value.forEach(amenity => {
+    if (!grouped[amenity.category]) {
+      grouped[amenity.category] = []
+    }
+    grouped[amenity.category].push(amenity)
+  })
+  return grouped
+})
+
+// アメニティデータを読み込み
+const loadAmenities = async () => {
+  try {
+    availableAmenities.value = await fetchAvailableAmenities()
+  } catch (error) {
+    console.error('アメニティの取得に失敗:', error)
+  }
+}
+
+// マウント時にアメニティ、写真、レビュー、施設設定を読み込み
+onMounted(() => {
+  loadAmenities()
+  loadPhotos()
+  loadReviews()
+  loadBlockedDates()
+  loadFacilitySettings()
+})
+
+// 写真ギャラリー管理
+const allPhotos = ref<Photo[]>([])
+const showPhotoTour = ref(false)
+const currentPhotoIndex = ref(0)
+const selectedPhotoCategory = ref<string | PhotoCategory>('all')
+
+// Firebaseから写真を読み込み
+const loadPhotos = async () => {
+  try {
+    allPhotos.value = await getVisiblePhotos()
+  } catch (error) {
+    console.error('写真の取得に失敗:', error)
+  }
+}
+
+// 表示用の写真リスト（フィルタリング適用）
+const displayPhotos = computed(() => {
+  if (selectedPhotoCategory.value === 'all') {
+    return allPhotos.value
+  }
+  return allPhotos.value.filter(p => p.category === selectedPhotoCategory.value)
+})
+
+// カテゴリごとの写真数を取得
+const getPhotosCountByCategory = (category: PhotoCategory): number => {
+  return allPhotos.value.filter(p => p.category === category).length
+}
+
+// 写真ツアーを開く
+const openPhotoTour = (index: number) => {
+  currentPhotoIndex.value = index
+  showPhotoTour.value = true
+  // bodyのスクロールを無効化
+  document.body.style.overflow = 'hidden'
+}
+
+// 写真ツアーを閉じる
+const closePhotoTour = () => {
+  showPhotoTour.value = false
+  // bodyのスクロールを有効化
+  document.body.style.overflow = 'auto'
+}
+
+// 前の写真へ
+const previousPhoto = () => {
+  if (currentPhotoIndex.value > 0) {
+    currentPhotoIndex.value--
+  }
+}
+
+// 次の写真へ
+const nextPhoto = () => {
+  if (currentPhotoIndex.value < displayPhotos.value.length - 1) {
+    currentPhotoIndex.value++
+  }
+}
+
+// カテゴリでフィルタリング
+const filterPhotosByCategory = (category: string | PhotoCategory) => {
+  selectedPhotoCategory.value = category
+  currentPhotoIndex.value = 0 // フィルタ変更時は最初の写真に戻る
+}
+
+// 写真を共有
+const sharePhoto = async () => {
+  const currentPhoto = displayPhotos.value[currentPhotoIndex.value]
+  if (!currentPhoto) return
+
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: currentPhoto.title,
+        text: currentPhoto.description || currentPhoto.title,
+        url: window.location.href
+      })
+    } catch (error) {
+      console.log('Share cancelled or failed:', error)
+    }
+  } else {
+    // Web Share API非対応の場合はURLをコピー
+    navigator.clipboard.writeText(window.location.href)
+    alert('URLをコピーしました')
+  }
+}
+
+// 予約ページへ遷移
+const goToBooking = () => {
+  navigateTo('/booking')
+}
+
+// 予約フォームの状態管理
+const checkInDate = ref('')
+const checkOutDate = ref('')
+const adults = ref(1)
+const children = ref(0)
+const infants = ref(0)
+const showGuestPicker = ref(false)
+const showCalendar = ref(false)
+
+// ブロック期間管理
+const { blockedDates, loadBlockedDates, isDateBlocked, isDateRangeBlocked } = useBlockedDates()
+
+// カレンダー表示用の月
+const currentMonth = ref(new Date())
+
+// 日付フォーマット
+const formatDate = (dateStr: string) => {
+  if (!dateStr) return ''
+  const date = new Date(dateStr)
+  return `${date.getMonth() + 1}/${date.getDate()}`
+}
+
+// 月名表示
+const currentMonthName = computed(() => {
+  const year = currentMonth.value.getFullYear()
+  const month = currentMonth.value.getMonth() + 1
+  return `${year}年${month}月`
+})
+
+const nextMonthName = computed(() => {
+  const next = new Date(currentMonth.value)
+  next.setMonth(next.getMonth() + 1)
+  const year = next.getFullYear()
+  const month = next.getMonth() + 1
+  return `${year}年${month}月`
+})
+
+// カレンダーの日付データ生成
+const generateMonthDates = (year: number, month: number) => {
+  const firstDay = new Date(year, month, 1)
+  const lastDay = new Date(year, month + 1, 0)
+  const daysInMonth = lastDay.getDate()
+  const startDayOfWeek = firstDay.getDay()
+
+  const dates = []
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  // 空白セルを追加
+  for (let i = 0; i < startDayOfWeek; i++) {
+    dates.push({ day: '', disabled: true, isEmpty: true, key: `empty-${i}` })
+  }
+
+  // 日付セルを追加
+  for (let day = 1; day <= daysInMonth; day++) {
+    const date = new Date(year, month, day)
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+
+    const isPast = date < today
+    const isSelected = dateStr === checkInDate.value || dateStr === checkOutDate.value
+
+    // 範囲内判定
+    let isInRange = false
+    if (checkInDate.value && checkOutDate.value) {
+      const checkIn = new Date(checkInDate.value)
+      const checkOut = new Date(checkOutDate.value)
+      isInRange = date > checkIn && date < checkOut
+    }
+
+    dates.push({
+      day,
+      date: dateStr,
+      disabled: isPast,
+      isSelected,
+      isInRange,
+      isEmpty: false,
+      key: dateStr
+    })
+  }
+
+  return dates
+}
+
+const currentMonthDates = computed(() => {
+  const year = currentMonth.value.getFullYear()
+  const month = currentMonth.value.getMonth()
+  return generateMonthDates(year, month)
+})
+
+const nextMonthDates = computed(() => {
+  const year = currentMonth.value.getFullYear()
+  const month = currentMonth.value.getMonth() + 1
+  return generateMonthDates(year, month)
+})
+
+// 日付選択
+const selectDate = (dateObj: any) => {
+  if (dateObj.disabled || dateObj.isEmpty) return
+
+  // ブロックされた日付かチェック
+  const selectedDate = new Date(dateObj.date)
+  if (isDateBlocked(selectedDate)) {
+    alert('この日付は予約できません（ブロック期間）')
+    return
+  }
+
+  if (!checkInDate.value || (checkInDate.value && checkOutDate.value)) {
+    // チェックイン日を設定（または両方リセットして新規設定）
+    checkInDate.value = dateObj.date
+    checkOutDate.value = ''
+  } else {
+    // チェックアウト日を設定
+    if (new Date(dateObj.date) > new Date(checkInDate.value)) {
+      checkOutDate.value = dateObj.date
+
+      // チェックイン〜チェックアウトの期間がブロックされていないかチェック
+      const checkIn = new Date(checkInDate.value)
+      const checkOut = new Date(dateObj.date)
+      if (isDateRangeBlocked(checkIn, checkOut)) {
+        alert('選択された期間には予約できない日が含まれています')
+        checkOutDate.value = ''
+        return
+      }
+    } else {
+      // チェックインより前の日付を選んだ場合は入れ替え
+      checkOutDate.value = checkInDate.value
+      checkInDate.value = dateObj.date
+
+      // チェックイン〜チェックアウトの期間がブロックされていないかチェック
+      const checkIn = new Date(dateObj.date)
+      const checkOut = new Date(checkOutDate.value)
+      if (isDateRangeBlocked(checkIn, checkOut)) {
+        alert('選択された期間には予約できない日が含まれています')
+        checkInDate.value = ''
+        checkOutDate.value = ''
+        return
+      }
+    }
+  }
+}
+
+// 月移動
+const previousMonth = () => {
+  const newMonth = new Date(currentMonth.value)
+  newMonth.setMonth(newMonth.getMonth() - 1)
+  currentMonth.value = newMonth
+}
+
+const nextMonth = () => {
+  const newMonth = new Date(currentMonth.value)
+  newMonth.setMonth(newMonth.getMonth() + 1)
+  currentMonth.value = newMonth
+}
+
+// 日付クリア
+const clearDates = () => {
+  checkInDate.value = ''
+  checkOutDate.value = ''
+}
+
+// 合計ゲスト数
+const totalGuests = computed(() => adults.value + children.value + infants.value)
+
+// 宿泊日数を計算
+const nights = computed(() => {
+  if (!checkInDate.value || !checkOutDate.value) return 0
+
+  const checkIn = new Date(checkInDate.value)
+  const checkOut = new Date(checkOutDate.value)
+  const diffTime = checkOut.getTime() - checkIn.getTime()
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+  return diffDays > 0 ? diffDays : 0
+})
+
+// 料金計算
+const pricePerNight = 30000
+const cleaningFee = 5000
+
+const totalPrice = computed(() => {
+  if (nights.value === 0) return 0
+  return pricePerNight * nights.value + cleaningFee
+})
+
+// 予約処理
+const handleReservation = () => {
+  if (!checkInDate.value || !checkOutDate.value) {
+    alert('チェックイン日とチェックアウト日を選択してください。')
+    return
+  }
+
+  if (nights.value === 0) {
+    alert('有効な日付を選択してください。')
+    return
+  }
+
+  if (totalGuests.value === 0) {
+    alert('宿泊人数を選択してください。')
+    return
+  }
+
+  if (totalGuests.value > 6) {
+    alert('最大6名までご利用いただけます。')
+    return
+  }
+
+  // ブロック期間の最終チェック
+  const checkIn = new Date(checkInDate.value)
+  const checkOut = new Date(checkOutDate.value)
+  if (isDateRangeBlocked(checkIn, checkOut)) {
+    alert('選択された期間には予約できない日が含まれています。別の日程をお選びください。')
+    return
+  }
+
+  // 新しい予約フローページに遷移
+  navigateTo({
+    path: '/booking/request',
+    query: {
+      checkIn: checkInDate.value,
+      checkOut: checkOutDate.value,
+      adults: adults.value,
+      children: children.value,
+      infants: infants.value
+    }
+  })
+}
+
+// SEO設定
 useHead({
-  title: '家具の家 No.1',
+  title: '家具の家 No.1 | 宿泊予約',
   meta: [
-    { name: 'description', content: '家具が家を支える「体験する建築」。静かな時間の中で構造体に囲まれる不思議な宿泊体験。' },
-    { property: 'og:title', content: '家具の家 No.1' },
-    { property: 'og:description', content: '家具が家を支える「体験する建築」。静かな時間の中で構造体に囲まれる不思議な宿泊体験。' },
-  ],
-  link: [
-    { rel: 'icon', type: 'image/png', href: '/favicon.png' },
-    { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
-    { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
-    { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&family=Zen+Kaku+Gothic+New:wght@400;500&display=swap' }
+    { name: 'description', content: '世界的建築家・坂茂が設計した「家具の家 No.1」。1日1組限定で、この革新的な建築に宿泊できる貴重な体験をご提供します。山中湖の自然に囲まれた特別な時間をお過ごしください。' },
+    { property: 'og:title', content: '家具の家 No.1 | 宿泊予約' },
+    { property: 'og:description', content: '坂茂建築の傑作に宿泊。1日1組限定の特別な建築体験。' },
+    { property: 'og:image', content: images.ogp },
+    { name: 'twitter:card', content: 'summary_large_image' }
   ]
 })
 </script>
 
 <style scoped>
-/* ベース */
-.site-page {
-  font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
-  color: #231815;
-  line-height: 2.2;
-  font-weight: 400;
-  font-size: 16px;
-  background-color: #ffffff;
-  -webkit-font-smoothing: antialiased;
-  width: 100%;
-  max-width: 100%;
-  overflow-x: hidden;
-  box-sizing: border-box;
+/* トランジション */
+* {
+  transition: all 0.4s cubic-bezier(0.4, 0.4, 0, 1);
 }
 
-*, *::before, *::after {
-  box-sizing: border-box;
-}
-
-/* ヘッダー */
-.site-header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
-  background-color: #ffffff;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.site-header-inner {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 0 24px;
-  height: 100px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.site-logo {
-  display: flex;
-  align-items: center;
-  text-decoration: none;
-}
-
-.site-logo-img {
-  width: 175px;
-  height: auto;
-}
-
-.site-instagram {
-  display: flex;
-  align-items: center;
-  transition: opacity 0.3s;
-}
-
-.site-instagram:hover {
-  opacity: 0.7;
-}
-
-/* ヒーロー */
-.site-hero {
-  padding-top: 100px;
-  width: 100%;
-}
-
-.site-hero-main {
-  position: relative;
-  width: 100%;
-  height: 640px;
-  overflow: hidden;
-  background: #f5f5f5;
-}
-
-@media (max-width: 768px) {
-  .site-hero {
-    padding-top: 80px;
-  }
-
-  .site-hero-main {
-    height: 400px;
-    width: 100%;
-  }
-}
-
-.site-hero-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* フェードトランジション */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.8s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-.site-hero-nav {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 4px;
-  background: rgba(255, 255, 255, 0.95);
-  padding: 6px 10px;
-  border-radius: 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.site-hero-nav-btn {
-  width: 32px;
-  height: 32px;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #231815;
-  border-radius: 50%;
-  transition: background 0.3s;
-  opacity: 0.7;
-}
-
-.site-hero-nav-btn:hover {
-  background: rgba(0, 0, 0, 0.05);
-  opacity: 1;
-}
-
-.site-hero-nav-btn.active {
-  opacity: 1;
-}
-
-/* サムネイル */
-.site-hero-thumbnails {
-  display: flex;
-  gap: 3px;
-  padding: 6px;
-  overflow-x: auto;
-  background: #fff;
-  justify-content: center;
-}
-
-.site-hero-thumb {
-  flex-shrink: 0;
-  width: 72px;
-  height: 54px;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  opacity: 0.4;
-  transition: opacity 0.3s;
-  overflow: hidden;
-  background: #f0f0f0;
-}
-
-.site-hero-thumb.active {
-  opacity: 1;
-}
-
-.site-hero-thumb:hover {
-  opacity: 0.8;
-}
-
-.site-hero-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* 滞在セクション */
-.site-stay-section {
-  width: 100%;
-  background-color: #eeeeee;
-  padding: 104px 120px 120px 120px;
-  box-sizing: border-box;
-}
-
-@media (max-width: 1024px) {
-  .site-stay-section {
-    padding: 60px 24px;
-  }
-}
-
-@media (max-width: 768px) {
-  .site-stay-section {
-    padding: 60px 24px;
-    width: 100%;
-  }
-}
-
-.site-stay-inner {
-  max-width: 100%;
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  gap: 72px;
-  align-items: flex-start;
-  justify-content: flex-start;
-}
-
-@media (max-width: 768px) {
-  .site-stay-inner {
-    flex-direction: column;
-    gap: 40px;
-    width: 100%;
-  }
-}
-
-.site-stay-image {
-  flex-shrink: 0;
-  width: 50%;
-  margin: 0;
-  padding: 0;
-}
-
-@media (max-width: 768px) {
-  .site-stay-image {
-    width: 100%;
-  }
-}
-
-.site-stay-image img {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-.site-stay-content {
-  flex: 1;
-  height: auto;
-  margin-top: 40px;
-}
-
-.site-stay-title {
-  font-family: 'Zen Kaku Gothic New', 'Noto Sans JP', sans-serif;
-  font-size: 40px;
-  font-weight: 500;
-  letter-spacing: 0;
-  margin-bottom: 40px;
-  color: #333333;
-  line-height: 1.4;
-}
-
-.site-stay-text p {
-  font-size: 16px;
-  line-height: 2.2;
-  margin-bottom: 8px;
-  color: #231815;
-  font-weight: 400;
-}
-
-.site-stay-notice {
-  font-size: 16px;
-  font-weight: 600;
-  color: #666;
-  margin-top: 40px;
-  margin-bottom: 32px;
-}
-
-.site-stay-btn {
-  display: inline-block;
-  padding: 14px 28px;
-  font-size: 14px;
-  font-weight: 400;
-  color: #231815;
-  background: transparent;
-  border: 1px solid #231815;
-  text-decoration: none;
-  transition: all 0.3s;
-}
-
-.site-stay-btn:hover {
-  background: #231815;
-  color: #fff;
-}
-
-/* 構造体セクション */
-.site-structure-section {
-  background-color: #ffffff;
-  padding: 104px 120px 0 120px;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
-  gap: 0;
-}
-
-@media (max-width: 1024px) {
-  .site-structure-section {
-    padding: 60px 24px 0;
-  }
-}
-
-@media (max-width: 768px) {
-  .site-structure-section {
-    padding: 40px 24px 0;
-    width: 100%;
-  }
-
-  .site-structure-inner {
-    width: 100%;
-  }
-
-  .site-structure-title {
-    font-size: 32px;
-    margin-bottom: 32px;
-  }
-
-  .site-structure-flow {
-    display: flex !important;
-    flex-direction: column !important;
-    width: 100% !important;
-    gap: 32px;
-  }
-
-  .site-structure-text {
-    width: 100% !important;
-    flex: none !important;
-  }
-
-  .site-structure-images {
-    width: 100% !important;
-    flex: none !important;
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-  }
-
-  .site-structure-figure {
-    width: 100%;
-  }
-
-  .site-structure-figure img {
-    width: 100%;
-    height: auto;
-  }
-}
-
-.site-structure-inner {
-  width: 100%;
-  max-width: none;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0;
-}
-
-.site-structure-title {
-  font-family: 'Zen Kaku Gothic New', 'Noto Sans JP', sans-serif;
-  font-size: 48px;
-  font-weight: 500;
-  line-height: 1.4;
-  letter-spacing: 0;
-  margin-bottom: 40px;
-  color: #333333;
-  text-align: left;
-}
-
-.site-structure-flow {
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  gap: 72px;
-  align-items: flex-start;
-  justify-content: flex-start;
-  margin: 0;
-  padding: 0;
-}
-
-.site-structure-text {
-  flex: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0;
-  margin: 0;
-  padding: 0;
-}
-
-.site-structure-text p {
-  font-size: 16px;
-  line-height: 2.2;
-  margin-bottom: 24px;
-  color: #231815;
-  font-weight: 400;
-}
-
-.site-structure-images {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 40px;
-  align-items: flex-end;
-  justify-content: flex-start;
-  margin: 0;
-  padding: 0;
-}
-
-.site-structure-figure {
-  width: 100%;
-}
-
-.site-structure-figure img {
-  width: 100%;
-  height: auto;
-}
-
-.site-image-caption {
-  font-size: 13px;
-  color: #666;
-  margin-top: 12px;
-  line-height: 1.6;
-}
-
-.site-structure-text .site-structure-credit {
-  display: none;
-}
-
-/* 構造体セクション ナビゲーション */
-.site-structure-nav {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 60px 0 80px;
-  gap: 16px;
-}
-
-.site-structure-nav-credit {
-  font-size: 13px;
-  color: #666;
-  text-align: center;
-}
-
-.site-structure-nav-btns {
-  display: flex;
-  gap: 4px;
-  background: rgba(255, 255, 255, 0.95);
-  padding: 6px 10px;
-  border-radius: 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.site-structure-nav-btn {
-  width: 32px;
-  height: 32px;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #231815;
-  border-radius: 50%;
-  transition: background 0.3s;
-  opacity: 0.7;
-}
-
-.site-structure-nav-btn:hover {
-  background: rgba(0, 0, 0, 0.05);
-  opacity: 1;
-}
-
-/* ギャラリーセクション */
-.site-gallery-section {
-  padding: 0;
-}
-
-.site-gallery-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0;
-}
-
-@media (max-width: 768px) {
-  .site-gallery-grid {
-    grid-template-columns: repeat(3, 1fr) !important;
-  }
-
-  .site-gallery-item {
-    height: auto !important;
-    aspect-ratio: 1 / 1;
-  }
-
-  .site-gallery-item:nth-child(n+4) {
-    display: none;
-  }
-}
-
-.site-gallery-item {
-  height: 560px;
+/* 行数制限 */
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-.site-gallery-item img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.5s ease;
+/* ホバーエフェクト */
+button:hover,
+a:hover {
+  transition: all 0.3s ease;
 }
 
-.site-gallery-item:hover img {
-  transform: scale(1.05);
-}
-
-/* 下部ギャラリー（10枚、5x2グリッド） */
-.site-gallery-grid-10 {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 0;
-}
-
-@media (max-width: 768px) {
-  .site-gallery-grid-10 {
-    grid-template-columns: repeat(3, 1fr) !important;
-  }
-
-  .site-gallery-item-10:nth-child(n+10) {
-    display: none;
-  }
-}
-
-.site-gallery-item-10 {
-  aspect-ratio: 1 / 1;
-  overflow: hidden;
-}
-
-.site-gallery-item-10 img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.5s ease;
-}
-
-.site-gallery-item-10:hover img {
-  transform: scale(1.05);
-}
-
-/* 施設情報セクション */
-.site-facility-section {
-  background-color: #ffffff;
-  padding: 104px 0 104px 0;
-  display: flex;
-  justify-content: center;
-}
-
-@media (max-width: 768px) {
-  .site-facility-section {
-    padding: 60px 24px;
-  }
-}
-
-.site-facility-inner {
-  width: 60%;
-  max-width: none;
-  margin: 0 auto;
-}
-
-@media (max-width: 768px) {
-  .site-facility-inner {
-    width: 100%;
-  }
-}
-
-.site-facility-title {
-  font-family: 'Zen Kaku Gothic New', 'Noto Sans JP', sans-serif;
-  font-size: 32px;
-  font-weight: 400;
-  margin-bottom: 32px;
-  color: #231815;
-}
-
-.site-facility-columns {
-  display: flex;
-  gap: 64px;
-  margin-top: 48px;
-}
-
-@media (max-width: 768px) {
-  .site-facility-columns {
-    flex-direction: column;
-    gap: 0;
-    margin-top: 24px;
-  }
-
-  .site-facility-column:first-child,
-  .site-facility-column:last-child {
-    min-width: auto;
-  }
-
-  .site-facility-label {
-    width: 80px;
-    margin-right: 48px;
-  }
-
-  .site-facility-notice {
-    text-align: left;
-    margin-top: 32px;
-  }
-}
-
-.site-facility-column:first-child {
-  flex: 0 0 auto;
-  min-width: 280px;
-}
-
-.site-facility-column:last-child {
-  flex: 1;
-}
-
-.site-facility-row {
-  display: flex;
-  padding: 8px 0;
-}
-
-.site-facility-label {
-  width: 56px;
-  flex-shrink: 0;
-  font-size: 16px;
-  line-height: 2.2;
-  font-weight: 400;
-  color: #231815;
-  margin-right: 40px;
-}
-
-.site-facility-value {
-  font-size: 16px;
-  line-height: 2.2;
-  font-weight: 400;
-  color: #231815;
-}
-
-.site-facility-notice {
-  margin-top: 48px;
-  font-size: 16px;
-  font-weight: 600;
-  color: #666;
-  text-align: center;
-}
-
-/* 別荘地セクション */
-.site-resort-section {
-  background-color: #ffffff;
-  padding: 80px 80px;
-}
-
-@media (max-width: 768px) {
-  .site-resort-section {
-    padding: 40px 24px;
-  }
-}
-
-.site-resort-inner {
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-@media (max-width: 768px) {
-  .site-resort-inner {
-    max-width: none;
-  }
-
-  .site-resort-title {
-    font-size: 24px;
-  }
-}
-
-.site-resort-title {
-  font-family: 'Zen Kaku Gothic New', 'Noto Sans JP', sans-serif;
-  font-size: 32px;
-  font-weight: 400;
-  line-height: 1.4;
-  margin-bottom: 32px;
-  color: #231815;
-}
-
-.site-resort-text p {
-  font-size: 16px;
-  line-height: 2.2;
-  margin-bottom: 24px;
-  color: #231815;
-  font-weight: 400;
-}
-
-/* フッター */
-.site-footer {
-  padding: 40px 80px;
-  background-color: #ffffff;
-}
-
-@media (max-width: 1024px) {
-  .site-footer {
-    padding: 40px 24px;
-  }
-}
-
-.site-footer-inner {
-  max-width: 1280px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
-
-@media (max-width: 768px) {
-  .site-footer-inner {
-    flex-direction: column;
-    gap: 16px;
-    align-items: flex-start;
-  }
-}
-
-.site-footer-title {
-  font-family: 'Zen Kaku Gothic New', 'Noto Sans JP', sans-serif;
-  font-size: 14px;
-  font-weight: 400;
-  color: #231815;
-}
-
-.site-footer-right {
-  text-align: right;
-}
-
-@media (max-width: 768px) {
-  .site-footer-right {
-    text-align: left;
-  }
-}
-
-.site-footer-contact {
-  font-size: 13px;
-  color: #666;
-  text-decoration: none;
-  display: block;
-  margin-bottom: 8px;
-}
-
-.site-footer-contact:hover {
-  text-decoration: underline;
-}
-
-.site-footer-credit {
-  font-size: 11px;
-  color: #999;
-}
-
-.site-footer-link {
-  color: #999;
-  text-decoration: none;
-}
-
-.site-footer-link:hover {
-  text-decoration: underline;
+/* スムーズスクロール */
+html {
+  scroll-behavior: smooth;
 }
 </style>
