@@ -628,21 +628,23 @@ useHead({
   }
 
   .site-structure-flow {
-    display: block;
-    width: 100%;
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 32px;
   }
 
   .site-structure-text {
-    width: 100%;
-    display: block;
+    width: 100% !important;
+    flex: none !important;
   }
 
   .site-structure-images {
-    width: 100%;
+    width: 100% !important;
+    flex: none !important;
     display: flex;
     flex-direction: column;
     gap: 24px;
-    margin-top: 32px;
   }
 
   .site-structure-figure {
@@ -795,12 +797,16 @@ useHead({
 
 @media (max-width: 768px) {
   .site-gallery-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, 1fr) !important;
   }
 
   .site-gallery-item {
-    height: auto;
+    height: auto !important;
     aspect-ratio: 1 / 1;
+  }
+
+  .site-gallery-item:nth-child(n+4) {
+    display: none;
   }
 }
 
