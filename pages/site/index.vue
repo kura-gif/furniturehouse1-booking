@@ -4,7 +4,7 @@
     <header class="site-header">
       <div class="site-header-inner">
         <a href="/" class="site-logo">
-          <img src="/images/hero/title.svg" alt="家具の家 No.1" class="site-logo-img" />
+          <img src="/images/title-logo.svg" alt="家具の家 No.1" class="site-logo-img" />
         </a>
         <a href="https://www.instagram.com/furniture.house.1/" target="_blank" rel="noopener" class="site-instagram">
           <svg viewBox="0 0 24 24" width="20" height="20">
@@ -36,7 +36,7 @@
     <section class="site-stay-section">
       <div class="site-stay-inner">
         <div class="site-stay-image">
-          <img src="/images/hero/07.jpg" alt="家具の家 内観" />
+          <img src="/images/hero/07.webp" alt="家具の家 内観" loading="lazy" />
         </div>
         <div class="site-stay-content">
           <h2 class="site-stay-title">家具の家 No.1に滞在する</h2>
@@ -69,11 +69,11 @@
           </div>
           <div class="site-structure-images">
             <div class="site-structure-figure">
-              <img src="/images/hero/08.webp" alt="家具が構造体として機能する" />
+              <img src="/images/hero/08.webp" alt="家具が構造体として機能する" loading="lazy" />
               <p class="site-image-caption">家具が構造体として機能する</p>
             </div>
             <div class="site-structure-figure">
-              <img src="/images/hero/09.webp" alt="家具を残した基礎と床の修繕課程" />
+              <img src="/images/hero/09.webp" alt="家具を残した基礎と床の修繕課程" loading="lazy" />
               <p class="site-image-caption">家具を残した基礎と床の修繕課程</p>
             </div>
           </div>
@@ -85,7 +85,7 @@
     <section class="site-gallery-section">
       <div class="site-gallery-grid">
         <div v-for="(img, index) in galleryTopImages" :key="index" class="site-gallery-item">
-          <img :src="img.src" :alt="img.alt" />
+          <img :src="img.src" :alt="img.alt" loading="lazy" />
         </div>
       </div>
     </section>
@@ -136,7 +136,7 @@
     <section class="site-gallery-section">
       <div class="site-gallery-grid">
         <div v-for="(img, index) in galleryMiddleImages" :key="index" class="site-gallery-item">
-          <img :src="img.src" :alt="img.alt" />
+          <img :src="img.src" :alt="img.alt" loading="lazy" />
         </div>
       </div>
     </section>
@@ -156,7 +156,7 @@
     <section class="site-gallery-section">
       <div class="site-gallery-grid-10">
         <div v-for="(img, index) in galleryBottomImages" :key="index" class="site-gallery-item-10">
-          <img :src="img.src" :alt="img.alt" />
+          <img :src="img.src" :alt="img.alt" loading="lazy" />
         </div>
       </div>
     </section>
@@ -177,42 +177,42 @@
 <script setup lang="ts">
 // 画像スライダー
 const heroImages = [
-  '/images/hero/01.jpg',
-  '/images/hero/02.jpg',
-  '/images/hero/03.jpg',
-  '/images/hero/04.jpg',
-  '/images/hero/05.jpg',
-  '/images/hero/06.jpg',
+  '/images/hero/01.webp',
+  '/images/hero/02.webp',
+  '/images/hero/03.webp',
+  '/images/hero/04.webp',
+  '/images/hero/05.webp',
+  '/images/hero/06.webp',
 ]
 
 // 上部ギャラリー（4枚）
 const galleryTopImages = [
-  { src: '/images/hero/gallery-1.jpg', alt: '内観1' },
-  { src: '/images/hero/gallery-2.png', alt: '内観2' },
-  { src: '/images/hero/gallery-3.jpg', alt: '内観3' },
-  { src: '/images/hero/gallery-4.png', alt: '内観4' },
+  { src: '/images/hero/gallery-1.webp', alt: '内観1' },
+  { src: '/images/hero/gallery-2.webp', alt: '内観2' },
+  { src: '/images/hero/gallery-3.webp', alt: '内観3' },
+  { src: '/images/hero/gallery-4.webp', alt: '内観4' },
 ]
 
 // 中間ギャラリー（4枚）
 const galleryMiddleImages = [
-  { src: '/images/hero/gallery-5.jpg', alt: '外観1' },
-  { src: '/images/hero/gallery-6.jpg', alt: '外観2' },
-  { src: '/images/hero/gallery-7.jpg', alt: '外観3' },
-  { src: '/images/hero/gallery-8.jpg', alt: '外観4' },
+  { src: '/images/hero/gallery-5.webp', alt: '外観1' },
+  { src: '/images/hero/gallery-6.webp', alt: '外観2' },
+  { src: '/images/hero/gallery-7.webp', alt: '外観3' },
+  { src: '/images/hero/gallery-8.webp', alt: '外観4' },
 ]
 
 // 下部ギャラリー（10枚、5x2グリッド）
 const galleryBottomImages = [
-  { src: '/images/hero/gallery-1.jpg', alt: '写真1' },
-  { src: '/images/hero/gallery-2.png', alt: '写真2' },
-  { src: '/images/hero/gallery-3.jpg', alt: '写真3' },
-  { src: '/images/hero/gallery-4.png', alt: '写真4' },
-  { src: '/images/hero/gallery-5.jpg', alt: '写真5' },
-  { src: '/images/hero/gallery-6.jpg', alt: '写真6' },
-  { src: '/images/hero/gallery-7.jpg', alt: '写真7' },
-  { src: '/images/hero/gallery-8.jpg', alt: '写真8' },
-  { src: '/images/hero/gallery-1.jpg', alt: '写真9' },
-  { src: '/images/hero/gallery-2.png', alt: '写真10' },
+  { src: '/images/hero/gallery-1.webp', alt: '写真1' },
+  { src: '/images/hero/gallery-2.webp', alt: '写真2' },
+  { src: '/images/hero/gallery-3.webp', alt: '写真3' },
+  { src: '/images/hero/gallery-4.webp', alt: '写真4' },
+  { src: '/images/hero/gallery-5.webp', alt: '写真5' },
+  { src: '/images/hero/gallery-6.webp', alt: '写真6' },
+  { src: '/images/hero/gallery-7.webp', alt: '写真7' },
+  { src: '/images/hero/gallery-8.webp', alt: '写真8' },
+  { src: '/images/hero/gallery-1.webp', alt: '写真9' },
+  { src: '/images/hero/gallery-2.webp', alt: '写真10' },
 ]
 
 const currentImageIndex = ref(0)
