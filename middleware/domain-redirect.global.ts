@@ -17,8 +17,7 @@ export default defineNuxtRouteMiddleware((to) => {
       }
     }
 
-    // chladni.co.jp の場合（Vercel rewritesで処理するためここでは何もしない）
-    // /chladni パスへのアクセスは許可
+    // chladni.co.jp の場合（サーバーミドルウェアで処理）
     if (host === 'chladni.co.jp' || host === 'www.chladni.co.jp') {
       return
     }

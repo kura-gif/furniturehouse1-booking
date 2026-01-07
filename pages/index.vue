@@ -13,10 +13,15 @@
             @click="openPhotoTour(0)"
             class="col-span-4 md:col-span-2 row-span-2 relative group cursor-pointer"
           >
-            <div
-              class="w-full h-full bg-cover bg-center transition-transform duration-300 group-hover:scale-105"
-              :style="`background-image: url('${displayPhotos[0]?.url || images.gallery[0]?.src}');`"
-            ></div>
+            <div class="gallery-skeleton"></div>
+            <img
+              :src="displayPhotos[0]?.url || images.gallery[0]?.src"
+              alt="メイン写真"
+              class="gallery-img"
+              fetchpriority="high"
+              loading="eager"
+              @load="onGalleryImageLoad"
+            />
           </div>
           <!-- サブ画像 (右側4枚) -->
           <div
@@ -25,10 +30,15 @@
             @click="openPhotoTour(index + 1)"
             class="hidden md:block col-span-1 relative group cursor-pointer overflow-hidden"
           >
-            <div
-              class="w-full h-full bg-cover bg-center transition-transform duration-300 group-hover:scale-105"
-              :style="`background-image: url('${(photo as any).url || (photo as any).src}');`"
-            ></div>
+            <div class="gallery-skeleton"></div>
+            <img
+              :src="(photo as any).url || (photo as any).src"
+              :alt="`写真 ${index + 2}`"
+              class="gallery-img"
+              :fetchpriority="index < 2 ? 'high' : 'low'"
+              :loading="index < 2 ? 'eager' : 'lazy'"
+              @load="onGalleryImageLoad"
+            />
           </div>
 
           <!-- すべての写真を表示ボタン -->
@@ -919,12 +929,57 @@ const showPhotoTour = ref(false)
 const currentPhotoIndex = ref(0)
 const selectedPhotoCategory = ref<string | PhotoCategory>('all')
 
-// Firebaseから写真を読み込み
+// ギャラリー画像読み込み完了時にフェードイン
+const onGalleryImageLoad = (e: Event) => {
+  const target = e.target as HTMLImageElement
+  target.classList.add('loaded')
+}
+
+// Firebaseから写真を読み込み（キャッシュ付き、ローカル画像フォールバック）
 const loadPhotos = async () => {
   try {
-    allPhotos.value = await getVisiblePhotos()
+    // sessionStorageからキャッシュを確認
+    const cached = sessionStorage.getItem('gallery_photos')
+    const cacheTime = sessionStorage.getItem('gallery_photos_time')
+    const now = Date.now()
+
+    // キャッシュが5分以内なら使用
+    if (cached && cacheTime && (now - parseInt(cacheTime)) < 5 * 60 * 1000) {
+      allPhotos.value = JSON.parse(cached)
+      return
+    }
+
+    // Firestoreから取得
+    const photos = await getVisiblePhotos()
+
+    // 写真がない場合はローカル画像を使用
+    if (!photos || photos.length === 0) {
+      allPhotos.value = images.gallery.map((img, i) => ({
+        id: `local-${i}`,
+        url: img.src,
+        title: img.alt,
+        category: 'interior' as const,
+        isVisible: true,
+        order: i
+      }))
+      return
+    }
+
+    allPhotos.value = photos
+
+    // キャッシュに保存
+    sessionStorage.setItem('gallery_photos', JSON.stringify(photos))
+    sessionStorage.setItem('gallery_photos_time', now.toString())
   } catch (error) {
-    console.error('写真の取得に失敗:', error)
+    // エラー時はローカル画像を使用（即座に表示可能）
+    allPhotos.value = images.gallery.map((img, i) => ({
+      id: `local-${i}`,
+      url: img.src,
+      title: img.alt,
+      category: 'interior' as const,
+      isVisible: true,
+      order: i
+    }))
   }
 }
 
@@ -1230,7 +1285,7 @@ const handleReservation = () => {
   })
 }
 
-// SEO設定
+// SEO設定 + 画像preload
 useHead({
   title: '家具の家 No.1 | 宿泊予約',
   meta: [
@@ -1239,11 +1294,50 @@ useHead({
     { property: 'og:description', content: '坂茂建築の傑作に宿泊。1日1組限定の特別な建築体験。' },
     { property: 'og:image', content: images.ogp },
     { name: 'twitter:card', content: 'summary_large_image' }
+  ],
+  link: [
+    // メイン画像を先読み（Vercel CDN経由）
+    { rel: 'preload', as: 'image', href: '/images/hero/01.webp' },
+    { rel: 'preload', as: 'image', href: '/images/hero/02.webp' },
+    { rel: 'preload', as: 'image', href: '/images/hero/03.webp' }
   ]
 })
 </script>
 
 <style scoped>
+/* ギャラリースケルトン */
+.gallery-skeleton {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  z-index: 0;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.gallery-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.5s ease, transform 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.gallery-img.loaded {
+  opacity: 1;
+}
+
+.group:hover .gallery-img.loaded {
+  transform: scale(1.05);
+}
+
 /* トランジション */
 * {
   transition: all 0.4s cubic-bezier(0.4, 0.4, 0, 1);

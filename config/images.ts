@@ -10,15 +10,15 @@ export const images = {
   hero: {
     slides: [
       {
-        src: 'https://storage.googleapis.com/production-os-assets/assets/ee624b9f-8615-4f77-a680-72fbc0876d71',
+        src: '/images/hero/01.webp',
         alt: '家具の家 No.1 外観'
       },
       {
-        src: 'https://storage.googleapis.com/production-os-assets/assets/d955ed6d-17a4-4e0d-b901-58361a841aab',
+        src: '/images/hero/02.webp',
         alt: '家具の家 内部構造'
       },
       {
-        src: 'https://storage.googleapis.com/production-os-assets/assets/44af6465-ab0c-4e37-b0ab-b526dcb50484',
+        src: '/images/hero/03.webp',
         alt: '家具の家 構造詳細'
       }
     ]
@@ -26,46 +26,46 @@ export const images = {
 
   // 建築紹介セクション画像
   about: {
-    main: 'https://storage.googleapis.com/production-os-assets/assets/d955ed6d-17a4-4e0d-b901-58361a841aab',
+    main: '/images/hero/02.webp',
     alt: '家具の家 内部構造'
   },
 
-  // ギャラリーセクション画像
+  // ギャラリーセクション画像（Vercel CDN経由で配信）
   gallery: [
     {
-      src: 'https://storage.googleapis.com/production-os-assets/assets/ee624b9f-8615-4f77-a680-72fbc0876d71',
+      src: '/images/hero/01.webp',
       alt: '家具の家 No.1 全景',
       category: '外観'
     },
     {
-      src: 'https://storage.googleapis.com/production-os-assets/assets/d955ed6d-17a4-4e0d-b901-58361a841aab',
+      src: '/images/hero/02.webp',
       alt: '家具の家 内部構造',
       category: '内観'
     },
     {
-      src: 'https://storage.googleapis.com/production-os-assets/assets/44af6465-ab0c-4e37-b0ab-b526dcb50484',
+      src: '/images/hero/03.webp',
       alt: '家具の家 構造詳細',
       category: '詳細'
     },
     {
-      src: 'https://storage.googleapis.com/production-os-assets/assets/ee624b9f-8615-4f77-a680-72fbc0876d71',
+      src: '/images/hero/04.webp',
       alt: '家具の家 外観',
       category: '外観'
     },
     {
-      src: 'https://storage.googleapis.com/production-os-assets/assets/d955ed6d-17a4-4e0d-b901-58361a841aab',
+      src: '/images/hero/05.webp',
       alt: 'リビングスペース',
       category: 'リビング'
     },
     {
-      src: 'https://storage.googleapis.com/production-os-assets/assets/44af6465-ab0c-4e37-b0ab-b526dcb50484',
+      src: '/images/hero/06.webp',
       alt: '寝室',
       category: '寝室'
     }
   ],
 
   // OGP画像（SNSシェア時に表示される画像）
-  ogp: 'https://storage.googleapis.com/production-os-assets/assets/d955ed6d-17a4-4e0d-b901-58361a841aab',
+  ogp: '/images/hero/02.webp',
 
   // その他のページ用画像
   booking: {
