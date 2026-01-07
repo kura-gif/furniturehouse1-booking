@@ -1,7 +1,7 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
-  devtools: { enabled: true },
+  devtools: { enabled: process.env.NODE_ENV !== 'production' },
 
   modules: [
     '@nuxtjs/tailwindcss',
@@ -49,6 +49,9 @@ export default defineNuxtConfig({
           'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://m.stripe.com https://*.firebaseio.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data: blob:; img-src 'self' data: https: blob:; connect-src 'self' https: wss:; frame-src https://js.stripe.com https://hooks.stripe.com https://*.firebaseapp.com; worker-src 'self' blob:;"
         }
       },
+      // 静的アセットのキャッシュ（1年）
+      '/_nuxt/**': { headers: { 'Cache-Control': 'public, max-age=31536000, immutable' } },
+      '/images/**': { headers: { 'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800' } },
       // CSRF除外ルート
       '/api/stripe/webhook': { csurf: false },
       '/api/stripe/create-payment-intent': { csurf: false },
@@ -95,5 +98,12 @@ export default defineNuxtConfig({
   typescript: {
     strict: false,
     typeCheck: false
+  },
+
+  // 本番ビルドでconsole.logを削除
+  vite: {
+    esbuild: {
+      drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : []
+    }
   }
 })

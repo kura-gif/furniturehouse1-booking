@@ -17,15 +17,10 @@ export default defineNuxtRouteMiddleware((to) => {
       }
     }
 
-    // chladni.co.jp でルートにアクセスした場合、/chladni にリダイレクト
+    // chladni.co.jp の場合（Vercel rewritesで処理するためここでは何もしない）
+    // /chladni パスへのアクセスは許可
     if (host === 'chladni.co.jp' || host === 'www.chladni.co.jp') {
-      if (to.path === '/') {
-        return navigateTo('/chladni', { redirectCode: 302 })
-      }
-      // /chladni 以外のパスにアクセスした場合も /chladni にリダイレクト
-      if (!to.path.startsWith('/chladni')) {
-        return navigateTo('/chladni', { redirectCode: 302 })
-      }
+      return
     }
   }
 })

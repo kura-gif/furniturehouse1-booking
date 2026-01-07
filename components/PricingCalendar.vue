@@ -1,5 +1,21 @@
 <template>
   <div class="pricing-calendar">
+    <!-- スケルトンローディング -->
+    <div v-if="isLoading" class="animate-pulse">
+      <div class="flex items-center justify-between mb-6">
+        <div class="w-10 h-10 bg-gray-200 rounded-lg"></div>
+        <div class="w-24 h-6 bg-gray-200 rounded"></div>
+        <div class="w-10 h-10 bg-gray-200 rounded-lg"></div>
+      </div>
+      <div class="grid grid-cols-7 gap-1 mb-2">
+        <div v-for="i in 7" :key="i" class="h-8 bg-gray-200 rounded"></div>
+      </div>
+      <div class="grid grid-cols-7 gap-1">
+        <div v-for="i in 42" :key="i" class="min-h-[70px] bg-gray-200 rounded-lg"></div>
+      </div>
+    </div>
+
+    <template v-else>
     <!-- カレンダーヘッダー -->
     <div class="flex items-center justify-between mb-6">
       <button
@@ -114,6 +130,7 @@
         </button>
       </div>
     </div>
+    </template>
   </div>
 </template>
 
@@ -159,6 +176,7 @@ const emit = defineEmits<{
 const { blockedDates, loadBlockedDates, isDateBlocked } = useBlockedDates()
 const { calculatePrice, loadFromFirestore } = useEnhancedPricing()
 
+const isLoading = ref(true)
 const weekDays = ['日', '月', '火', '水', '木', '金', '土']
 const currentMonth = ref(new Date())
 const checkInDate = ref(props.modelCheckIn || '')
@@ -179,7 +197,7 @@ onMounted(async () => {
     loadBlockedDates(),
     loadFromFirestore()
   ])
-  console.log('✅ PricingCalendar: Loaded blocked dates and pricing settings')
+  isLoading.value = false
 })
 
 const currentMonthName = computed(() => {
