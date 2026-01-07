@@ -3,27 +3,5 @@
   "devCommand": "npm run dev",
   "installCommand": "npm install",
   "framework": "nuxtjs",
-  "outputDirectory": ".output/public",
-  "rewrites": [
-    {
-      "source": "/",
-      "destination": "/chladni",
-      "has": [
-        {
-          "type": "host",
-          "value": "chladni.co.jp"
-        }
-      ]
-    },
-    {
-      "source": "/",
-      "destination": "/chladni",
-      "has": [
-        {
-          "type": "host",
-          "value": "www.chladni.co.jp"
-        }
-      ]
-    }
-  ]
+  "outputDirectory": ".output/public"
 }

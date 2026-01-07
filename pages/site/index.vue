@@ -85,7 +85,8 @@
     <section class="site-gallery-section">
       <div class="site-gallery-grid">
         <div v-for="(img, index) in galleryTopImages" :key="index" class="site-gallery-item">
-          <img :src="img.src" :alt="img.alt" loading="lazy" />
+          <div class="site-gallery-skeleton"></div>
+          <img :src="img.src" :alt="img.alt" loading="lazy" class="site-gallery-img" @load="onImageLoad" />
         </div>
       </div>
     </section>
@@ -136,7 +137,8 @@
     <section class="site-gallery-section">
       <div class="site-gallery-grid">
         <div v-for="(img, index) in galleryMiddleImages" :key="index" class="site-gallery-item">
-          <img :src="img.src" :alt="img.alt" loading="lazy" />
+          <div class="site-gallery-skeleton"></div>
+          <img :src="img.src" :alt="img.alt" loading="lazy" class="site-gallery-img" @load="onImageLoad" />
         </div>
       </div>
     </section>
@@ -156,7 +158,8 @@
     <section class="site-gallery-section">
       <div class="site-gallery-grid-10">
         <div v-for="(img, index) in galleryBottomImages" :key="index" class="site-gallery-item-10">
-          <img :src="img.src" :alt="img.alt" loading="lazy" />
+          <div class="site-gallery-skeleton"></div>
+          <img :src="img.src" :alt="img.alt" loading="lazy" class="site-gallery-img" @load="onImageLoad" />
         </div>
       </div>
     </section>
@@ -219,6 +222,12 @@ const currentImageIndex = ref(0)
 const autoplay = ref(true)
 let autoplayInterval: ReturnType<typeof setInterval> | null = null
 
+// 画像読み込み完了時にフェードイン
+const onImageLoad = (e: Event) => {
+  const target = e.target as HTMLImageElement
+  target.classList.add('loaded')
+}
+
 const nextImage = () => {
   currentImageIndex.value = (currentImageIndex.value + 1) % heroImages.length
 }
@@ -262,7 +271,8 @@ useHead({
     { rel: 'icon', type: 'image/png', href: '/favicon.png' },
     { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
     { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
-    { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&family=Zen+Kaku+Gothic+New:wght@400;500&display=swap' }
+    { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&family=Zen+Kaku+Gothic+New:wght@400;500&display=swap' },
+    { rel: 'preload', as: 'image', href: '/images/hero/01.webp' }
   ]
 })
 </script>
@@ -777,16 +787,38 @@ useHead({
 .site-gallery-item {
   height: 560px;
   overflow: hidden;
+  position: relative;
+  background: #f0f0f0;
 }
 
-.site-gallery-item img {
+.site-gallery-skeleton {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.site-gallery-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.5s ease;
+  transition: transform 0.5s ease, opacity 0.5s ease;
+  opacity: 0;
+  position: relative;
+  z-index: 1;
 }
 
-.site-gallery-item:hover img {
+.site-gallery-img.loaded {
+  opacity: 1;
+}
+
+.site-gallery-item:hover .site-gallery-img.loaded {
   transform: scale(1.05);
 }
 
@@ -810,16 +842,33 @@ useHead({
 .site-gallery-item-10 {
   aspect-ratio: 1 / 1;
   overflow: hidden;
+  position: relative;
+  background: #f0f0f0;
 }
 
-.site-gallery-item-10 img {
+.site-gallery-item-10 .site-gallery-skeleton {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.site-gallery-item-10 .site-gallery-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.5s ease;
+  transition: transform 0.5s ease, opacity 0.5s ease;
+  opacity: 0;
+  position: relative;
+  z-index: 1;
 }
 
-.site-gallery-item-10:hover img {
+.site-gallery-item-10 .site-gallery-img.loaded {
+  opacity: 1;
+}
+
+.site-gallery-item-10:hover .site-gallery-img.loaded {
   transform: scale(1.05);
 }
 
