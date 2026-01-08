@@ -316,15 +316,22 @@ function handleDatesSelected(checkIn: string, checkOut: string, nightsCount: num
 function handleProceedToRequest() {
   if (!canProceed.value) return
 
+  const query: Record<string, string> = {
+    checkIn: checkInDate.value,
+    checkOut: checkOutDate.value,
+    adults: adults.value.toString(),
+    children: children.value.toString(),
+    infants: infants.value.toString()
+  }
+
+  // promoパラメータがある場合は引き継ぐ
+  if (route.query.promo) {
+    query.promo = route.query.promo as string
+  }
+
   router.push({
     path: '/booking/request',
-    query: {
-      checkIn: checkInDate.value,
-      checkOut: checkOutDate.value,
-      adults: adults.value.toString(),
-      children: children.value.toString(),
-      infants: infants.value.toString()
-    }
+    query
   })
 }
 
