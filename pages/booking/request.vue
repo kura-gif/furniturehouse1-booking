@@ -307,17 +307,65 @@
                   <span class="text-gray-900">¥{{ taxWithOptions.toLocaleString() }}</span>
                 </div>
 
+                <!-- クーポン割引 -->
+                <div v-if="appliedCoupon" class="flex justify-between text-green-600">
+                  <span>割引（{{ appliedCoupon.code }}）</span>
+                  <span>-¥{{ couponDiscountAmount.toLocaleString() }}</span>
+                </div>
+
                 <!-- 合計（税込） -->
                 <div class="flex justify-between pt-2 border-t-2 border-gray-300 font-semibold text-base">
                   <span>合計（税込）</span>
-                  <span>¥{{ totalAmountWithOptions.toLocaleString() }}</span>
+                  <span>¥{{ finalTotalAmount.toLocaleString() }}</span>
                 </div>
 
                 <!-- 料金サマリー -->
                 <div v-if="priceCalculation.summary" class="text-xs text-gray-500 pt-2 border-t border-gray-100">
                   <div class="flex justify-between">
                     <span>1人1泊あたり平均</span>
-                    <span>¥{{ Math.floor(totalAmount / (adults + children + infants) / numberOfNights).toLocaleString() }}</span>
+                    <span>¥{{ Math.floor(finalTotalAmount / (adults + children + infants) / numberOfNights).toLocaleString() }}</span>
+                  </div>
+                </div>
+
+                <!-- コード入力欄（URLパラメータがある場合のみ表示） -->
+                <div v-if="showCouponField" class="pt-3 border-t border-gray-100">
+                  <button
+                    v-if="!showCouponInput && !appliedCoupon"
+                    @click="showCouponInput = true"
+                    class="text-xs text-gray-500 hover:text-gray-700 transition-colors"
+                    type="button"
+                  >
+                    コードをお持ちの方
+                  </button>
+                  <div v-if="showCouponInput && !appliedCoupon" class="mt-2 space-y-2">
+                    <div class="flex gap-2">
+                      <input
+                        v-model="couponCode"
+                        type="text"
+                        placeholder="コードを入力"
+                        class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        :disabled="isValidatingCoupon"
+                      />
+                      <button
+                        @click="applyCoupon"
+                        :disabled="!couponCode || isValidatingCoupon"
+                        class="px-4 py-2 text-sm bg-gray-900 text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        type="button"
+                      >
+                        {{ isValidatingCoupon ? '...' : '適用' }}
+                      </button>
+                    </div>
+                    <p v-if="couponError" class="text-xs text-red-500">{{ couponError }}</p>
+                  </div>
+                  <div v-if="appliedCoupon" class="flex items-center justify-between mt-2">
+                    <span class="text-xs text-green-600">{{ appliedCoupon.code }} 適用中</span>
+                    <button
+                      @click="removeCoupon"
+                      class="text-xs text-gray-500 hover:text-red-500 transition-colors"
+                      type="button"
+                    >
+                      取り消す
+                    </button>
                   </div>
                 </div>
               </div>
@@ -526,13 +574,17 @@
                 <span class="text-gray-600">税金</span>
                 <span class="text-gray-900">¥{{ taxWithOptions.toLocaleString() }}</span>
               </div>
+              <div v-if="appliedCoupon" class="flex justify-between text-green-600">
+                <span>割引</span>
+                <span>-¥{{ couponDiscountAmount.toLocaleString() }}</span>
+              </div>
             </div>
 
             <!-- 合計 -->
             <div class="pt-4 border-t border-gray-200">
               <div class="flex justify-between items-center">
                 <span class="font-semibold text-gray-900">合計額 JPY</span>
-                <span class="font-semibold text-gray-900 text-xl">¥{{ totalAmountWithOptions.toLocaleString() }}</span>
+                <span class="font-semibold text-gray-900 text-xl">¥{{ finalTotalAmount.toLocaleString() }}</span>
               </div>
               <button type="button" class="text-sm underline text-gray-600 hover:text-gray-900 mt-2">
                 料金内訳
@@ -571,9 +623,13 @@
             <span class="text-gray-600">オプション</span>
             <span class="font-medium text-gray-900">{{ selectedOptions.map(o => o.name).join('、') }}</span>
           </div>
+          <div v-if="appliedCoupon" class="flex justify-between text-sm text-green-600">
+            <span>割引（{{ appliedCoupon.code }}）</span>
+            <span>-¥{{ couponDiscountAmount.toLocaleString() }}</span>
+          </div>
           <div class="border-t pt-3 flex justify-between">
             <span class="font-semibold text-gray-900">合計金額</span>
-            <span class="font-semibold text-lg text-gray-900">¥{{ totalAmountWithOptions.toLocaleString() }}</span>
+            <span class="font-semibold text-lg text-gray-900">¥{{ finalTotalAmount.toLocaleString() }}</span>
           </div>
         </div>
 
@@ -608,7 +664,7 @@
 </template>
 
 <script setup lang="ts">
-import type { BookingOption, SelectedBookingOption } from '~/types'
+import type { BookingOption, SelectedBookingOption, Coupon } from '~/types'
 
 definePageMeta({
   layout: false
@@ -620,6 +676,7 @@ const { createBooking } = useBookings()
 const { createPaymentIntent, initializeElements, confirmCardPayment } = useStripePayment()
 const { calculatePrice, pricingSetting, loadFromFirestore } = useEnhancedPricing()
 const { getActivePolicy, generatePolicyDescription } = useCancellationPolicy()
+const { validateCoupon, incrementCouponUsage } = useCoupon()
 
 // パンくずリスト
 const breadcrumbItems = [
@@ -639,6 +696,52 @@ const availableOptions = ref<BookingOption[]>([])
 const selectedOptions = ref<SelectedBookingOption[]>([])
 const optionAvailability = ref<Record<string, { available: boolean; remaining: number; dailyLimit: number }>>({})
 const loadingOptions = ref(true)
+
+// クーポン関連
+const showCouponField = computed(() => route.query.promo !== undefined)
+const showCouponInput = ref(false)
+const couponCode = ref((route.query.promo as string) || '')
+const appliedCoupon = ref<Coupon | null>(null)
+const couponDiscountAmount = ref(0)
+const isValidatingCoupon = ref(false)
+const couponError = ref('')
+
+// クーポン適用
+const applyCoupon = async () => {
+  if (!couponCode.value) return
+
+  isValidatingCoupon.value = true
+  couponError.value = ''
+
+  try {
+    const result = await validateCoupon(couponCode.value, totalAmountWithOptions.value)
+
+    if (result.isValid && result.coupon) {
+      appliedCoupon.value = result.coupon
+      couponDiscountAmount.value = result.discountAmount || 0
+      showCouponInput.value = false
+    } else {
+      couponError.value = result.error || 'クーポンが無効です'
+    }
+  } catch (e) {
+    couponError.value = 'クーポンの検証に失敗しました'
+  } finally {
+    isValidatingCoupon.value = false
+  }
+}
+
+// クーポン取り消し
+const removeCoupon = () => {
+  appliedCoupon.value = null
+  couponDiscountAmount.value = 0
+  couponCode.value = ''
+  showCouponInput.value = false
+}
+
+// 最終合計金額（クーポン適用後）
+const finalTotalAmount = computed(() => {
+  return totalAmountWithOptions.value - couponDiscountAmount.value
+})
 
 // オプションの合計金額
 const optionsTotalPrice = computed(() => {
@@ -712,6 +815,14 @@ onMounted(async () => {
     }
   } catch (error) {
     console.error('キャンセルポリシー取得エラー:', error)
+  }
+
+  // URLパラメータにプロモコードがある場合は自動適用を試みる
+  if (couponCode.value && showCouponField.value) {
+    // 料金計算が完了するのを少し待つ
+    setTimeout(() => {
+      applyCoupon()
+    }, 500)
   }
 })
 
@@ -934,7 +1045,9 @@ const proceedToPayment = async () => {
           checkIn: checkInDate.value,
           checkOut: checkOutDate.value,
           guests: `大人${adults.value}人${children.value > 0 ? `、子ども${children.value}人` : ''}${infants.value > 0 ? `、乳幼児${infants.value}人` : ''}`,
-          totalAmount: totalAmountWithOptions.value.toString(),
+          totalAmount: finalTotalAmount.value.toString(),
+          discount: couponDiscountAmount.value > 0 ? `-¥${couponDiscountAmount.value}` : 'なし',
+          couponCode: appliedCoupon.value?.code || 'なし',
           options: selectedOptions.value.map(o => o.name).join('、') || 'なし'
         }
       }
@@ -949,9 +1062,11 @@ const proceedToPayment = async () => {
       guestName: guestName.value,
       guestEmail: guestEmail.value,
       guestPhone: guestPhone.value,
-      totalAmount: totalAmountWithOptions.value,
+      totalAmount: finalTotalAmount.value,
       baseAmount: subtotal.value,
-      discountAmount: 0,
+      discountAmount: couponDiscountAmount.value,
+      couponCode: appliedCoupon.value?.code || null,
+      couponId: appliedCoupon.value?.id || null,
       notes: `決済ID: ${clientSecret.value.split('_secret_')[0]}`,
       selectedOptions: selectedOptions.value,
       optionsTotalPrice: optionsTotalPrice.value
@@ -959,6 +1074,12 @@ const proceedToPayment = async () => {
 
     const bookingId = await createBooking(bookingData)
     console.log('✅ 予約作成成功:', bookingId)
+
+    // クーポン使用回数を更新
+    if (appliedCoupon.value?.id) {
+      await incrementCouponUsage(appliedCoupon.value.id)
+      console.log('✅ クーポン使用回数を更新:', appliedCoupon.value.code)
+    }
 
     // Stripe決済を確定（Card Element用）
     // ローカル開発環境（HTTP）ではStripe決済が制限されるため、テスト環境では決済をスキップ
