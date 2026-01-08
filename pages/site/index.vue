@@ -48,7 +48,6 @@
             <p>ここでは、そんな体験をより深く味わうための、いくつかのヒントをご紹介します。</p>
           </div>
           <p class="site-stay-notice">※冬季休業中のため、2026年1月31日予約開始、予約可能日4月1日以降となります。</p>
-          <a href="/booking-full" class="site-stay-btn">宿泊のご案内</a>
         </div>
       </div>
     </section>
@@ -160,6 +159,67 @@
         <div v-for="(img, index) in galleryBottomImages" :key="index" class="site-gallery-item-10">
           <div class="site-gallery-skeleton"></div>
           <img :src="img.src" :alt="img.alt" loading="lazy" class="site-gallery-img" @load="onImageLoad" />
+        </div>
+      </div>
+    </section>
+
+    <!-- 宿泊のご案内セクション -->
+    <section class="site-guide-section">
+      <div class="site-guide-inner">
+        <h2 class="site-guide-title">宿泊のご案内</h2>
+        <p class="site-guide-intro">
+          雨を気にせず集まってBBQをする、寝っ転がって景色を眺める、読書にふける。<br>
+          あなたらしい過ごし方が、この空間で見つかりますように。
+        </p>
+
+        <div class="site-guide-grid">
+          <div class="site-guide-item">
+            <div class="site-guide-item-image">
+              <img src="/images/hero/guide-1.webp" alt="大きな窓" loading="lazy" />
+            </div>
+            <h3 class="site-guide-item-title">大きな窓</h3>
+            <p class="site-guide-item-text">リビングには大きな4枚のガラス戸。一度はぜひ全開にしてみてください。心地よい風が部屋を抜け、内と外の境界がふっと溶けていく感覚を味わってください。</p>
+          </div>
+
+          <div class="site-guide-item">
+            <div class="site-guide-item-image">
+              <img src="/images/hero/guide-2.webp" alt="テラスで、コーヒー" loading="lazy" />
+            </div>
+            <h3 class="site-guide-item-title">テラスで、コーヒー</h3>
+            <p class="site-guide-item-text">晴れも雨でも、コーヒーはデッキテラスで。大平山を望みながら深呼吸をすれば、からだの芯まで澄み渡るような時間が流れます。</p>
+          </div>
+
+          <div class="site-guide-item">
+            <div class="site-guide-item-image">
+              <img src="/images/hero/guide-3.webp" alt="全身で、朝の光" loading="lazy" />
+            </div>
+            <h3 class="site-guide-item-title">全身で、朝の光</h3>
+            <p class="site-guide-item-text">静けさの中でぐっすりと眠った朝。遮光カーテンを開けて、差し込む朝日をたっぷり浴びれば、身体も心もふんわりと目覚めていきます。</p>
+          </div>
+
+          <div class="site-guide-item">
+            <div class="site-guide-item-image">
+              <img src="/images/hero/guide-4.webp" alt="リビングに、キッチン" loading="lazy" />
+            </div>
+            <h3 class="site-guide-item-title">リビングに、キッチン</h3>
+            <p class="site-guide-item-text">リビングの中にキッチンがあるから、くつろぎながら料理を楽しめます。必要な道具は一通りそろえていますので、ご安心を。</p>
+          </div>
+
+          <div class="site-guide-item">
+            <div class="site-guide-item-image">
+              <img src="/images/hero/guide-5.webp" alt="森の中の、お風呂" loading="lazy" />
+            </div>
+            <h3 class="site-guide-item-title">森の中の、お風呂</h3>
+            <p class="site-guide-item-text">寒冷地仕様のため追焚きはできませんが、ブラインドを開ければ森に溶け込むような開放感。外の緑を眺めながら、静かなお風呂の時間をお楽しみください。</p>
+          </div>
+
+          <div class="site-guide-item">
+            <div class="site-guide-item-image">
+              <img src="/images/hero/guide-6.webp" alt="クーラーは、山中湖の風" loading="lazy" />
+            </div>
+            <h3 class="site-guide-item-title">クーラーは、山中湖の風</h3>
+            <p class="site-guide-item-text">山中湖の澄んだ空気を感じていただきたいので、エアコンは設置していません。山中湖の天然クーラーを感じてください。</p>
+          </div>
         </div>
       </div>
     </section>
@@ -1014,6 +1074,99 @@ useHead({
   font-size: 16px;
   line-height: 2.2;
   margin-bottom: 24px;
+  color: #231815;
+  font-weight: 400;
+}
+
+/* 宿泊のご案内セクション */
+.site-guide-section {
+  background-color: #eeeeee;
+  padding: 104px 120px;
+}
+
+@media (max-width: 1024px) {
+  .site-guide-section {
+    padding: 60px 24px;
+  }
+}
+
+.site-guide-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.site-guide-title {
+  font-family: 'Zen Kaku Gothic New', 'Noto Sans JP', sans-serif;
+  font-size: 32px;
+  font-weight: 400;
+  margin-bottom: 32px;
+  color: #231815;
+  text-align: center;
+}
+
+.site-guide-intro {
+  font-size: 16px;
+  line-height: 2.2;
+  color: #231815;
+  text-align: center;
+  margin-bottom: 64px;
+}
+
+.site-guide-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 48px 40px;
+}
+
+@media (max-width: 1024px) {
+  .site-guide-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 40px 32px;
+  }
+}
+
+@media (max-width: 768px) {
+  .site-guide-grid {
+    grid-template-columns: 1fr;
+    gap: 48px;
+  }
+}
+
+.site-guide-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.site-guide-item-image {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.site-guide-item-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.site-guide-item:hover .site-guide-item-image img {
+  transform: scale(1.03);
+}
+
+.site-guide-item-title {
+  font-family: 'Zen Kaku Gothic New', 'Noto Sans JP', sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  color: #231815;
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+
+.site-guide-item-text {
+  font-size: 15px;
+  line-height: 2;
   color: #231815;
   font-weight: 400;
 }
