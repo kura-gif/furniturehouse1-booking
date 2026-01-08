@@ -52,13 +52,16 @@ service cloud.firestore {
 
     // クーポンコレクション
     match /coupons/{couponId} {
-      // 全ユーザーが読み取り可能（クーポンコード検証のため）
-      allow read: if request.auth != null;
+      // 全ユーザー（未認証含む）が読み取り可能（クーポンコード検証のため）
+      allow read: if true;
 
       // 管理者のみ作成・更新・削除可能
       allow write: if request.auth != null &&
                       exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
                       get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+
+      // 使用回数の更新は予約完了時に必要（認証不要）
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['usageCount', 'updatedAt']);
     }
 
     // 料金設定コレクション
