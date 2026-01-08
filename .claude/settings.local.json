@@ -82,7 +82,9 @@
       "Bash(/opt/homebrew/bin/brew install:*)",
       "Bash(/usr/local/bin/brew install:*)",
       "Bash(/opt/homebrew/bin/ffmpeg:*)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(npm exec firebase:*)",
+      "Bash(./node_modules/.bin/firebase deploy:*)"
     ]
   }
 }

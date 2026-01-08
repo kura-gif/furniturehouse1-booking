@@ -69,6 +69,13 @@
               </td>
               <td class="px-4 py-3 text-sm space-x-2">
                 <button
+                  @click="copyPromoLink(coupon.code)"
+                  class="text-green-600 hover:text-green-800"
+                  title="プロモーションリンクをコピー"
+                >
+                  リンク
+                </button>
+                <button
                   @click="editCoupon(coupon)"
                   class="text-purple-600 hover:text-purple-800"
                 >
@@ -477,5 +484,19 @@ function formatDate(timestamp: any): string {
     ? timestamp.toDate()
     : (timestamp.toDate ? timestamp.toDate() : new Date(timestamp))
   return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`
+}
+
+// プロモーションリンクをコピー
+async function copyPromoLink(code: string) {
+  const baseUrl = 'https://booking.furniturehouse1.com'
+  const promoUrl = `${baseUrl}/booking?promo=${code}`
+
+  try {
+    await navigator.clipboard.writeText(promoUrl)
+    alert(`リンクをコピーしました:\n${promoUrl}`)
+  } catch (e) {
+    // フォールバック: 手動コピー用のプロンプト
+    prompt('以下のリンクをコピーしてください:', promoUrl)
+  }
 }
 </script>
