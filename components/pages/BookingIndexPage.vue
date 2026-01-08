@@ -10,7 +10,7 @@
         <div class="grid grid-cols-4 gap-2 h-[400px] md:h-[500px] rounded-lg overflow-hidden relative">
           <!-- メイン画像 (左側大きく) -->
           <div
-            @click="openPhotoTour(0)"
+            @click="openPhotoTour"
             class="col-span-4 md:col-span-2 row-span-2 relative group cursor-pointer"
           >
             <div
@@ -20,20 +20,20 @@
           </div>
           <!-- サブ画像 (右側4枚) -->
           <div
-            v-for="(photo, index) in (displayPhotos.length > 0 ? displayPhotos.slice(1, 5) : images.gallery.slice(1, 5))"
-            :key="(photo as any).id || (photo as any).src || index"
-            @click="openPhotoTour(index + 1)"
+            v-for="(photo, index) in displayPhotos.slice(1, 5)"
+            :key="photo.id || index"
+            @click="openPhotoTour"
             class="hidden md:block col-span-1 relative group cursor-pointer overflow-hidden"
           >
             <div
               class="w-full h-full bg-cover bg-center transition-transform duration-300 group-hover:scale-105"
-              :style="`background-image: url('${(photo as any).url || (photo as any).src}');`"
+              :style="`background-image: url('${photo.url}');`"
             ></div>
           </div>
 
           <!-- すべての写真を表示ボタン -->
           <button
-            @click="openPhotoTour(0)"
+            @click="openPhotoTour"
             class="absolute bottom-4 right-4 px-4 py-2 bg-white border border-gray-900 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center gap-2"
             type="button"
           >
@@ -45,95 +45,44 @@
         </div>
       </div>
 
-      <!-- 写真ツアーモーダル -->
-      <div v-if="showPhotoTour" class="fixed inset-0 z-50 bg-black" @click="closePhotoTour">
-        <!-- ヘッダー -->
-        <div class="absolute top-0 left-0 right-0 bg-gradient-to-b from-black to-transparent z-10 p-4 flex items-center justify-between">
-          <button @click="closePhotoTour" class="p-2 text-white hover:bg-white/10 rounded-full transition-colors" type="button">
+      <!-- 写真ツアーモーダル（スクロール型） -->
+      <div v-if="showPhotoTour" class="fixed inset-0 z-50 bg-white">
+        <!-- 固定ヘッダー -->
+        <div class="sticky top-0 bg-white border-b border-gray-200 z-10 px-4 py-3 flex items-center justify-between">
+          <button @click="closePhotoTour" class="p-2 hover:bg-gray-100 rounded-full transition-colors" type="button">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
-          <div class="text-white text-sm">
-            {{ currentPhotoIndex + 1 }} / {{ displayPhotos.length }}
+          <div class="text-sm text-gray-600">
+            {{ displayPhotos.length }}枚の写真
           </div>
-          <button @click="sharePhoto" class="p-2 text-white hover:bg-white/10 rounded-full transition-colors" type="button">
+          <button @click="sharePhoto" class="p-2 hover:bg-gray-100 rounded-full transition-colors" type="button">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
             </svg>
           </button>
         </div>
 
-        <!-- 写真表示エリア -->
-        <div class="absolute inset-0 flex items-center justify-center p-4 pt-20 pb-32">
-          <div @click.stop class="relative max-w-6xl max-h-full w-full flex items-center justify-center">
-            <!-- 前へボタン -->
-            <button
-              v-if="currentPhotoIndex > 0"
-              @click="previousPhoto"
-              class="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white/90 hover:bg-white rounded-full transition-colors z-10"
-              type="button"
+        <!-- スクロール可能な写真一覧 -->
+        <div class="h-[calc(100vh-57px)] overflow-y-auto">
+          <div class="max-w-4xl mx-auto px-4 py-6 space-y-6">
+            <div
+              v-for="(photo, index) in displayPhotos"
+              :key="photo.id"
+              class="space-y-2"
             >
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-
-            <!-- 写真 -->
-            <img
-              :src="displayPhotos[currentPhotoIndex]?.url"
-              :alt="displayPhotos[currentPhotoIndex]?.title"
-              class="max-w-full max-h-full object-contain"
-            />
-
-            <!-- 次へボタン -->
-            <button
-              v-if="currentPhotoIndex < displayPhotos.length - 1"
-              @click="nextPhoto"
-              class="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white/90 hover:bg-white rounded-full transition-colors z-10"
-              type="button"
-            >
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        <!-- フッター：写真情報 & カテゴリタブ -->
-        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent z-10 p-6">
-          <!-- 写真情報 -->
-          <div class="text-white mb-6 max-w-6xl mx-auto">
-            <h3 class="text-xl font-medium mb-1">{{ displayPhotos[currentPhotoIndex]?.title }}</h3>
-            <p v-if="displayPhotos[currentPhotoIndex]?.description" class="text-sm text-gray-300">
-              {{ displayPhotos[currentPhotoIndex]?.description }}
-            </p>
-          </div>
-
-          <!-- カテゴリタブ -->
-          <div class="flex gap-2 overflow-x-auto pb-2 max-w-6xl mx-auto">
-            <button
-              @click="filterPhotosByCategory('all')"
-              :class="[
-                'px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors',
-                selectedPhotoCategory === 'all' ? 'bg-white text-gray-900' : 'bg-white/20 text-white hover:bg-white/30'
-              ]"
-              type="button"
-            >
-              すべて ({{ displayPhotos.length }})
-            </button>
-            <button
-              v-for="(label, key) in photoCategories"
-              :key="key"
-              @click="filterPhotosByCategory(key)"
-              :class="[
-                'px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors',
-                selectedPhotoCategory === key ? 'bg-white text-gray-900' : 'bg-white/20 text-white hover:bg-white/30'
-              ]"
-              type="button"
-            >
-              {{ label }} ({{ getPhotosCountByCategory(key) }})
-            </button>
+              <img
+                :src="photo.url"
+                :alt="photo.title"
+                class="w-full h-auto rounded-lg"
+                loading="lazy"
+              />
+              <div class="px-1">
+                <h3 class="font-medium text-gray-900">{{ photo.title }}</h3>
+                <p v-if="photo.description" class="text-sm text-gray-600">{{ photo.description }}</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -747,7 +696,7 @@
 <script setup lang="ts">
 import { images } from '~/config/images'
 import { amenityCategories, type Amenity } from '~/config/amenities'
-import { photoCategories, type Photo, type PhotoCategory } from '~/config/photos'
+import { type Photo, type PhotoCategory } from '~/config/photos'
 import {
   WifiIcon,
   TruckIcon,
@@ -912,8 +861,6 @@ onMounted(() => {
 // 写真ギャラリー管理
 const allPhotos = ref<Photo[]>([])
 const showPhotoTour = ref(false)
-const currentPhotoIndex = ref(0)
-const selectedPhotoCategory = ref<string | PhotoCategory>('all')
 
 // Firebaseから写真を読み込み
 const loadPhotos = async () => {
@@ -924,71 +871,49 @@ const loadPhotos = async () => {
   }
 }
 
-// 表示用の写真リスト（フィルタリング適用）
-const displayPhotos = computed(() => {
-  if (selectedPhotoCategory.value === 'all') {
-    return allPhotos.value
-  }
-  return allPhotos.value.filter(p => p.category === selectedPhotoCategory.value)
+// フォールバック用のローカル写真データ
+const fallbackPhotos = computed((): Photo[] => {
+  return images.gallery.map((img, index) => ({
+    id: `fallback-${index}`,
+    url: img.src,
+    title: img.alt,
+    description: '',
+    category: 'exterior' as PhotoCategory,
+    isVisible: true,
+    order: index
+  }))
 })
 
-// カテゴリごとの写真数を取得
-const getPhotosCountByCategory = (category: PhotoCategory): number => {
-  return allPhotos.value.filter(p => p.category === category).length
-}
+// 表示用の写真リスト
+const displayPhotos = computed(() => {
+  return allPhotos.value.length > 0 ? allPhotos.value : fallbackPhotos.value
+})
 
 // 写真ツアーを開く
-const openPhotoTour = (index: number) => {
-  currentPhotoIndex.value = index
+const openPhotoTour = () => {
   showPhotoTour.value = true
-  // bodyのスクロールを無効化
   document.body.style.overflow = 'hidden'
 }
 
 // 写真ツアーを閉じる
 const closePhotoTour = () => {
   showPhotoTour.value = false
-  // bodyのスクロールを有効化
   document.body.style.overflow = 'auto'
 }
 
-// 前の写真へ
-const previousPhoto = () => {
-  if (currentPhotoIndex.value > 0) {
-    currentPhotoIndex.value--
-  }
-}
-
-// 次の写真へ
-const nextPhoto = () => {
-  if (currentPhotoIndex.value < displayPhotos.value.length - 1) {
-    currentPhotoIndex.value++
-  }
-}
-
-// カテゴリでフィルタリング
-const filterPhotosByCategory = (category: string | PhotoCategory) => {
-  selectedPhotoCategory.value = category
-  currentPhotoIndex.value = 0 // フィルタ変更時は最初の写真に戻る
-}
-
-// 写真を共有
+// ページを共有
 const sharePhoto = async () => {
-  const currentPhoto = displayPhotos.value[currentPhotoIndex.value]
-  if (!currentPhoto) return
-
   if (navigator.share) {
     try {
       await navigator.share({
-        title: currentPhoto.title,
-        text: currentPhoto.description || currentPhoto.title,
+        title: '家具の家 No.1',
+        text: '世界的建築家・坂茂が設計した「家具の家 No.1」',
         url: window.location.href
       })
     } catch (error) {
       console.log('Share cancelled or failed:', error)
     }
   } else {
-    // Web Share API非対応の場合はURLをコピー
     navigator.clipboard.writeText(window.location.href)
     alert('URLをコピーしました')
   }
