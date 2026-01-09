@@ -59,6 +59,7 @@ export default defineNuxtConfig({
       '/api/stripe/update-payment-intent': { csurf: false },
       '/api/bookings/create': { csurf: false },
       '/api/emails/**': { csurf: false },
+      '/api/emails/send-booking-confirmation': { csurf: false },
       '/api/admin/**': { csurf: false },
       '/api/test/**': { csurf: false },
       '/api/public/**': { csurf: false },
