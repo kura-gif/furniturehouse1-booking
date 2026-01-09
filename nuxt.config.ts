@@ -56,6 +56,7 @@ export default defineNuxtConfig({
       '/api/stripe/webhook': { csurf: false },
       '/api/stripe/create-payment-intent': { csurf: false },
       '/api/stripe/create-payment-intent-secure': { csurf: false },
+      '/api/stripe/update-payment-intent': { csurf: false },
       '/api/bookings/create': { csurf: false },
       '/api/emails/**': { csurf: false },
       '/api/admin/**': { csurf: false },
