@@ -288,8 +288,6 @@ definePageMeta({
   middleware: 'admin'
 })
 
-const { $storage } = useNuxtApp()
-
 // template refs
 const fileInput = ref<HTMLInputElement | null>(null)
 
@@ -411,16 +409,27 @@ const removeImage = () => {
   }
 }
 
-// 画像をアップロード
+// 画像をアップロード（サーバー経由）
 const uploadImage = async (): Promise<string | null> => {
-  if (!imageFile.value || !$storage) return form.imageUrl || null
+  if (!imageFile.value) return form.imageUrl || null
 
   try {
-    const { ref, uploadBytes, getDownloadURL } = await import('firebase/storage')
-    const fileName = `options/${Date.now()}-${imageFile.value.name}`
-    const storageRef = ref($storage, fileName)
-    await uploadBytes(storageRef, imageFile.value)
-    return await getDownloadURL(storageRef)
+    const formData = new FormData()
+    formData.append('file', imageFile.value)
+    formData.append('folder', 'options')
+
+    const response = await fetch('/api/admin/upload-image', {
+      method: 'POST',
+      body: formData
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(errorData.statusMessage || '画像のアップロードに失敗しました')
+    }
+
+    const data = await response.json()
+    return data.url
   } catch (error) {
     console.error('画像アップロードエラー:', error)
     throw new Error('画像のアップロードに失敗しました')

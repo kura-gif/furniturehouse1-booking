@@ -1,0 +1,12 @@
+[
+  {
+    "origin": [
+      "https://booking.furniturehouse1.com",
+      "https://furniturehouse1.com",
+      "http://localhost:3000"
+    ],
+    "method": ["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"],
+    "maxAgeSeconds": 3600,
+    "responseHeader": ["Content-Type", "Authorization", "Content-Length", "X-Requested-With"]
+  }
+]

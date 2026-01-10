@@ -111,17 +111,12 @@ definePageMeta({
 const route = useRoute()
 const router = useRouter()
 const bookingId = route.params.id as string
-const { user } = useAuth()
+const { user, getIdToken } = useAuth()
 
 const {
-  getOrCreateConversation,
-  getConversationByBookingId,
   subscribeToMessages,
-  sendMessage,
   markAsReadByGuest
 } = useConversations()
-
-const { getBooking } = useBookings()
 
 const conversation = ref<Conversation | null>(null)
 const messages = ref<Message[]>([])
@@ -158,61 +153,73 @@ const scrollToBottom = () => {
   })
 }
 
-// 会話を読み込み
+// 会話を読み込み（サーバーAPI経由）
 const loadConversation = async () => {
   isLoading.value = true
   error.value = null
 
+  console.log('loadConversation開始: bookingId=', bookingId, 'user=', user.value?.uid, user.value?.email)
+
   try {
-    // 予約情報を取得
-    const booking = await getBooking(bookingId)
-    if (!booking) {
-      error.value = '予約が見つかりません'
+    // IDトークンを取得
+    const idToken = await getIdToken()
+    if (!idToken) {
+      error.value = '認証が必要です'
       return
     }
 
-    // ユーザーが予約の所有者か確認
-    if (booking.userId !== user.value?.uid && booking.guestEmail !== user.value?.email) {
-      error.value = 'この予約へのアクセス権がありません'
+    // サーバーAPI経由で会話を取得または作成
+    console.log('サーバーAPIで会話を取得中...')
+    const response = await fetch(`/api/conversations/by-booking?bookingId=${bookingId}`, {
+      headers: {
+        'Authorization': `Bearer ${idToken}`
+      }
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      if (response.status === 404) {
+        error.value = '予約が見つかりません'
+      } else if (response.status === 403) {
+        error.value = 'この予約へのアクセス権がありません'
+      } else {
+        error.value = errorData.statusMessage || '会話の取得に失敗しました'
+      }
       return
     }
 
-    // 既存の会話を取得または作成
-    let existingConversation = await getConversationByBookingId(bookingId)
+    const data = await response.json()
+    console.log('API応答:', data)
 
-    if (!existingConversation) {
-      existingConversation = await getOrCreateConversation(
-        bookingId,
-        booking.bookingReference,
-        booking.guestName,
-        booking.guestEmail,
-        user.value?.uid
-      )
+    if (!data.success || !data.conversation) {
+      error.value = '会話の取得に失敗しました'
+      return
     }
 
-    conversation.value = existingConversation
+    conversation.value = data.conversation as Conversation
 
     // 既読にする（エラーが発生しても続行）
     try {
-      await markAsReadByGuest(existingConversation.id)
+      await markAsReadByGuest(data.conversation.id)
     } catch (readError) {
       console.warn('既読マーク更新をスキップ:', readError)
     }
 
     // メッセージをリアルタイム監視
-    unsubscribe = subscribeToMessages(existingConversation.id, (newMessages) => {
+    unsubscribe = subscribeToMessages(data.conversation.id, (newMessages) => {
       messages.value = newMessages
       scrollToBottom()
     })
-  } catch (err) {
+  } catch (err: any) {
     console.error('会話の取得に失敗:', err)
-    error.value = '会話の取得に失敗しました'
+    console.error('エラー詳細:', err?.code, err?.message)
+    error.value = `会話の取得に失敗しました: ${err?.message || '不明なエラー'}`
   } finally {
     isLoading.value = false
   }
 }
 
-// メッセージ送信
+// メッセージ送信（サーバーAPI経由）
 const handleSendMessage = async () => {
   if (!newMessage.value.trim() || isSending.value || !conversation.value) return
 
@@ -221,24 +228,46 @@ const handleSendMessage = async () => {
   newMessage.value = ''
 
   try {
-    await sendMessage(
-      conversation.value.id,
-      content,
-      'guest',
-      user.value?.displayName || 'ゲスト',
-      user.value?.uid
-    )
+    const idToken = await getIdToken()
+    if (!idToken) {
+      throw new Error('認証が必要です')
+    }
+
+    const response = await fetch('/api/conversations/send-message', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${idToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        conversationId: conversation.value.id,
+        content,
+        senderName: user.value?.displayName || 'ゲスト'
+      })
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(errorData.statusMessage || 'メッセージの送信に失敗しました')
+    }
+
     scrollToBottom()
-  } catch (err) {
+  } catch (err: any) {
     console.error('メッセージ送信に失敗:', err)
-    alert('メッセージの送信に失敗しました')
+    alert(`メッセージの送信に失敗しました: ${err.message}`)
     newMessage.value = content // 復元
   } finally {
     isSending.value = false
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
+  // ユーザー認証状態が確定するまで少し待つ
+  if (!user.value) {
+    console.log('ユーザー未ロード、待機中...')
+    await new Promise(resolve => setTimeout(resolve, 500))
+  }
+  console.log('onMounted: user=', user.value?.uid, user.value?.email)
   loadConversation()
 })
 

@@ -46,7 +46,7 @@ export default defineNuxtConfig({
     routeRules: {
       '/**': {
         headers: {
-          'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://m.stripe.com https://*.firebaseio.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data: blob:; img-src 'self' data: https: blob:; connect-src 'self' https: wss:; frame-src https://js.stripe.com https://hooks.stripe.com https://*.firebaseapp.com; worker-src 'self' blob:;"
+          'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://m.stripe.com https://*.firebaseio.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: blob:; connect-src 'self' https: wss: blob:; frame-src https://js.stripe.com https://hooks.stripe.com https://*.firebaseapp.com; worker-src 'self' blob:;"
         }
       },
       // 静的アセットのキャッシュ（1年）
@@ -63,7 +63,8 @@ export default defineNuxtConfig({
       '/api/admin/**': { csurf: false },
       '/api/test/**': { csurf: false },
       '/api/public/**': { csurf: false },
-      '/api/chladni/**': { csurf: false }
+      '/api/chladni/**': { csurf: false },
+      '/api/conversations/**': { csurf: false }
     }
   },
 

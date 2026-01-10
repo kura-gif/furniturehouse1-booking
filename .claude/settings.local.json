@@ -84,7 +84,14 @@
       "Bash(/opt/homebrew/bin/ffmpeg:*)",
       "Bash(wc:*)",
       "Bash(npm exec firebase:*)",
-      "Bash(./node_modules/.bin/firebase deploy:*)"
+      "Bash(./node_modules/.bin/firebase deploy:*)",
+      "Bash(gsutil cors set:*)",
+      "Bash(/opt/homebrew/bin/gcloud auth login:*)",
+      "Bash(export GOOGLE_APPLICATION_CREDENTIALS=\"/Users/kurashimayouichi/Documents/furniturehouse1/furniture-house-1-firebase-adminsdk-fbsvc-31687aa747.json\")",
+      "Bash(/opt/homebrew/bin/gsutil cors set:*)",
+      "Bash(/opt/homebrew/bin/gsutil ls:*)",
+      "Bash(/opt/homebrew/bin/gcloud config set:*)",
+      "Bash(/opt/homebrew/bin/gcloud auth activate-service-account:*)"
     ]
   }
 }

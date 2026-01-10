@@ -361,9 +361,10 @@ service cloud.firestore {
                      (resource.data.guestUserId == request.auth.uid ||
                       resource.data.guestEmail == request.auth.token.email);
 
-      // ゲストは自分の会話を作成可能
+      // ゲストは自分の会話を作成可能（userIdまたはemailで照合）
       allow create: if request.auth != null &&
-                       request.resource.data.guestUserId == request.auth.uid;
+                       (request.resource.data.guestUserId == request.auth.uid ||
+                        request.resource.data.guestEmail == request.auth.token.email);
 
       // ゲストは自分の会話の未読カウントを更新可能（userIdまたはemailで照合）
       allow update: if request.auth != null &&

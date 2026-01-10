@@ -108,10 +108,24 @@ export const useConversations = () => {
 
   /**
    * 予約IDから会話を取得
+   * guestEmailも条件に含めてFirestoreルールを満たす
    */
-  const getConversationByBookingId = async (bookingId: string): Promise<Conversation | null> => {
+  const getConversationByBookingId = async (bookingId: string, guestEmail?: string): Promise<Conversation | null> => {
     const conversationsRef = collection($db, 'conversations')
-    const q = query(conversationsRef, where('bookingId', '==', bookingId), limit(1))
+
+    // guestEmailが指定されている場合は複合条件でクエリ
+    let q
+    if (guestEmail) {
+      q = query(
+        conversationsRef,
+        where('bookingId', '==', bookingId),
+        where('guestEmail', '==', guestEmail),
+        limit(1)
+      )
+    } else {
+      q = query(conversationsRef, where('bookingId', '==', bookingId), limit(1))
+    }
+
     const snapshot = await getDocs(q)
 
     if (snapshot.empty) {
