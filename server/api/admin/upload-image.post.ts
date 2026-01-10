@@ -49,18 +49,19 @@ export default defineEventHandler(async (event) => {
     await fileRef.save(file.data, {
       metadata: {
         contentType: file.type
-      },
-      public: true
+      }
     })
 
-    // Firebase Storage の公開URLを生成
-    // 新しいfirebasestorage.appドメイン形式
-    const encodedFileName = encodeURIComponent(fileName)
-    const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodedFileName}?alt=media`
+    // Firebase Storage ダウンロードトークンを使ったURLを生成
+    // Signed URLを取得（長期間有効）
+    const [signedUrl] = await fileRef.getSignedUrl({
+      action: 'read',
+      expires: '01-01-2100' // 長期間有効
+    })
 
     return {
       success: true,
-      url: publicUrl,
+      url: signedUrl,
       fileName
     }
   } catch (error: any) {
