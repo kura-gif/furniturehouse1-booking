@@ -221,15 +221,12 @@
               </div>
             </div>
 
-            <!-- 高速バス＋レンタカー（おすすめ） -->
-            <div class="bg-gray-50 rounded-lg p-6 border-2 border-gray-900">
-              <div class="flex justify-between items-center mb-2 flex-wrap gap-2">
+            <!-- 高速バス＋レンタカー -->
+            <div class="bg-gray-50 rounded-lg p-6">
+              <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
                 <h3 class="font-semibold text-gray-900">新宿から高速バス＋レンタカー</h3>
-                <span class="text-xs text-white bg-gray-900 px-3 py-1 rounded-full">おすすめ</span>
+                <span class="text-xs text-gray-500 bg-white px-3 py-1 rounded-full">現地で自由に</span>
               </div>
-              <p class="text-sm text-gray-600 mb-4">
-                高速バスで山中湖まで来て、現地でレンタカーを借りる方法。運転は最小限で、到着後は自由に動けます。
-              </p>
 
               <div class="route-visual">
                 <div class="route-step start">
