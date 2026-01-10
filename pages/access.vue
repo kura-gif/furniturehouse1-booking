@@ -263,7 +263,7 @@
               <div class="info-box">
                 <div class="title">山中湖のレンタカー</div>
                 <ul>
-                  <li>トヨタレンタカー山中湖店</li>
+                  <li><a href="https://rent.toyota.co.jp/sp/shop/detail.aspx?rCode=63901&eCode=012" target="_blank" rel="noopener noreferrer">トヨタレンタカー山中湖店</a></li>
                 </ul>
               </div>
             </div>
