@@ -271,7 +271,7 @@
 
           <div class="route-card">
             <div class="route-header">
-              <h3>タクシー情報</h3>
+              <h3>タクシー・レンタカー情報</h3>
               <span class="route-badge">参考情報</span>
             </div>
             <div class="route-body">
@@ -283,6 +283,13 @@
                 <div class="title">タクシー会社</div>
                 <ul>
                   <li><a href="https://kyowa-taxi.jp/" target="_blank" rel="noopener noreferrer">共和タクシー（山中湖）</a></li>
+                </ul>
+              </div>
+
+              <div class="info-box secondary">
+                <div class="title">レンタカー</div>
+                <ul>
+                  <li><a href="https://rent.toyota.co.jp/sp/shop/detail.aspx?rCode=63901&eCode=012" target="_blank" rel="noopener noreferrer">トヨタレンタカー山中湖店</a></li>
                 </ul>
               </div>
             </div>
@@ -461,7 +468,7 @@
 
           <div class="route-card">
             <div class="route-header">
-              <h3>タクシー情報</h3>
+              <h3>タクシー・レンタカー情報</h3>
               <span class="route-badge">参考情報</span>
             </div>
             <div class="route-body">
@@ -473,6 +480,13 @@
                 <div class="title">タクシー会社</div>
                 <ul>
                   <li><a href="https://kyowa-taxi.jp/" target="_blank" rel="noopener noreferrer">共和タクシー（山中湖）</a></li>
+                </ul>
+              </div>
+
+              <div class="info-box secondary">
+                <div class="title">レンタカー</div>
+                <ul>
+                  <li><a href="https://rent.toyota.co.jp/sp/shop/detail.aspx?rCode=63901&eCode=012" target="_blank" rel="noopener noreferrer">トヨタレンタカー山中湖店</a></li>
                 </ul>
               </div>
             </div>
