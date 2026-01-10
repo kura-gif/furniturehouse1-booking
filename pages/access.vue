@@ -488,11 +488,15 @@
       </div>
     </main>
 
-    <footer class="access-footer">
+    <!-- 注意書き -->
+    <div class="access-notice">
       <p>
         バス時刻・料金は変更になる場合があります。お出かけ前に各交通機関の公式サイトをご確認ください。
       </p>
-    </footer>
+    </div>
+
+    <!-- 共通フッター -->
+    <AppFooter />
   </div>
 </template>
 
@@ -547,7 +551,7 @@ useHead({
 
 <style scoped>
 .access-page {
-  font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Noto Sans JP', 'Tsukushi Gothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', sans-serif;
   background-color: #ffffff;
   color: #1a1a1a;
   line-height: 1.8;
@@ -919,15 +923,15 @@ useHead({
   color: #777777;
 }
 
-/* Footer */
-.access-footer {
+/* Notice */
+.access-notice {
   background: #f5f5f5;
   border-top: 1px solid #dddddd;
   padding: 48px 24px;
   text-align: center;
 }
 
-.access-footer p {
+.access-notice p {
   font-size: 0.8rem;
   color: #777777;
   max-width: 600px;
