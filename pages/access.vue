@@ -2,12 +2,10 @@
   <div class="access-page">
     <!-- Header -->
     <header class="access-header">
+      <NuxtLink to="/" class="back-to-top">
+        ← トップへ戻る
+      </NuxtLink>
       <div class="access-header-inner">
-        <div class="breadcrumb">
-          <NuxtLink to="/" class="breadcrumb-link">ホーム</NuxtLink>
-          <span class="breadcrumb-separator">›</span>
-          <span class="breadcrumb-current">アクセス</span>
-        </div>
         <h1>アクセス</h1>
       </div>
     </header>
@@ -563,6 +561,7 @@ useHead({
   padding: 32px 24px;
   text-align: center;
   border-bottom: 1px solid #3a3a3a;
+  position: relative;
 }
 
 .access-header-inner {
@@ -577,29 +576,19 @@ useHead({
   color: #ffffff;
 }
 
-/* Breadcrumb */
-.breadcrumb {
-  margin-bottom: 16px;
-  font-size: 0.85rem;
-}
-
-.breadcrumb-link {
+/* Back to Top Button */
+.back-to-top {
+  position: absolute;
+  top: 24px;
+  left: 24px;
   color: #999999;
   text-decoration: none;
+  font-size: 0.85rem;
   transition: color 0.2s ease;
 }
 
-.breadcrumb-link:hover {
+.back-to-top:hover {
   color: #ffffff;
-}
-
-.breadcrumb-separator {
-  color: #666666;
-  margin: 0 8px;
-}
-
-.breadcrumb-current {
-  color: #cccccc;
 }
 
 /* Container */
