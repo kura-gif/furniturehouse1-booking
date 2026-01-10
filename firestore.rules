@@ -356,17 +356,19 @@ service cloud.firestore {
                             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
                             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
 
-      // ゲストは自分の会話を読み取り可能
+      // ゲストは自分の会話を読み取り可能（userIdまたはemailで照合）
       allow read: if request.auth != null &&
-                     resource.data.guestUserId == request.auth.uid;
+                     (resource.data.guestUserId == request.auth.uid ||
+                      resource.data.guestEmail == request.auth.token.email);
 
       // ゲストは自分の会話を作成可能
       allow create: if request.auth != null &&
                        request.resource.data.guestUserId == request.auth.uid;
 
-      // ゲストは自分の会話の未読カウントを更新可能
+      // ゲストは自分の会話の未読カウントを更新可能（userIdまたはemailで照合）
       allow update: if request.auth != null &&
-                       resource.data.guestUserId == request.auth.uid &&
+                       (resource.data.guestUserId == request.auth.uid ||
+                        resource.data.guestEmail == request.auth.token.email) &&
                        request.resource.data.diff(resource.data).affectedKeys()
                          .hasOnly(['unreadByGuest', 'updatedAt']);
     }
@@ -378,15 +380,17 @@ service cloud.firestore {
                             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
                             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
 
-      // ゲストは自分の会話のメッセージを読み取り可能
+      // ゲストは自分の会話のメッセージを読み取り可能（userIdまたはemailで照合）
       allow read: if request.auth != null &&
                      exists(/databases/$(database)/documents/conversations/$(resource.data.conversationId)) &&
-                     get(/databases/$(database)/documents/conversations/$(resource.data.conversationId)).data.guestUserId == request.auth.uid;
+                     (get(/databases/$(database)/documents/conversations/$(resource.data.conversationId)).data.guestUserId == request.auth.uid ||
+                      get(/databases/$(database)/documents/conversations/$(resource.data.conversationId)).data.guestEmail == request.auth.token.email);
 
-      // ゲストは自分の会話にメッセージを送信可能
+      // ゲストは自分の会話にメッセージを送信可能（userIdまたはemailで照合）
       allow create: if request.auth != null &&
                        exists(/databases/$(database)/documents/conversations/$(request.resource.data.conversationId)) &&
-                       get(/databases/$(database)/documents/conversations/$(request.resource.data.conversationId)).data.guestUserId == request.auth.uid &&
+                       (get(/databases/$(database)/documents/conversations/$(request.resource.data.conversationId)).data.guestUserId == request.auth.uid ||
+                        get(/databases/$(database)/documents/conversations/$(request.resource.data.conversationId)).data.guestEmail == request.auth.token.email) &&
                        request.resource.data.senderType == 'guest';
 
       // メッセージの既読更新

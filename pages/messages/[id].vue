@@ -192,8 +192,12 @@ const loadConversation = async () => {
 
     conversation.value = existingConversation
 
-    // 既読にする
-    await markAsReadByGuest(existingConversation.id)
+    // 既読にする（エラーが発生しても続行）
+    try {
+      await markAsReadByGuest(existingConversation.id)
+    } catch (readError) {
+      console.warn('既読マーク更新をスキップ:', readError)
+    }
 
     // メッセージをリアルタイム監視
     unsubscribe = subscribeToMessages(existingConversation.id, (newMessages) => {

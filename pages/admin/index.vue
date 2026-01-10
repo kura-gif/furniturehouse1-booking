@@ -2249,6 +2249,10 @@ const {
   updateMaintenanceRecord,
   deleteMaintenanceRecord
 } = useMaintenance()
+const {
+  getConversationByBookingId,
+  getOrCreateConversation
+} = useConversations()
 const router = useRouter()
 
 definePageMeta({
@@ -2946,10 +2950,29 @@ async function cancelBooking(bookingId: string) {
   }
 }
 
-function openMessage(booking: Booking) {
-  // メッセージタブに移動
-  currentTab.value = 'messages'
-  selectedBooking.value = booking
+async function openMessage(booking: Booking) {
+  try {
+    // 既存の会話を検索
+    let conversation = await getConversationByBookingId(booking.id)
+
+    // 会話がなければ作成
+    if (!conversation) {
+      conversation = await getOrCreateConversation(
+        booking.id,
+        booking.bookingReference,
+        booking.guestName,
+        booking.guestEmail,
+        booking.userId || undefined
+      )
+    }
+
+    // 会話詳細ページに遷移
+    selectedBooking.value = null
+    router.push(`/admin/messages/${conversation.id}`)
+  } catch (error) {
+    console.error('メッセージを開くエラー:', error)
+    alert('メッセージを開けませんでした')
+  }
 }
 
 // 返金処理
