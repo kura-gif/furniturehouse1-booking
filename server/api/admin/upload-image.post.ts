@@ -65,6 +65,11 @@ export default defineEventHandler(async (event) => {
     }
   } catch (error: any) {
     console.error('画像アップロードエラー:', error)
+    console.error('エラー詳細:', JSON.stringify({
+      message: error.message,
+      code: error.code,
+      stack: error.stack
+    }, null, 2))
 
     if (error.statusCode) {
       throw error
@@ -72,7 +77,7 @@ export default defineEventHandler(async (event) => {
 
     throw createError({
       statusCode: 500,
-      statusMessage: error.message || '画像のアップロードに失敗しました'
+      statusMessage: `画像のアップロードに失敗しました: ${error.message || 'Unknown error'}`
     })
   }
 })

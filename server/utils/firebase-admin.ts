@@ -134,7 +134,10 @@ export const getStorageAdmin = () => {
       throw new Error('Firebase Admin SDK is not initialized. Please configure credentials.')
     }
   }
-  return getStorage().bucket()
+  const config = useRuntimeConfig()
+  const bucketName = config.public.firebaseStorageBucket || 'furniture-house-1.firebasestorage.app'
+  console.log('[Storage] Using bucket:', bucketName)
+  return getStorage().bucket(bucketName)
 }
 
 /**
