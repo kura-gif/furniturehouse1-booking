@@ -839,3 +839,44 @@ export interface SelectedBookingOption {
   price: number
   imageUrl?: string
 }
+
+/**
+ * 在庫ステータス
+ */
+export type InventoryStatus = 'sufficient' | 'low' | 'out_of_stock'
+
+/**
+ * 在庫アイテム
+ */
+export interface InventoryItem {
+  id: string
+  name: string
+  currentStock: number
+  unit: string // 枚、本、ロール、個など
+  reorderThreshold: number // 発注目安数量
+  purchaseUrl?: string // 購入URL（Amazon等）
+  notes?: string
+  createdAt: Timestamp
+  updatedAt: Timestamp
+}
+
+/**
+ * メンテナンスステータス
+ */
+export type MaintenanceStatus = 'good' | 'needs_attention' | 'under_maintenance' | 'broken'
+
+/**
+ * メンテナンス記録
+ */
+export interface MaintenanceRecord {
+  id: string
+  equipmentName: string
+  lastMaintenanceDate: Timestamp
+  nextScheduledDate?: Timestamp
+  status: MaintenanceStatus
+  description?: string
+  cost?: number
+  performedBy?: string
+  createdAt: Timestamp
+  updatedAt: Timestamp
+}

@@ -268,6 +268,30 @@ service cloud.firestore {
                       get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
+    // 在庫管理コレクション（管理者・サポーター共有）
+    match /inventory/{itemId} {
+      // 管理者がアクセス可能
+      allow read, write: if request.auth != null &&
+                            exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+
+      // サポーター（認証済みでusersコレクションに存在しない＝supportersコレクションのユーザー）がアクセス可能
+      allow read, write: if request.auth != null &&
+                            !exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    // メンテナンス記録コレクション（管理者・サポーター共有）
+    match /maintenance/{recordId} {
+      // 管理者がアクセス可能
+      allow read, write: if request.auth != null &&
+                            exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+
+      // サポーター（認証済みでusersコレクションに存在しない＝supportersコレクションのユーザー）がアクセス可能
+      allow read, write: if request.auth != null &&
+                            !exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
     // レビューコレクション（公開用）
     match /reviews/{reviewId} {
       // 承認済みレビューは全ユーザーが読み取り可能（リスト・詳細両方）

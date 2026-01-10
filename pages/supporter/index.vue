@@ -44,6 +44,7 @@
             <button
               v-for="tab in tabs"
               :key="tab.id"
+              type="button"
               @click="currentTab = tab.id"
               :class="[
                 'py-4 px-1 border-b-2 font-medium text-sm transition-custom',
@@ -107,6 +108,133 @@
         >
           <TaskCard :task="task" :showCompensation="true" />
         </div>
+      </div>
+
+      <!-- 備品管理タブ -->
+      <div v-if="currentTab === 'inventory'" class="space-y-6">
+        <!-- ローディング -->
+        <div v-if="isLoadingInventory" class="card text-center py-8">
+          <p class="text-gray-600">読み込み中...</p>
+        </div>
+
+        <template v-else>
+          <!-- アメニティ在庫 -->
+          <div class="card">
+            <h2 class="text-xl font-semibold mb-4">アメニティ在庫管理</h2>
+
+            <div v-if="inventoryItems.length === 0" class="text-center py-8 text-gray-500">
+              在庫アイテムがありません
+            </div>
+
+            <div class="space-y-3">
+              <div
+                v-for="item in inventoryItems"
+                :key="item.id"
+                class="border rounded-lg p-4"
+              >
+                <div class="flex items-center justify-between">
+                  <div class="flex-1">
+                    <div class="flex items-center gap-2">
+                      <h3 class="font-semibold">{{ item.name }}</h3>
+                      <a
+                        v-if="item.purchaseUrl"
+                        :href="item.purchaseUrl"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="text-blue-600 hover:text-blue-800"
+                        title="購入ページを開く"
+                      >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                      </a>
+                    </div>
+                    <div class="mt-1 flex items-center gap-4 text-sm">
+                      <span>
+                        <span class="text-gray-600">現在庫:</span>
+                        <span class="font-semibold ml-1">{{ item.currentStock }}{{ item.unit }}</span>
+                      </span>
+                      <span class="text-gray-500">
+                        発注目安: {{ item.reorderThreshold }}{{ item.unit }}以下
+                      </span>
+                    </div>
+                    <p v-if="item.notes" class="text-sm text-gray-500 mt-1">{{ item.notes }}</p>
+                  </div>
+                  <div class="flex gap-2 items-center">
+                    <button
+                      @click="openEditInventoryModal(item)"
+                      class="btn-secondary text-sm py-1 px-3"
+                    >
+                      編集
+                    </button>
+                    <button
+                      @click="handleDeleteInventory(item)"
+                      class="text-red-600 hover:text-red-800 text-sm"
+                    >
+                      削除
+                    </button>
+                    <span :class="['px-3 py-1 rounded-full text-sm font-semibold', getInventoryStatusColor(item)]">
+                      {{ getInventoryStatusLabel(item) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button @click="openAddInventoryModal" class="btn-primary mt-4">新しいアイテムを追加</button>
+          </div>
+
+          <!-- 設備メンテナンス -->
+          <div class="card">
+            <h2 class="text-xl font-semibold mb-4">設備メンテナンス履歴</h2>
+
+            <div v-if="maintenanceRecords.length === 0" class="text-center py-8 text-gray-500">
+              メンテナンス記録がありません
+            </div>
+
+            <div v-else class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">設備</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">前回</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">次回</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">状態</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">操作</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                  <tr v-for="record in maintenanceRecords" :key="record.id">
+                    <td class="px-4 py-3 whitespace-nowrap font-medium">{{ record.equipmentName }}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm">{{ formatTimestamp(record.lastMaintenanceDate) }}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm">{{ formatTimestamp(record.nextScheduledDate) }}</td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                      <span :class="['px-2 py-1 rounded-full text-xs', getMaintenanceStatusColor(record.status)]">
+                        {{ getMaintenanceStatusLabel(record.status) }}
+                      </span>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                      <button
+                        @click="openEditMaintenanceModal(record)"
+                        class="text-blue-600 hover:text-blue-800 text-sm mr-2"
+                      >
+                        編集
+                      </button>
+                      <button
+                        @click="handleDeleteMaintenance(record)"
+                        class="text-red-600 hover:text-red-800 text-sm"
+                      >
+                        削除
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <button @click="openAddMaintenanceModal" class="btn-primary mt-4">メンテナンスを記録</button>
+          </div>
+        </template>
       </div>
 
       <!-- 報酬履歴タブ -->
@@ -373,15 +501,384 @@
         </div>
       </div>
     </div>
+
+    <!-- 在庫追加モーダル -->
+    <div v-if="showAddInventoryModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-xl p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
+        <h3 class="text-xl font-bold mb-4">新しい在庫アイテムを追加</h3>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">アイテム名 *</label>
+            <input
+              v-model="inventoryForm.name"
+              type="text"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              placeholder="例: バスタオル"
+            />
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">現在庫</label>
+              <input
+                v-model.number="inventoryForm.currentStock"
+                type="number"
+                min="0"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">単位</label>
+              <select
+                v-model="inventoryForm.unit"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="個">個</option>
+                <option value="枚">枚</option>
+                <option value="本">本</option>
+                <option value="ロール">ロール</option>
+                <option value="セット">セット</option>
+                <option value="パック">パック</option>
+                <option value="袋">袋</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">発注目安数量</label>
+            <input
+              v-model.number="inventoryForm.reorderThreshold"
+              type="number"
+              min="0"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            />
+            <p class="text-xs text-gray-500 mt-1">この数量以下になると「要発注」と表示されます</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">購入URL（Amazon等）</label>
+            <input
+              v-model="inventoryForm.purchaseUrl"
+              type="url"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              placeholder="https://www.amazon.co.jp/..."
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">メモ</label>
+            <textarea
+              v-model="inventoryForm.notes"
+              rows="2"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              placeholder="発注先など"
+            ></textarea>
+          </div>
+        </div>
+        <div class="flex justify-end gap-3 mt-6">
+          <button
+            @click="showAddInventoryModal = false"
+            class="btn-secondary"
+            :disabled="isAddingInventory"
+          >
+            キャンセル
+          </button>
+          <button
+            @click="submitAddInventory"
+            class="btn-primary"
+            :disabled="isAddingInventory"
+          >
+            {{ isAddingInventory ? '追加中...' : '追加' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 在庫編集モーダル -->
+    <div v-if="showEditInventoryModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-xl p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
+        <h3 class="text-xl font-bold mb-4">在庫アイテムを編集</h3>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">アイテム名 *</label>
+            <input
+              v-model="editInventoryForm.name"
+              type="text"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">現在庫</label>
+              <input
+                v-model.number="editInventoryForm.currentStock"
+                type="number"
+                min="0"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">単位</label>
+              <select
+                v-model="editInventoryForm.unit"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="個">個</option>
+                <option value="枚">枚</option>
+                <option value="本">本</option>
+                <option value="ロール">ロール</option>
+                <option value="セット">セット</option>
+                <option value="パック">パック</option>
+                <option value="袋">袋</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">発注目安数量</label>
+            <input
+              v-model.number="editInventoryForm.reorderThreshold"
+              type="number"
+              min="0"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">購入URL（Amazon等）</label>
+            <input
+              v-model="editInventoryForm.purchaseUrl"
+              type="url"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              placeholder="https://www.amazon.co.jp/..."
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">メモ</label>
+            <textarea
+              v-model="editInventoryForm.notes"
+              rows="2"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            ></textarea>
+          </div>
+        </div>
+        <div class="flex justify-end gap-3 mt-6">
+          <button
+            @click="showEditInventoryModal = false"
+            class="btn-secondary"
+            :disabled="isEditingInventory"
+          >
+            キャンセル
+          </button>
+          <button
+            @click="submitEditInventory"
+            class="btn-primary"
+            :disabled="isEditingInventory"
+          >
+            {{ isEditingInventory ? '保存中...' : '保存' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- メンテナンス追加モーダル -->
+    <div v-if="showAddMaintenanceModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-xl p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
+        <h3 class="text-xl font-bold mb-4">メンテナンスを記録</h3>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">設備名 *</label>
+            <input
+              v-model="maintenanceForm.equipmentName"
+              type="text"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              placeholder="例: エアコン、給湯器"
+            />
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">メンテナンス日</label>
+              <input
+                v-model="maintenanceForm.lastMaintenanceDate"
+                type="date"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">次回予定日</label>
+              <input
+                v-model="maintenanceForm.nextScheduledDate"
+                type="date"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">ステータス</label>
+            <select
+              v-model="maintenanceForm.status"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="good">良好</option>
+              <option value="needs_attention">要確認</option>
+              <option value="under_maintenance">メンテナンス中</option>
+              <option value="broken">故障</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">作業内容</label>
+            <textarea
+              v-model="maintenanceForm.description"
+              rows="2"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              placeholder="実施した作業の詳細"
+            ></textarea>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">作業者</label>
+              <input
+                v-model="maintenanceForm.performedBy"
+                type="text"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">費用（円）</label>
+              <input
+                v-model.number="maintenanceForm.cost"
+                type="number"
+                min="0"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="flex justify-end gap-3 mt-6">
+          <button
+            @click="showAddMaintenanceModal = false"
+            class="btn-secondary"
+            :disabled="isAddingMaintenance"
+          >
+            キャンセル
+          </button>
+          <button
+            @click="submitAddMaintenance"
+            class="btn-primary"
+            :disabled="isAddingMaintenance"
+          >
+            {{ isAddingMaintenance ? '保存中...' : '保存' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- メンテナンス編集モーダル -->
+    <div v-if="showEditMaintenanceModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-xl p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
+        <h3 class="text-xl font-bold mb-4">メンテナンス記録を編集</h3>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">設備名 *</label>
+            <input
+              v-model="editMaintenanceForm.equipmentName"
+              type="text"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">メンテナンス日</label>
+              <input
+                v-model="editMaintenanceForm.lastMaintenanceDate"
+                type="date"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">次回予定日</label>
+              <input
+                v-model="editMaintenanceForm.nextScheduledDate"
+                type="date"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">ステータス</label>
+            <select
+              v-model="editMaintenanceForm.status"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="good">良好</option>
+              <option value="needs_attention">要確認</option>
+              <option value="under_maintenance">メンテナンス中</option>
+              <option value="broken">故障</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">作業内容</label>
+            <textarea
+              v-model="editMaintenanceForm.description"
+              rows="2"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            ></textarea>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">作業者</label>
+              <input
+                v-model="editMaintenanceForm.performedBy"
+                type="text"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">費用（円）</label>
+              <input
+                v-model.number="editMaintenanceForm.cost"
+                type="number"
+                min="0"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="flex justify-end gap-3 mt-6">
+          <button
+            @click="showEditMaintenanceModal = false"
+            class="btn-secondary"
+            :disabled="isEditingMaintenance"
+          >
+            キャンセル
+          </button>
+          <button
+            @click="submitEditMaintenance"
+            class="btn-primary"
+            :disabled="isEditingMaintenance"
+          >
+            {{ isEditingMaintenance ? '保存中...' : '保存' }}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
-import type { CleaningTask, CleaningTaskStatus } from '~/types'
+import { ref, computed, onMounted, watch, reactive } from 'vue'
+import type { CleaningTask, CleaningTaskStatus, InventoryItem, MaintenanceRecord, MaintenanceStatus } from '~/types'
+import { Timestamp } from 'firebase/firestore'
 
 const { appUser, loading, user, logout } = useAuth()
 const { getTasksBySupporter, updateTask } = useCleaningTasks()
+const {
+  getInventoryStatus,
+  getAllInventoryItems,
+  createInventoryItem,
+  updateInventoryItem,
+  deleteInventoryItem
+} = useInventory()
+const {
+  getAllMaintenanceRecords,
+  createMaintenanceRecord,
+  updateMaintenanceRecord,
+  deleteMaintenanceRecord
+} = useMaintenance()
 const router = useRouter()
 
 definePageMeta({
@@ -401,7 +898,8 @@ const tabs = [
   { id: 'today', name: '本日' },
   { id: 'pending', name: '未完了' },
   { id: 'completed', name: '完了' },
-  { id: 'earnings', name: '報酬' }
+  { id: 'earnings', name: '報酬' },
+  { id: 'inventory', name: '備品管理' }
 ]
 const currentTab = ref('today')
 
@@ -671,5 +1169,355 @@ function getStatusColor(status: CleaningTaskStatus) {
     cancelled: 'bg-red-100 text-red-800'
   }
   return colors[status] || 'bg-gray-100 text-gray-800'
+}
+
+// ============================================
+// 備品・メンテナンス管理
+// ============================================
+
+// 在庫アイテムデータ
+const inventoryItems = ref<InventoryItem[]>([])
+const maintenanceRecords = ref<MaintenanceRecord[]>([])
+const isLoadingInventory = ref(false)
+
+// 在庫追加モーダル
+const showAddInventoryModal = ref(false)
+const isAddingInventory = ref(false)
+const inventoryForm = reactive({
+  name: '',
+  currentStock: 0,
+  unit: '個',
+  reorderThreshold: 10,
+  purchaseUrl: '',
+  notes: ''
+})
+
+// 在庫編集モーダル
+const showEditInventoryModal = ref(false)
+const isEditingInventory = ref(false)
+const editingInventoryItem = ref<InventoryItem | null>(null)
+const editInventoryForm = reactive({
+  name: '',
+  currentStock: 0,
+  unit: '',
+  reorderThreshold: 0,
+  purchaseUrl: '',
+  notes: ''
+})
+
+// メンテナンス追加モーダル
+const showAddMaintenanceModal = ref(false)
+const isAddingMaintenance = ref(false)
+const maintenanceForm = reactive({
+  equipmentName: '',
+  lastMaintenanceDate: '',
+  nextScheduledDate: '',
+  status: 'good' as MaintenanceStatus,
+  description: '',
+  performedBy: '',
+  cost: 0
+})
+
+// メンテナンス編集モーダル
+const showEditMaintenanceModal = ref(false)
+const isEditingMaintenance = ref(false)
+const editingMaintenanceRecord = ref<MaintenanceRecord | null>(null)
+const editMaintenanceForm = reactive({
+  equipmentName: '',
+  lastMaintenanceDate: '',
+  nextScheduledDate: '',
+  status: 'good' as MaintenanceStatus,
+  description: '',
+  performedBy: '',
+  cost: 0
+})
+
+// 在庫・メンテナンスデータを読み込み
+const loadInventoryAndMaintenance = async () => {
+  isLoadingInventory.value = true
+  try {
+    const [items, records] = await Promise.all([
+      getAllInventoryItems(),
+      getAllMaintenanceRecords()
+    ])
+    inventoryItems.value = items
+    maintenanceRecords.value = records
+  } catch (error) {
+    console.error('Load inventory/maintenance error:', error)
+  } finally {
+    isLoadingInventory.value = false
+  }
+}
+
+// タブが変わったら備品データを読み込み
+watch(currentTab, (newTab) => {
+  if (newTab === 'inventory') {
+    loadInventoryAndMaintenance()
+  }
+})
+
+// 在庫ステータスラベル
+const getInventoryStatusLabel = (item: InventoryItem): string => {
+  const status = getInventoryStatus(item)
+  switch (status) {
+    case 'sufficient': return '十分'
+    case 'low': return '要発注'
+    case 'out_of_stock': return '在庫切れ'
+    default: return '不明'
+  }
+}
+
+// 在庫ステータス色
+const getInventoryStatusColor = (item: InventoryItem): string => {
+  const status = getInventoryStatus(item)
+  switch (status) {
+    case 'sufficient': return 'bg-green-100 text-green-800'
+    case 'low': return 'bg-yellow-100 text-yellow-800'
+    case 'out_of_stock': return 'bg-red-100 text-red-800'
+    default: return 'bg-gray-100 text-gray-800'
+  }
+}
+
+// メンテナンスステータスラベル
+const getMaintenanceStatusLabel = (status: MaintenanceStatus): string => {
+  switch (status) {
+    case 'good': return '良好'
+    case 'needs_attention': return '要確認'
+    case 'under_maintenance': return 'メンテ中'
+    case 'broken': return '故障'
+    default: return '不明'
+  }
+}
+
+// メンテナンスステータス色
+const getMaintenanceStatusColor = (status: MaintenanceStatus): string => {
+  switch (status) {
+    case 'good': return 'bg-green-100 text-green-800'
+    case 'needs_attention': return 'bg-yellow-100 text-yellow-800'
+    case 'under_maintenance': return 'bg-blue-100 text-blue-800'
+    case 'broken': return 'bg-red-100 text-red-800'
+    default: return 'bg-gray-100 text-gray-800'
+  }
+}
+
+// Timestampを日付文字列に変換
+const formatTimestamp = (timestamp: Timestamp | undefined): string => {
+  if (!timestamp) return '-'
+  const date = timestamp.toDate()
+  return `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`
+}
+
+// 在庫アイテム追加
+const openAddInventoryModal = () => {
+  inventoryForm.name = ''
+  inventoryForm.currentStock = 0
+  inventoryForm.unit = '個'
+  inventoryForm.reorderThreshold = 10
+  inventoryForm.purchaseUrl = ''
+  inventoryForm.notes = ''
+  showAddInventoryModal.value = true
+}
+
+const submitAddInventory = async () => {
+  if (!inventoryForm.name.trim()) {
+    alert('アイテム名を入力してください')
+    return
+  }
+  isAddingInventory.value = true
+  try {
+    await createInventoryItem({
+      name: inventoryForm.name,
+      currentStock: inventoryForm.currentStock,
+      unit: inventoryForm.unit,
+      reorderThreshold: inventoryForm.reorderThreshold,
+      purchaseUrl: inventoryForm.purchaseUrl || undefined,
+      notes: inventoryForm.notes || undefined
+    })
+    showAddInventoryModal.value = false
+    await loadInventoryAndMaintenance()
+
+    // 在庫が少ない場合は通知を送信
+    if (inventoryForm.currentStock <= inventoryForm.reorderThreshold) {
+      await sendLowStockNotification(inventoryForm.name, inventoryForm.currentStock, inventoryForm.unit, inventoryForm.reorderThreshold)
+    }
+  } catch (error) {
+    console.error('Add inventory error:', error)
+    alert('在庫アイテムの追加に失敗しました')
+  } finally {
+    isAddingInventory.value = false
+  }
+}
+
+// 在庫アイテム編集
+const openEditInventoryModal = (item: InventoryItem) => {
+  editingInventoryItem.value = item
+  editInventoryForm.name = item.name
+  editInventoryForm.currentStock = item.currentStock
+  editInventoryForm.unit = item.unit
+  editInventoryForm.reorderThreshold = item.reorderThreshold
+  editInventoryForm.purchaseUrl = item.purchaseUrl || ''
+  editInventoryForm.notes = item.notes || ''
+  showEditInventoryModal.value = true
+}
+
+const submitEditInventory = async () => {
+  if (!editingInventoryItem.value) return
+  if (!editInventoryForm.name.trim()) {
+    alert('アイテム名を入力してください')
+    return
+  }
+
+  const previousStock = editingInventoryItem.value.currentStock
+
+  isEditingInventory.value = true
+  try {
+    await updateInventoryItem(editingInventoryItem.value.id, {
+      name: editInventoryForm.name,
+      currentStock: editInventoryForm.currentStock,
+      unit: editInventoryForm.unit,
+      reorderThreshold: editInventoryForm.reorderThreshold,
+      purchaseUrl: editInventoryForm.purchaseUrl || undefined,
+      notes: editInventoryForm.notes || undefined
+    })
+    showEditInventoryModal.value = false
+    await loadInventoryAndMaintenance()
+
+    // 在庫が閾値を下回った場合に通知
+    if (previousStock > editInventoryForm.reorderThreshold &&
+        editInventoryForm.currentStock <= editInventoryForm.reorderThreshold) {
+      await sendLowStockNotification(editInventoryForm.name, editInventoryForm.currentStock, editInventoryForm.unit, editInventoryForm.reorderThreshold)
+    }
+  } catch (error) {
+    console.error('Edit inventory error:', error)
+    alert('在庫アイテムの更新に失敗しました')
+  } finally {
+    isEditingInventory.value = false
+  }
+}
+
+// 在庫アイテム削除
+const handleDeleteInventory = async (item: InventoryItem) => {
+  if (!confirm(`「${item.name}」を削除しますか？`)) return
+  try {
+    await deleteInventoryItem(item.id)
+    await loadInventoryAndMaintenance()
+  } catch (error) {
+    console.error('Delete inventory error:', error)
+    alert('在庫アイテムの削除に失敗しました')
+  }
+}
+
+// メンテナンス記録追加
+const openAddMaintenanceModal = () => {
+  const today = new Date()
+  const todayStr = today.toISOString().split('T')[0]
+  maintenanceForm.equipmentName = ''
+  maintenanceForm.lastMaintenanceDate = todayStr
+  maintenanceForm.nextScheduledDate = ''
+  maintenanceForm.status = 'good'
+  maintenanceForm.description = ''
+  maintenanceForm.performedBy = ''
+  maintenanceForm.cost = 0
+  showAddMaintenanceModal.value = true
+}
+
+const submitAddMaintenance = async () => {
+  if (!maintenanceForm.equipmentName.trim()) {
+    alert('設備名を入力してください')
+    return
+  }
+  isAddingMaintenance.value = true
+  try {
+    await createMaintenanceRecord({
+      equipmentName: maintenanceForm.equipmentName,
+      lastMaintenanceDate: Timestamp.fromDate(new Date(maintenanceForm.lastMaintenanceDate)),
+      nextScheduledDate: maintenanceForm.nextScheduledDate
+        ? Timestamp.fromDate(new Date(maintenanceForm.nextScheduledDate))
+        : undefined,
+      status: maintenanceForm.status,
+      description: maintenanceForm.description || undefined,
+      performedBy: maintenanceForm.performedBy || undefined,
+      cost: maintenanceForm.cost || undefined
+    })
+    showAddMaintenanceModal.value = false
+    await loadInventoryAndMaintenance()
+  } catch (error) {
+    console.error('Add maintenance error:', error)
+    alert('メンテナンス記録の追加に失敗しました')
+  } finally {
+    isAddingMaintenance.value = false
+  }
+}
+
+// メンテナンス記録編集
+const openEditMaintenanceModal = (record: MaintenanceRecord) => {
+  editingMaintenanceRecord.value = record
+  editMaintenanceForm.equipmentName = record.equipmentName
+  editMaintenanceForm.lastMaintenanceDate = record.lastMaintenanceDate?.toDate().toISOString().split('T')[0] || ''
+  editMaintenanceForm.nextScheduledDate = record.nextScheduledDate?.toDate().toISOString().split('T')[0] || ''
+  editMaintenanceForm.status = record.status
+  editMaintenanceForm.description = record.description || ''
+  editMaintenanceForm.performedBy = record.performedBy || ''
+  editMaintenanceForm.cost = record.cost || 0
+  showEditMaintenanceModal.value = true
+}
+
+const submitEditMaintenance = async () => {
+  if (!editingMaintenanceRecord.value) return
+  if (!editMaintenanceForm.equipmentName.trim()) {
+    alert('設備名を入力してください')
+    return
+  }
+  isEditingMaintenance.value = true
+  try {
+    await updateMaintenanceRecord(editingMaintenanceRecord.value.id, {
+      equipmentName: editMaintenanceForm.equipmentName,
+      lastMaintenanceDate: Timestamp.fromDate(new Date(editMaintenanceForm.lastMaintenanceDate)),
+      nextScheduledDate: editMaintenanceForm.nextScheduledDate
+        ? Timestamp.fromDate(new Date(editMaintenanceForm.nextScheduledDate))
+        : undefined,
+      status: editMaintenanceForm.status,
+      description: editMaintenanceForm.description || undefined,
+      performedBy: editMaintenanceForm.performedBy || undefined,
+      cost: editMaintenanceForm.cost || undefined
+    })
+    showEditMaintenanceModal.value = false
+    await loadInventoryAndMaintenance()
+  } catch (error) {
+    console.error('Edit maintenance error:', error)
+    alert('メンテナンス記録の更新に失敗しました')
+  } finally {
+    isEditingMaintenance.value = false
+  }
+}
+
+// メンテナンス記録削除
+const handleDeleteMaintenance = async (record: MaintenanceRecord) => {
+  if (!confirm(`「${record.equipmentName}」の記録を削除しますか？`)) return
+  try {
+    await deleteMaintenanceRecord(record.id)
+    await loadInventoryAndMaintenance()
+  } catch (error) {
+    console.error('Delete maintenance error:', error)
+    alert('メンテナンス記録の削除に失敗しました')
+  }
+}
+
+// 在庫不足通知を送信
+const sendLowStockNotification = async (itemName: string, currentStock: number, unit: string, threshold: number) => {
+  try {
+    await $fetch('/api/inventory/low-stock-notification', {
+      method: 'POST',
+      body: {
+        itemName,
+        currentStock,
+        unit,
+        threshold
+      }
+    })
+  } catch (error) {
+    console.error('Low stock notification error:', error)
+    // 通知失敗はユーザーに表示しない（メイン処理に影響させない）
+  }
 }
 </script>

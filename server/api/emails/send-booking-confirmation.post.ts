@@ -1,14 +1,16 @@
 import nodemailer from 'nodemailer'
+import { getFacilitySettings } from '~/server/utils/facility-settings'
 
 /**
  * 予約確認メール送信API
- * 
+ *
  * ⚠️ セキュリティ: このAPIは内部呼び出し専用です
  * - Webhook経由での呼び出しのみを想定
  * - シークレットキーによる認証が必要
  */
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
+  const facilitySettings = await getFacilitySettings()
   
   // 内部呼び出し認証チェック
   const authHeader = getHeader(event, 'x-internal-secret')
@@ -207,8 +209,8 @@ export default defineEventHandler(async (event) => {
           <div class="info-box">
             <h3 style="margin-top: 0;">重要事項</h3>
             <ul style="margin: 0; padding-left: 20px;">
-              <li>チェックイン時間: 15:00〜18:00</li>
-              <li>チェックアウト時間: 〜11:00</li>
+              <li>チェックイン時間: ${facilitySettings.checkInTime}〜</li>
+              <li>チェックアウト時間: 〜${facilitySettings.checkOutTime}</li>
               <li>詳細な住所は別途メールにてお知らせいたします</li>
               <li>お問い合わせの際は、予約番号（${bookingReference}）をお伝えください</li>
             </ul>

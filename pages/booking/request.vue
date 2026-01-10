@@ -605,11 +605,11 @@
         <div class="space-y-3 mb-6">
           <div class="flex justify-between text-sm">
             <span class="text-gray-600">チェックイン</span>
-            <span class="font-medium text-gray-900">{{ formatDisplayDate(checkInDate) }} 15:00以降</span>
+            <span class="font-medium text-gray-900">{{ formatDisplayDate(checkInDate) }} {{ facilitySettings.checkInTime }}以降</span>
           </div>
           <div class="flex justify-between text-sm">
             <span class="text-gray-600">チェックアウト</span>
-            <span class="font-medium text-gray-900">{{ formatDisplayDate(checkOutDate) }} 11:00まで</span>
+            <span class="font-medium text-gray-900">{{ formatDisplayDate(checkOutDate) }} {{ facilitySettings.checkOutTime }}まで</span>
           </div>
           <div class="flex justify-between text-sm">
             <span class="text-gray-600">宿泊人数</span>
@@ -678,6 +678,12 @@ const { calculatePrice, pricingSetting, loadFromFirestore } = useEnhancedPricing
 const { getActivePolicy, generatePolicyDescription } = useCancellationPolicy()
 const { validateCoupon, incrementCouponUsage } = useCoupon()
 
+// 施設設定
+const facilitySettings = ref({
+  checkInTime: '15:00',
+  checkOutTime: '11:00'
+})
+
 // パンくずリスト
 const breadcrumbItems = [
   { label: '家具の家 No.1 予約サイト', path: '/' },
@@ -699,7 +705,7 @@ const loadingOptions = ref(true)
 
 // クーポン関連
 const showCouponField = computed(() => route.query.promo !== undefined)
-const showCouponInput = ref(false)
+const showCouponInput = ref(!!route.query.promo) // promoパラメータがある場合は最初から開く
 const couponCode = ref((route.query.promo as string) || '')
 const appliedCoupon = ref<Coupon | null>(null)
 const couponDiscountAmount = ref(0)
@@ -800,9 +806,28 @@ const loadOptionsAndAvailability = async () => {
   }
 }
 
+// 施設設定を読み込み
+const loadFacilitySettings = async () => {
+  try {
+    const response = await fetch('/api/public/settings')
+    if (response.ok) {
+      const data = await response.json()
+      if (data.success && data.settings) {
+        facilitySettings.value = {
+          checkInTime: data.settings.checkInTime || '15:00',
+          checkOutTime: data.settings.checkOutTime || '11:00'
+        }
+      }
+    }
+  } catch (error) {
+    console.error('施設設定の取得に失敗:', error)
+  }
+}
+
 // 料金設定とキャンセルポリシーを読み込み
 onMounted(async () => {
   await loadFromFirestore()
+  await loadFacilitySettings()
 
   // オプションを読み込み
   await loadOptionsAndAvailability()

@@ -11,12 +11,21 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 
   console.log('[Admin Middleware] Starting auth check, loading:', loading.value)
 
-  // 認証状態の読み込み中は待機（最大15秒）
-  let loadingAttempts = 0
-  const maxAttempts = 300 // 15秒
-  while (loading.value && loadingAttempts < maxAttempts) {
-    await new Promise(resolve => setTimeout(resolve, 50))
-    loadingAttempts++
+  // 認証状態の読み込み中は待機（watchを使用して非ブロッキング）
+  if (loading.value) {
+    await new Promise<void>((resolve) => {
+      const unwatch = watch(loading, (newLoading) => {
+        if (!newLoading) {
+          unwatch()
+          resolve()
+        }
+      }, { immediate: true })
+      // タイムアウト（5秒）
+      setTimeout(() => {
+        unwatch()
+        resolve()
+      }, 5000)
+    })
   }
 
   console.log('[Admin Middleware] Auth state after wait:', {
@@ -24,8 +33,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     appUser: appUser.value?.email,
     role: appUser.value?.role,
     isAdmin: isAdmin.value,
-    loading: loading.value,
-    attempts: loadingAttempts
+    loading: loading.value
   })
 
   // 未認証の場合はログインページへ
@@ -34,18 +42,26 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     return navigateTo('/login')
   }
 
-  // appUserの読み込みを待つ（最大10秒）
-  let attempts = 0
-  const maxAppUserAttempts = 200 // 10秒
-  while (!appUser.value && attempts < maxAppUserAttempts) {
-    await new Promise(resolve => setTimeout(resolve, 50))
-    attempts++
+  // appUserの読み込みを待つ（watchを使用して非ブロッキング）
+  if (!appUser.value) {
+    await new Promise<void>((resolve) => {
+      const unwatch = watch(appUser, (newAppUser) => {
+        if (newAppUser) {
+          unwatch()
+          resolve()
+        }
+      }, { immediate: true })
+      // タイムアウト（3秒）
+      setTimeout(() => {
+        unwatch()
+        resolve()
+      }, 3000)
+    })
   }
 
   console.log('[Admin Middleware] AppUser state:', {
     appUser: appUser.value?.email,
-    role: appUser.value?.role,
-    attempts
+    role: appUser.value?.role
   })
 
   // 管理者でない場合はホームへリダイレクト

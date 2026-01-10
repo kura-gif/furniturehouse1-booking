@@ -251,7 +251,7 @@
             <ul class="space-y-3 text-sm text-gray-700">
               <li class="flex items-start gap-3">
                 <span class="text-gray-400 mt-1">•</span>
-                <span>チェックイン: 15:00〜18:00 / チェックアウト: 〜11:00</span>
+                <span>チェックイン: {{ facilitySettings.checkInTime }}〜 / チェックアウト: 〜{{ facilitySettings.checkOutTime }}</span>
               </li>
               <li class="flex items-start gap-3">
                 <span class="text-gray-400 mt-1">•</span>
@@ -561,6 +561,9 @@
                     <p class="text-gray-600 mt-1">東京から約2時間<br />中央道 山中湖ICより15分</p>
                   </div>
                 </div>
+                <NuxtLink to="/access" class="text-sm font-medium underline hover:text-gray-600 mt-2 transition-colors inline-block">
+                  アクセス詳細を見る
+                </NuxtLink>
               </div>
             </div>
           </div>
@@ -1165,11 +1168,6 @@ useHead({
 </script>
 
 <style scoped>
-/* トランジション */
-* {
-  transition: all 0.4s cubic-bezier(0.4, 0.4, 0, 1);
-}
-
 /* 行数制限 */
 .line-clamp-3 {
   display: -webkit-box;

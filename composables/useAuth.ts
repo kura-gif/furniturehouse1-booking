@@ -178,6 +178,9 @@ export const useAuth = () => {
   // 管理者かどうかをチェック
   const isAdmin = computed(() => appUser.value?.role === 'admin')
 
+  // サポーターかどうかをチェック
+  const isSupporter = computed(() => appUser.value?.role === 'supporter')
+
   // IDトークンを取得
   const getIdToken = async (): Promise<string | null> => {
     if (!user.value) return null
@@ -218,6 +221,7 @@ export const useAuth = () => {
     appUser,
     loading,
     isAdmin,
+    isSupporter,
     initAuth,
     login,
     signup,

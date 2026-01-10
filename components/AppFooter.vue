@@ -14,31 +14,28 @@
           <h4 class="font-semibold mb-4">サイトマップ</h4>
           <ul class="space-y-2 text-sm text-gray-400">
             <li>
-              <a href="#about" class="hover:text-white transition-colors">施設について</a>
+              <a href="https://furniturehouse1.com/" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors">施設について</a>
             </li>
             <li>
-              <a href="#gallery" class="hover:text-white transition-colors">ギャラリー</a>
+              <a href="https://booking.furniturehouse1.com/#gallery" class="hover:text-white transition-colors">ギャラリー</a>
             </li>
             <li>
-              <a href="#amenities" class="hover:text-white transition-colors">設備・アメニティ</a>
+              <NuxtLink to="/access" class="hover:text-white transition-colors">アクセス</NuxtLink>
             </li>
             <li>
-              <a href="#access" class="hover:text-white transition-colors">アクセス</a>
-            </li>
-            <li>
-              <NuxtLink to="/booking/request" class="hover:text-white transition-colors">宿泊予約</NuxtLink>
-            </li>
-            <li>
-              <NuxtLink to="/workshop" class="hover:text-white transition-colors">ワークショップ予約</NuxtLink>
+              <a href="https://booking.furniturehouse1.com/booking" class="hover:text-white transition-colors">宿泊予約</a>
             </li>
           </ul>
         </div>
 
-        <div>
-          <h4 class="font-semibold mb-4">管理者</h4>
+        <div v-if="isAdmin || isSupporter">
+          <h4 class="font-semibold mb-4">管理</h4>
           <ul class="space-y-2 text-sm text-gray-400">
-            <li>
-              <a href="/admin" class="hover:text-white transition-colors">管理ダッシュボード</a>
+            <li v-if="isAdmin">
+              <NuxtLink to="/admin" class="hover:text-white transition-colors">管理ダッシュボード</NuxtLink>
+            </li>
+            <li v-if="isSupporter">
+              <NuxtLink to="/supporter" class="hover:text-white transition-colors">施設サポーター</NuxtLink>
             </li>
           </ul>
         </div>
@@ -54,5 +51,6 @@
 </template>
 
 <script setup lang="ts">
+const { isAdmin, isSupporter } = useAuth()
 const currentYear = new Date().getFullYear()
 </script>

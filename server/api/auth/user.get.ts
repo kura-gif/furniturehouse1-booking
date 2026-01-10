@@ -3,6 +3,7 @@ import { getFirestoreAdmin, getAuthAdmin } from '~/server/utils/firebase-admin'
 /**
  * 現在のユーザー情報を取得するAPI
  * Firebase Auth トークンからユーザー情報を取得
+ * usersコレクションにない場合はsupportersコレクションも検索
  */
 export default defineEventHandler(async (event) => {
   const authHeader = getHeader(event, 'authorization')
@@ -28,27 +29,56 @@ export default defineEventHandler(async (event) => {
     const userDoc = await db.collection('users').doc(uid).get()
     console.log('[API /auth/user] User doc exists:', userDoc.exists)
 
-    if (!userDoc.exists) {
+    if (userDoc.exists) {
+      const userData = userDoc.data()
+      console.log('[API /auth/user] User role:', userData?.role)
       return {
-        success: false,
-        error: 'User not found',
-        user: null
+        success: true,
+        user: {
+          id: userDoc.id,
+          uid: uid,
+          email: userData?.email,
+          displayName: userData?.displayName,
+          role: userData?.role,
+          createdAt: userData?.createdAt?.toDate?.() || null,
+          updatedAt: userData?.updatedAt?.toDate?.() || null
+        }
       }
     }
 
-    const userData = userDoc.data()
-    console.log('[API /auth/user] User role:', userData?.role)
-    return {
-      success: true,
-      user: {
-        id: userDoc.id,
-        uid: uid,
-        email: userData?.email,
-        displayName: userData?.displayName,
-        role: userData?.role,
-        createdAt: userData?.createdAt?.toDate?.() || null,
-        updatedAt: userData?.updatedAt?.toDate?.() || null
+    // usersコレクションにない場合、supportersコレクションを検索
+    console.log('[API /auth/user] User not found in users collection, checking supporters...')
+    const supportersSnapshot = await db.collection('supporters')
+      .where('uid', '==', uid)
+      .limit(1)
+      .get()
+
+    if (!supportersSnapshot.empty) {
+      const supporterDoc = supportersSnapshot.docs[0]
+      const supporterData = supporterDoc.data()
+      console.log('[API /auth/user] Found supporter:', supporterData?.name)
+      return {
+        success: true,
+        user: {
+          id: supporterDoc.id,
+          uid: uid,
+          email: supporterData?.email,
+          displayName: supporterData?.name || supporterData?.displayName,
+          role: 'supporter',
+          hourlyRate: supporterData?.hourlyRate,
+          transportationFee: supporterData?.transportationFee,
+          isActive: supporterData?.isActive,
+          createdAt: supporterData?.createdAt?.toDate?.() || null,
+          updatedAt: supporterData?.updatedAt?.toDate?.() || null
+        }
       }
+    }
+
+    console.log('[API /auth/user] User not found in any collection')
+    return {
+      success: false,
+      error: 'User not found',
+      user: null
     }
   } catch (error: any) {
     console.error('[API /auth/user] Error:', error.message, error.stack)

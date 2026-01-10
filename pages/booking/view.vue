@@ -52,12 +52,12 @@
               <div>
                 <p class="text-sm text-gray-600 mb-1">チェックイン</p>
                 <p class="font-medium text-gray-900">{{ formatDate(booking.startDate) }}</p>
-                <p class="text-xs text-gray-500">15:00以降</p>
+                <p class="text-xs text-gray-500">{{ facilitySettings.checkInTime }}以降</p>
               </div>
               <div>
                 <p class="text-sm text-gray-600 mb-1">チェックアウト</p>
                 <p class="font-medium text-gray-900">{{ formatDate(booking.endDate) }}</p>
-                <p class="text-xs text-gray-500">11:00まで</p>
+                <p class="text-xs text-gray-500">{{ facilitySettings.checkOutTime }}まで</p>
               </div>
               <div>
                 <p class="text-sm text-gray-600 mb-1">宿泊数</p>
@@ -212,8 +212,35 @@ const isLoading = ref(true)
 const error = ref('')
 const isLoggedIn = computed(() => !!user.value)
 
+// 施設設定
+const facilitySettings = ref({
+  checkInTime: '15:00',
+  checkOutTime: '11:00'
+})
+
+// 施設設定を読み込み
+const loadFacilitySettings = async () => {
+  try {
+    const response = await fetch('/api/public/settings')
+    if (response.ok) {
+      const data = await response.json()
+      if (data.success && data.settings) {
+        facilitySettings.value = {
+          checkInTime: data.settings.checkInTime || '15:00',
+          checkOutTime: data.settings.checkOutTime || '11:00'
+        }
+      }
+    }
+  } catch (err) {
+    console.error('施設設定の取得に失敗:', err)
+  }
+}
+
 // 予約情報を取得
 onMounted(async () => {
+  // 施設設定を読み込み
+  loadFacilitySettings()
+
   if (!token.value) {
     error.value = '予約確認リンクが無効です'
     isLoading.value = false

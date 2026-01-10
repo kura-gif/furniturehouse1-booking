@@ -713,13 +713,22 @@ export const useCleaningTasks = () => {
 
   /**
    * サポーター別のタスク一覧を取得
+   * セキュリティルールはassignedToUidでチェックするため、そちらでクエリする
    */
   const getTasksBySupporter = async (supporterId: string): Promise<CleaningTask[]> => {
     try {
       const tasksRef = collection($db, 'cleaningTasks')
+      // セキュリティルールがassignedToUidでチェックするため、
+      // uidでクエリを実行する（user.valueはFirebase AuthのUser）
+      const supporterUid = user.value?.uid
+      if (!supporterUid) {
+        console.error('❌ サポーターのUIDが取得できません')
+        return []
+      }
+
       const q = query(
         tasksRef,
-        where('assignedTo', '==', supporterId),
+        where('assignedToUid', '==', supporterUid),
         orderBy('scheduledDate', 'desc')
       )
       const snapshot = await getDocs(q)

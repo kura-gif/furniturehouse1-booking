@@ -4,9 +4,11 @@
  */
 
 import nodemailer from 'nodemailer'
+import { getFacilitySettings } from '~/server/utils/facility-settings'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
+  const facilitySettings = await getFacilitySettings()
 
   // 内部呼び出し認証
   const internalSecret = getHeader(event, 'x-internal-secret')
@@ -94,11 +96,11 @@ export default defineEventHandler(async (event) => {
                       </tr>
                       <tr>
                         <td style="color: #666; font-size: 14px;">チェックイン</td>
-                        <td style="color: #333; font-size: 14px;">${checkInDate} 15:00以降</td>
+                        <td style="color: #333; font-size: 14px;">${checkInDate} ${facilitySettings.checkInTime}以降</td>
                       </tr>
                       <tr>
                         <td style="color: #666; font-size: 14px;">チェックアウト</td>
-                        <td style="color: #333; font-size: 14px;">${checkOutDate} 11:00まで</td>
+                        <td style="color: #333; font-size: 14px;">${checkOutDate} ${facilitySettings.checkOutTime}まで</td>
                       </tr>
                       <tr>
                         <td style="color: #666; font-size: 14px;">お支払い金額</td>

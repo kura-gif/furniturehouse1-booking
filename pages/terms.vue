@@ -103,9 +103,9 @@
           </h2>
           <div class="space-y-4 text-gray-700">
             <ul class="list-disc list-inside space-y-2" style="line-height: 1.8;">
-              <li><strong>チェックイン:</strong> 13:00以降（スマートロック利用、詳細は別途案内）</li>
-              <li><strong>チェックアウト:</strong> 11:00まで（時間厳守）</li>
-              <li><strong>利用人数:</strong> 最大6名まで</li>
+              <li><strong>チェックイン:</strong> {{ facilitySettings.checkInTime }}以降（スマートロック利用、詳細は別途案内）</li>
+              <li><strong>チェックアウト:</strong> {{ facilitySettings.checkOutTime }}まで（時間厳守）</li>
+              <li><strong>利用人数:</strong> 最大{{ facilitySettings.maxGuests }}名まで</li>
             </ul>
           </div>
         </section>
@@ -282,6 +282,32 @@
 <script setup lang="ts">
 definePageMeta({
   layout: false
+})
+
+// 施設設定
+const facilitySettings = ref({
+  checkInTime: '15:00',
+  checkOutTime: '11:00',
+  maxGuests: 6
+})
+
+// 施設設定を読み込み
+onMounted(async () => {
+  try {
+    const response = await fetch('/api/public/settings')
+    if (response.ok) {
+      const data = await response.json()
+      if (data.success && data.settings) {
+        facilitySettings.value = {
+          checkInTime: data.settings.checkInTime || '15:00',
+          checkOutTime: data.settings.checkOutTime || '11:00',
+          maxGuests: data.settings.maxGuests || 6
+        }
+      }
+    }
+  } catch (error) {
+    console.error('施設設定の取得に失敗:', error)
+  }
 })
 
 // SEO設定

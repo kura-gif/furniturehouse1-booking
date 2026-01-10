@@ -4,13 +4,26 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     return
   }
 
-  const { user, appUser, loading, isAdmin } = useAuth()
+  const { user, appUser, loading, isAdmin, initAuth } = useAuth()
 
-  // 認証状態の読み込み中は待機（最大10秒）
-  let loadingAttempts = 0
-  while (loading.value && loadingAttempts < 200) {
-    await new Promise(resolve => setTimeout(resolve, 50))
-    loadingAttempts++
+  // 初期化を確実に行う
+  initAuth()
+
+  // 認証状態の読み込み中は待機（watchを使用して非ブロッキング）
+  if (loading.value) {
+    await new Promise<void>((resolve) => {
+      const unwatch = watch(loading, (newLoading) => {
+        if (!newLoading) {
+          unwatch()
+          resolve()
+        }
+      }, { immediate: true })
+      // タイムアウト（5秒）
+      setTimeout(() => {
+        unwatch()
+        resolve()
+      }, 5000)
+    })
   }
 
   // 未認証の場合はログインページへ
@@ -18,11 +31,21 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     return navigateTo('/login')
   }
 
-  // appUserの読み込みを待つ（最大5秒）
-  let attempts = 0
-  while (!appUser.value && attempts < 100) {
-    await new Promise(resolve => setTimeout(resolve, 50))
-    attempts++
+  // appUserの読み込みを待つ（watchを使用して非ブロッキング）
+  if (!appUser.value) {
+    await new Promise<void>((resolve) => {
+      const unwatch = watch(appUser, (newAppUser) => {
+        if (newAppUser) {
+          unwatch()
+          resolve()
+        }
+      }, { immediate: true })
+      // タイムアウト（3秒）
+      setTimeout(() => {
+        unwatch()
+        resolve()
+      }, 3000)
+    })
   }
 
   // サポーターまたは管理者でない場合はホームへリダイレクト
