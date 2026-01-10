@@ -1,3 +1,5 @@
+import { getStorageAdmin } from '~/server/utils/firebase-admin'
+
 export default defineEventHandler(async (event) => {
   try {
     // multipart/form-dataを読み取り
@@ -10,7 +12,7 @@ export default defineEventHandler(async (event) => {
     }
 
     const file = formData.find(f => f.name === 'file')
-    const folder = formData.find(f => f.name === 'folder')?.data.toString() || 'uploads'
+    const folder = formData.find(f => f.name === 'folder')?.data.toString() || 'options'
 
     if (!file || !file.data) {
       throw createError({
@@ -40,18 +42,29 @@ export default defineEventHandler(async (event) => {
     const ext = file.filename?.split('.').pop() || 'jpg'
     const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`
 
-    // Base64エンコードしてクライアントに返す
-    // クライアント側でFirebase Storageにアップロードさせる
-    const base64Data = file.data.toString('base64')
+    // Firebase Admin SDKでStorageにアップロード
+    const bucket = getStorageAdmin()
+    const fileRef = bucket.file(fileName)
+
+    await fileRef.save(file.data, {
+      metadata: {
+        contentType: file.type
+      }
+    })
+
+    // ファイルを公開アクセス可能にする
+    await fileRef.makePublic()
+
+    // 公開URLを取得
+    const publicUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`
 
     return {
       success: true,
-      fileName,
-      base64: base64Data,
-      contentType: file.type
+      url: publicUrl,
+      fileName
     }
   } catch (error: any) {
-    console.error('画像処理エラー:', error)
+    console.error('画像アップロードエラー:', error)
 
     if (error.statusCode) {
       throw error
@@ -59,7 +72,7 @@ export default defineEventHandler(async (event) => {
 
     throw createError({
       statusCode: 500,
-      statusMessage: error.message || '画像の処理に失敗しました'
+      statusMessage: error.message || '画像のアップロードに失敗しました'
     })
   }
 })

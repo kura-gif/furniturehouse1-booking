@@ -12,6 +12,15 @@ service firebase.storage {
       allow write, delete: if request.auth != null;
     }
 
+    // オプション画像フォルダ
+    match /options/{imageId} {
+      // 読み取りは誰でもOK（公開画像）
+      allow read: if true;
+
+      // 書き込み・削除は認証済みユーザーのみ
+      allow write, delete: if request.auth != null;
+    }
+
     // その他のファイルへのアクセス
     match /{allPaths=**} {
       // デフォルトは認証済みユーザーのみアクセス可能

@@ -409,21 +409,25 @@ const removeImage = () => {
   }
 }
 
-// 画像をアップロード（クライアント側でFirebase Storageへ直接）
+// 画像をアップロード（サーバー経由でFirebase Storageへ）
 const uploadImage = async (): Promise<string | null> => {
   if (!imageFile.value) return form.imageUrl || null
 
   try {
-    const { $storage } = useNuxtApp()
-    if (!$storage) {
-      throw new Error('Firebase Storageが初期化されていません')
+    const formData = new FormData()
+    formData.append('file', imageFile.value)
+    formData.append('folder', 'options')
+
+    const result = await $fetch<{ success: boolean; url: string }>('/api/admin/upload-image', {
+      method: 'POST',
+      body: formData
+    })
+
+    if (!result.success || !result.url) {
+      throw new Error('アップロードに失敗しました')
     }
 
-    const { ref, uploadBytes, getDownloadURL } = await import('firebase/storage')
-    const fileName = `options/${Date.now()}-${imageFile.value.name}`
-    const storageRef = ref($storage, fileName)
-    await uploadBytes(storageRef, imageFile.value)
-    return await getDownloadURL(storageRef)
+    return result.url
   } catch (error) {
     console.error('画像アップロードエラー:', error)
     throw new Error('画像のアップロードに失敗しました')

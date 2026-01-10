@@ -91,7 +91,8 @@
       "Bash(/opt/homebrew/bin/gsutil cors set:*)",
       "Bash(/opt/homebrew/bin/gsutil ls:*)",
       "Bash(/opt/homebrew/bin/gcloud config set:*)",
-      "Bash(/opt/homebrew/bin/gcloud auth activate-service-account:*)"
+      "Bash(/opt/homebrew/bin/gcloud auth activate-service-account:*)",
+      "Bash(gsutil cors get:*)"
     ]
   }
 }

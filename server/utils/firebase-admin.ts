@@ -6,6 +6,7 @@
 import { cert, getApps, initializeApp, type ServiceAccount } from 'firebase-admin/app'
 import { getFirestore } from 'firebase-admin/firestore'
 import { getAuth } from 'firebase-admin/auth'
+import { getStorage } from 'firebase-admin/storage'
 
 let adminApp: any = null
 
@@ -35,6 +36,7 @@ export const initializeFirebaseAdmin = () => {
     adminApp = initializeApp({
       credential: cert(serviceAccount as ServiceAccount),
       projectId: config.public.firebaseProjectId,
+      storageBucket: config.public.firebaseStorageBucket || 'furniture-house-1.firebasestorage.app',
     })
 
     console.log('✅ Firebase Admin SDK initialized')
@@ -120,6 +122,19 @@ export const getAuthAdmin = () => {
     }
   }
   return getAuth()
+}
+
+/**
+ * Firebase Storageバケットを取得
+ */
+export const getStorageAdmin = () => {
+  if (!adminApp) {
+    const app = initializeFirebaseAdmin()
+    if (!app) {
+      throw new Error('Firebase Admin SDK is not initialized. Please configure credentials.')
+    }
+  }
+  return getStorage().bucket()
 }
 
 /**
