@@ -555,7 +555,7 @@ useHead({
 .access-header {
   background: #000000;
   color: #ffffff;
-  padding: 48px 24px;
+  padding: 32px 24px;
   text-align: center;
   border-bottom: 1px solid #3a3a3a;
 }
@@ -569,6 +569,7 @@ useHead({
   font-size: 1.5rem;
   font-weight: 400;
   letter-spacing: 0.15em;
+  color: #ffffff;
 }
 
 /* Container */
@@ -680,8 +681,8 @@ useHead({
 }
 
 .route-badge {
-  font-size: 0.7rem;
-  color: #999999;
+  font-size: 0.85rem;
+  color: #ffffff;
   letter-spacing: 0.05em;
 }
 
@@ -917,11 +918,11 @@ useHead({
 /* PC Layout */
 @media (min-width: 768px) {
   .access-header {
-    padding: 80px 48px;
+    padding: 56px 48px;
   }
 
   .access-header h1 {
-    font-size: 2rem;
+    font-size: 1.75rem;
   }
 
   .access-container {
@@ -956,11 +957,11 @@ useHead({
 
 @media (min-width: 1024px) {
   .access-header {
-    padding: 100px 64px;
+    padding: 70px 64px;
   }
 
   .access-header h1 {
-    font-size: 2.5rem;
+    font-size: 2rem;
   }
 
   .section-header {
