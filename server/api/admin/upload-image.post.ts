@@ -1,22 +1,5 @@
-import { getApps } from 'firebase-admin/app'
-import { getStorage } from 'firebase-admin/storage'
-import { initializeFirebaseAdmin } from '~/server/utils/firebase-admin'
-
 export default defineEventHandler(async (event) => {
   try {
-    // Firebase Admin初期化
-    initializeFirebaseAdmin()
-
-    const config = useRuntimeConfig()
-    let bucketName = config.public.firebaseStorageBucket
-
-    if (!bucketName) {
-      throw createError({
-        statusCode: 500,
-        statusMessage: 'Storage bucket not configured'
-      })
-    }
-
     // multipart/form-dataを読み取り
     const formData = await readMultipartFormData(event)
     if (!formData || formData.length === 0) {
@@ -57,44 +40,18 @@ export default defineEventHandler(async (event) => {
     const ext = file.filename?.split('.').pop() || 'jpg'
     const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`
 
-    // Firebase Storageにアップロード
-    // バケット名が gs:// で始まる場合は除去
-    if (bucketName.startsWith('gs://')) {
-      bucketName = bucketName.replace('gs://', '')
-    }
-
-    const app = getApps()[0]
-    if (!app) {
-      throw createError({
-        statusCode: 500,
-        statusMessage: 'Firebase Admin not initialized'
-      })
-    }
-
-    const storage = getStorage(app)
-    const bucket = storage.bucket(bucketName)
-    const fileRef = bucket.file(fileName)
-
-    await fileRef.save(file.data, {
-      metadata: {
-        contentType: file.type,
-        cacheControl: 'public, max-age=31536000'
-      }
-    })
-
-    // 署名付きURLを取得（有効期限: 100年）
-    const [signedUrl] = await fileRef.getSignedUrl({
-      action: 'read',
-      expires: Date.now() + 100 * 365 * 24 * 60 * 60 * 1000
-    })
+    // Base64エンコードしてクライアントに返す
+    // クライアント側でFirebase Storageにアップロードさせる
+    const base64Data = file.data.toString('base64')
 
     return {
       success: true,
-      url: signedUrl,
-      fileName
+      fileName,
+      base64: base64Data,
+      contentType: file.type
     }
   } catch (error: any) {
-    console.error('画像アップロードエラー:', error)
+    console.error('画像処理エラー:', error)
 
     if (error.statusCode) {
       throw error
@@ -102,7 +59,7 @@ export default defineEventHandler(async (event) => {
 
     throw createError({
       statusCode: 500,
-      statusMessage: error.message || '画像のアップロードに失敗しました'
+      statusMessage: error.message || '画像の処理に失敗しました'
     })
   }
 })
