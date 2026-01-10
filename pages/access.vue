@@ -3,6 +3,11 @@
     <!-- Header -->
     <header class="access-header">
       <div class="access-header-inner">
+        <div class="breadcrumb">
+          <NuxtLink to="/" class="breadcrumb-link">ホーム</NuxtLink>
+          <span class="breadcrumb-separator">›</span>
+          <span class="breadcrumb-current">アクセス</span>
+        </div>
         <h1>アクセス</h1>
       </div>
     </header>
@@ -570,6 +575,31 @@ useHead({
   font-weight: 400;
   letter-spacing: 0.15em;
   color: #ffffff;
+}
+
+/* Breadcrumb */
+.breadcrumb {
+  margin-bottom: 16px;
+  font-size: 0.85rem;
+}
+
+.breadcrumb-link {
+  color: #999999;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.breadcrumb-link:hover {
+  color: #ffffff;
+}
+
+.breadcrumb-separator {
+  color: #666666;
+  margin: 0 8px;
+}
+
+.breadcrumb-current {
+  color: #cccccc;
 }
 
 /* Container */
