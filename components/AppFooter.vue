@@ -17,9 +17,6 @@
               <a href="https://furniturehouse1.com/" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors">施設について</a>
             </li>
             <li>
-              <a href="https://booking.furniturehouse1.com/#gallery" class="hover:text-white transition-colors">ギャラリー</a>
-            </li>
-            <li>
               <NuxtLink to="/access" class="hover:text-white transition-colors">アクセス</NuxtLink>
             </li>
             <li>
