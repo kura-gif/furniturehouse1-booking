@@ -1,3 +1,4 @@
+import { getApps } from 'firebase-admin/app'
 import { getStorage } from 'firebase-admin/storage'
 import { initializeFirebaseAdmin } from '~/server/utils/firebase-admin'
 
@@ -7,7 +8,7 @@ export default defineEventHandler(async (event) => {
     initializeFirebaseAdmin()
 
     const config = useRuntimeConfig()
-    const bucketName = config.public.firebaseStorageBucket
+    let bucketName = config.public.firebaseStorageBucket
 
     if (!bucketName) {
       throw createError({
@@ -57,7 +58,20 @@ export default defineEventHandler(async (event) => {
     const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`
 
     // Firebase Storageにアップロード
-    const storage = getStorage()
+    // バケット名が gs:// で始まる場合は除去
+    if (bucketName.startsWith('gs://')) {
+      bucketName = bucketName.replace('gs://', '')
+    }
+
+    const app = getApps()[0]
+    if (!app) {
+      throw createError({
+        statusCode: 500,
+        statusMessage: 'Firebase Admin not initialized'
+      })
+    }
+
+    const storage = getStorage(app)
     const bucket = storage.bucket(bucketName)
     const fileRef = bucket.file(fileName)
 
@@ -68,13 +82,15 @@ export default defineEventHandler(async (event) => {
       }
     })
 
-    // 公開URLを取得
-    await fileRef.makePublic()
-    const publicUrl = `https://storage.googleapis.com/${bucketName}/${fileName}`
+    // 署名付きURLを取得（有効期限: 100年）
+    const [signedUrl] = await fileRef.getSignedUrl({
+      action: 'read',
+      expires: Date.now() + 100 * 365 * 24 * 60 * 60 * 1000
+    })
 
     return {
       success: true,
-      url: publicUrl,
+      url: signedUrl,
       fileName
     }
   } catch (error: any) {
