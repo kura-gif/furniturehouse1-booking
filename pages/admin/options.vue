@@ -409,28 +409,31 @@ const removeImage = () => {
   }
 }
 
-// 画像をアップロード（サーバー経由でFirebase Storageへ）
-const uploadImage = async (): Promise<string | null> => {
+// 画像をBase64に変換
+const convertToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
+
+// 画像をBase64で取得
+const getImageData = async (): Promise<string | null> => {
   if (!imageFile.value) return form.imageUrl || null
 
   try {
-    const formData = new FormData()
-    formData.append('file', imageFile.value)
-    formData.append('folder', 'options')
-
-    const result = await $fetch<{ success: boolean; url: string }>('/api/admin/upload-image', {
-      method: 'POST',
-      body: formData
-    })
-
-    if (!result.success || !result.url) {
-      throw new Error('アップロードに失敗しました')
+    // ファイルサイズチェック（1MB以下に制限）
+    if (imageFile.value.size > 1 * 1024 * 1024) {
+      throw new Error('画像サイズは1MB以下にしてください')
     }
 
-    return result.url
+    const base64 = await convertToBase64(imageFile.value)
+    return base64
   } catch (error) {
-    console.error('画像アップロードエラー:', error)
-    throw new Error('画像のアップロードに失敗しました')
+    console.error('画像変換エラー:', error)
+    throw error
   }
 }
 
@@ -439,8 +442,8 @@ const saveOption = async () => {
   isSaving.value = true
 
   try {
-    // 画像をアップロード
-    const imageUrl = await uploadImage()
+    // 画像をBase64で取得
+    const imageUrl = await getImageData()
 
     const optionData = {
       name: form.name,
