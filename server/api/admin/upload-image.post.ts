@@ -49,14 +49,14 @@ export default defineEventHandler(async (event) => {
     await fileRef.save(file.data, {
       metadata: {
         contentType: file.type
-      }
+      },
+      public: true
     })
 
-    // ファイルを公開アクセス可能にする
-    await fileRef.makePublic()
-
-    // 公開URLを取得
-    const publicUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`
+    // Firebase Storage の公開URLを生成
+    // 新しいfirebasestorage.appドメイン形式
+    const encodedFileName = encodeURIComponent(fileName)
+    const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodedFileName}?alt=media`
 
     return {
       success: true,
