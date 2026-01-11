@@ -2,6 +2,7 @@ import { Timestamp, FieldValue } from 'firebase-admin/firestore'
 import { getFirestoreAdmin, getAuthAdmin } from '~/server/utils/firebase-admin'
 
 export default defineEventHandler(async (event) => {
+  const config = useRuntimeConfig()
   try {
     // 認証チェック
     const authHeader = getHeader(event, 'authorization')
@@ -96,6 +97,36 @@ export default defineEventHandler(async (event) => {
       updatedAt: now,
       unreadByAdmin: FieldValue.increment(1)
     })
+
+    // 管理者にメール通知を送信（非同期で実行、エラーでもメッセージ送信は成功扱い）
+    try {
+      const siteUrl = config.public.siteUrl || 'http://localhost:3000'
+      console.log('📧 Sending admin notification email...')
+      console.log('📧 Site URL:', siteUrl)
+      console.log('📧 Has internal secret:', !!config.internalApiSecret)
+
+      await $fetch(`${siteUrl}/api/emails/send-message-notification`, {
+        method: 'POST',
+        headers: {
+          'x-internal-secret': config.internalApiSecret || ''
+        },
+        body: {
+          type: 'guest_to_admin',
+          conversationId,
+          bookingReference: conversationData.bookingReference || null,
+          guestName: conversationData.guestName || senderName || 'ゲスト',
+          guestEmail: conversationData.guestEmail || userEmail,
+          senderName: senderName || 'ゲスト',
+          messageContent: content,
+          messagePreview: content.substring(0, 100)
+        }
+      })
+      console.log('✅ Admin notification email sent for new guest message')
+    } catch (emailError: any) {
+      // メール送信失敗してもメッセージ送信自体は成功とする
+      console.error('⚠️ Failed to send admin notification email:', emailError?.message || emailError)
+      console.error('⚠️ Error details:', JSON.stringify(emailError?.data || emailError, null, 2))
+    }
 
     return {
       success: true,

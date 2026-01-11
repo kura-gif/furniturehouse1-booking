@@ -9,9 +9,7 @@ import {
   orderBy,
   updateDoc,
   onSnapshot,
-  Timestamp,
   serverTimestamp,
-  increment,
   limit
 } from 'firebase/firestore'
 import type { Conversation, Message } from '~/types'
@@ -179,6 +177,10 @@ export const useConversations = () => {
 
   /**
    * メッセージを送信
+   * - ゲストの場合: 既存のAPI経由（server/api/conversations/send-message.post.ts）
+   * - 管理者の場合: 管理者用API経由（server/api/conversations/admin-send-message.post.ts）
+   *
+   * どちらも送信後に相手方へメール通知が送られる
    */
   const sendMessage = async (
     conversationId: string,
@@ -187,39 +189,45 @@ export const useConversations = () => {
     senderName: string,
     senderId?: string
   ): Promise<string> => {
-    const messagesRef = collection($db, 'messages')
-    const conversationRef = doc($db, 'conversations', conversationId)
+    const { $auth } = useNuxtApp()
 
-    // メッセージを作成
-    const newMessage = {
-      conversationId,
-      content,
-      senderType,
-      senderName,
-      senderId: senderId || null,
-      isRead: false,
-      createdAt: serverTimestamp()
+    // 認証トークンを取得
+    const currentUser = $auth.currentUser
+    if (!currentUser) {
+      throw new Error('認証が必要です')
     }
 
-    const docRef = await addDoc(messagesRef, newMessage)
+    const idToken = await currentUser.getIdToken()
 
-    // 会話を更新
-    const updateData: any = {
-      lastMessageAt: serverTimestamp(),
-      lastMessagePreview: content.substring(0, 50),
-      updatedAt: serverTimestamp()
-    }
-
-    // 未読カウントを増加
-    if (senderType === 'guest') {
-      updateData.unreadByAdmin = increment(1)
+    if (senderType === 'admin') {
+      // 管理者の場合は管理者用APIを使用（ゲストへのメール通知付き）
+      const response = await $fetch<{ success: boolean; messageId: string }>('/api/conversations/admin-send-message', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${idToken}`
+        },
+        body: {
+          conversationId,
+          content,
+          senderName
+        }
+      })
+      return response.messageId
     } else {
-      updateData.unreadByGuest = increment(1)
+      // ゲストの場合は既存APIを使用（管理者へのメール通知付き）
+      const response = await $fetch<{ success: boolean; messageId: string }>('/api/conversations/send-message', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${idToken}`
+        },
+        body: {
+          conversationId,
+          content,
+          senderName
+        }
+      })
+      return response.messageId
     }
-
-    await updateDoc(conversationRef, updateData)
-
-    return docRef.id
   }
 
   /**
