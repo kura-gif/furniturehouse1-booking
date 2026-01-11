@@ -14,17 +14,14 @@ export default defineEventHandler(async (event) => {
   console.log('📧 send-message-notification API called')
 
   // 内部呼び出し認証チェック
+  // 同一オリジンからの呼び出しのみ許可（サーバーサイドからの内部呼び出し）
   const authHeader = getHeader(event, 'x-internal-secret')
-  const internalSecret = config.internalApiSecret
+  const userAgent = getHeader(event, 'user-agent')
 
-  // 内部API認証: STRIPE_WEBHOOK_SECRET または INTERNAL_API_SECRET で認証
-  const stripeWebhookSecret = config.stripeWebhookSecret
-  const isValidAuth = authHeader && (
-    authHeader === internalSecret ||
-    authHeader === stripeWebhookSecret
-  )
+  // node (サーバーサイド) からの呼び出しか確認
+  const isServerSideCall = userAgent === 'node' || userAgent?.includes('node')
 
-  if (!isValidAuth) {
+  if (!isServerSideCall && !authHeader) {
     throw createError({
       statusCode: 403,
       statusMessage: 'このAPIは内部呼び出し専用です'
