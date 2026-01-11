@@ -1127,7 +1127,9 @@ const proceedToPayment = async () => {
       const paymentIntent = await confirmCardPayment(clientSecret.value, cardElement)
 
       // 決済成功後、完了ページにリダイレクト
-      if (paymentIntent && paymentIntent.status === 'succeeded') {
+      // requires_capture: 与信確保成功（審査待ち）
+      // succeeded: 即時決済成功
+      if (paymentIntent && (paymentIntent.status === 'succeeded' || paymentIntent.status === 'requires_capture')) {
         router.push({
           path: '/booking/complete',
           query: {
