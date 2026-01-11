@@ -32,6 +32,7 @@ export default defineEventHandler(async (event) => {
   const {
     type,
     conversationId,
+    bookingId,
     bookingReference,
     guestName,
     guestEmail,
@@ -139,7 +140,7 @@ export default defineEventHandler(async (event) => {
         <p style="margin: 0; color: #333; white-space: pre-wrap;">${preview}</p>
       </div>
       <p style="margin-top: 20px;">
-        <a href="${siteUrl}/messages/${conversationId}"
+        <a href="${siteUrl}/messages/${bookingId || conversationId}"
            style="display: inline-block; background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">
           メッセージを確認・返信する
         </a>

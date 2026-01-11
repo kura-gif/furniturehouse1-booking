@@ -109,6 +109,7 @@ export default defineEventHandler(async (event) => {
           body: {
             type: 'admin_to_guest',
             conversationId,
+            bookingId: conversationData.bookingId || null,
             bookingReference: conversationData.bookingReference || null,
             guestName: conversationData.guestName || 'ゲスト',
             guestEmail: conversationData.guestEmail,
