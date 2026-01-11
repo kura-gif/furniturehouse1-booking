@@ -85,7 +85,7 @@
       <div class="site-gallery-grid">
         <div v-for="(img, index) in galleryTopImages" :key="index" class="site-gallery-item">
           <div class="site-gallery-skeleton"></div>
-          <img :src="img.src" :alt="img.alt" loading="lazy" class="site-gallery-img" @load="onImageLoad" />
+          <img v-img-loaded :src="img.src" :alt="img.alt" loading="lazy" class="site-gallery-img" @load="onImageLoad" />
         </div>
       </div>
     </section>
@@ -137,7 +137,7 @@
       <div class="site-gallery-grid">
         <div v-for="(img, index) in galleryMiddleImages" :key="index" class="site-gallery-item">
           <div class="site-gallery-skeleton"></div>
-          <img :src="img.src" :alt="img.alt" loading="lazy" class="site-gallery-img" @load="onImageLoad" />
+          <img v-img-loaded :src="img.src" :alt="img.alt" loading="lazy" class="site-gallery-img" @load="onImageLoad" />
         </div>
       </div>
     </section>
@@ -158,7 +158,7 @@
       <div class="site-gallery-grid-10">
         <div v-for="(img, index) in galleryBottomImages" :key="index" class="site-gallery-item-10">
           <div class="site-gallery-skeleton"></div>
-          <img :src="img.src" :alt="img.alt" loading="lazy" class="site-gallery-img" @load="onImageLoad" />
+          <img v-img-loaded :src="img.src" :alt="img.alt" loading="lazy" class="site-gallery-img" @load="onImageLoad" />
         </div>
       </div>
     </section>
@@ -286,6 +286,15 @@ let autoplayInterval: ReturnType<typeof setInterval> | null = null
 const onImageLoad = (e: Event) => {
   const target = e.target as HTMLImageElement
   target.classList.add('loaded')
+}
+
+// キャッシュされた画像に対応するためのディレクティブ
+const vImgLoaded = {
+  mounted(el: HTMLImageElement) {
+    if (el.complete && el.naturalHeight !== 0) {
+      el.classList.add('loaded')
+    }
+  }
 }
 
 const nextImage = () => {
