@@ -104,7 +104,7 @@ export default defineEventHandler(async (event) => {
         await $fetch(`${siteUrl}/api/emails/send-message-notification`, {
           method: 'POST',
           headers: {
-            'x-internal-secret': config.internalApiSecret || ''
+            'x-internal-secret': config.internalApiSecret || config.stripeWebhookSecret || ''
           },
           body: {
             type: 'admin_to_guest',

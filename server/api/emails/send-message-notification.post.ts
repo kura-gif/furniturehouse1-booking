@@ -17,21 +17,19 @@ export default defineEventHandler(async (event) => {
   const authHeader = getHeader(event, 'x-internal-secret')
   const internalSecret = config.internalApiSecret
 
-  console.log('🔑 Auth header present:', !!authHeader, 'length:', authHeader?.length)
-  console.log('🔑 Internal secret present:', !!internalSecret, 'length:', internalSecret?.length)
-  console.log('🔑 Auth header first 10 chars:', authHeader?.substring(0, 10))
-  console.log('🔑 Internal secret first 10 chars:', internalSecret?.substring(0, 10))
+  // 内部API認証: STRIPE_WEBHOOK_SECRET または INTERNAL_API_SECRET で認証
+  const stripeWebhookSecret = config.stripeWebhookSecret
+  const isValidAuth = authHeader && (
+    authHeader === internalSecret ||
+    authHeader === stripeWebhookSecret
+  )
 
-  if (!authHeader || authHeader !== internalSecret) {
-    console.log('❌ Auth failed - headers do not match')
-    console.log('❌ Match result:', authHeader === internalSecret)
+  if (!isValidAuth) {
     throw createError({
       statusCode: 403,
       statusMessage: 'このAPIは内部呼び出し専用です'
     })
   }
-
-  console.log('✅ Auth passed')
 
   const body = await readBody(event)
   const {
