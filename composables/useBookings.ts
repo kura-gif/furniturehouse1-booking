@@ -74,21 +74,8 @@ export const useBookings = () => {
       const docRef = await addDoc(collection($db, 'bookings'), booking)
       const bookingId = docRef.id
 
-      // メール通知を送信（非同期・エラーが出ても続行）
-      try {
-        const { sendBookingConfirmationEmail } = useEmail()
-        await sendBookingConfirmationEmail(bookingData.guestEmail, {
-          bookingId,
-          bookingReference,
-          bookingToken,
-          guestName: bookingData.guestName,
-          checkInDate: bookingData.startDate.toLocaleDateString('ja-JP'),
-          checkOutDate: bookingData.endDate.toLocaleDateString('ja-JP'),
-          totalAmount: bookingData.totalAmount
-        })
-      } catch (emailError) {
-        console.error('メール送信エラー（処理は続行）:', emailError)
-      }
+      // メール通知はStripe Webhook（payment_intent.amount_capturable_updated）で
+      // 与信確保成功時に自動送信されるため、ここでは送信しない
 
       return bookingId
     } catch (error) {
