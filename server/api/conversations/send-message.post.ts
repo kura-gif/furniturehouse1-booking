@@ -100,15 +100,12 @@ export default defineEventHandler(async (event) => {
 
     // 管理者にメール通知を送信（非同期で実行、エラーでもメッセージ送信は成功扱い）
     try {
-      const siteUrl = config.public.siteUrl || 'http://localhost:3000'
-      console.log('📧 Sending admin notification email...')
-      console.log('📧 Site URL:', siteUrl)
-      console.log('📧 Has internal secret:', !!config.internalApiSecret)
+      const siteUrl = (config.public.siteUrl || 'http://localhost:3000').trim()
 
       await $fetch(`${siteUrl}/api/emails/send-message-notification`, {
         method: 'POST',
         headers: {
-          'x-internal-secret': config.internalApiSecret || ''
+          'x-internal-secret': config.internalApiSecret || config.stripeWebhookSecret || ''
         },
         body: {
           type: 'guest_to_admin',

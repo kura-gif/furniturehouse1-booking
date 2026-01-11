@@ -100,7 +100,7 @@ export default defineEventHandler(async (event) => {
     // ゲストにメール通知を送信（非同期で実行、エラーでもメッセージ送信は成功扱い）
     if (conversationData.guestEmail) {
       try {
-        const siteUrl = config.public.siteUrl || 'http://localhost:3000'
+        const siteUrl = (config.public.siteUrl || 'http://localhost:3000').trim()
         await $fetch(`${siteUrl}/api/emails/send-message-notification`, {
           method: 'POST',
           headers: {
