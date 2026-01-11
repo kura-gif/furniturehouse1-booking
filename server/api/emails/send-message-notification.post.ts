@@ -17,11 +17,14 @@ export default defineEventHandler(async (event) => {
   const authHeader = getHeader(event, 'x-internal-secret')
   const internalSecret = config.internalApiSecret
 
-  console.log('🔑 Auth header present:', !!authHeader)
-  console.log('🔑 Internal secret present:', !!internalSecret)
+  console.log('🔑 Auth header present:', !!authHeader, 'length:', authHeader?.length)
+  console.log('🔑 Internal secret present:', !!internalSecret, 'length:', internalSecret?.length)
+  console.log('🔑 Auth header first 10 chars:', authHeader?.substring(0, 10))
+  console.log('🔑 Internal secret first 10 chars:', internalSecret?.substring(0, 10))
 
   if (!authHeader || authHeader !== internalSecret) {
     console.log('❌ Auth failed - headers do not match')
+    console.log('❌ Match result:', authHeader === internalSecret)
     throw createError({
       statusCode: 403,
       statusMessage: 'このAPIは内部呼び出し専用です'
