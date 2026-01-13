@@ -81,7 +81,18 @@
               <div class="px-1">
                 <h3 class="font-medium text-gray-900">{{ photo.title }}</h3>
                 <p v-if="photo.description" class="text-sm text-gray-600">{{ photo.description }}</p>
-                <p v-if="photo.credit" class="text-xs text-gray-400 mt-1">{{ photo.credit }}</p>
+                <p v-if="photo.credit" class="text-xs text-gray-400 mt-1">
+                  <a
+                    v-if="photo.credit.includes('instagram.com') || photo.credit.startsWith('@')"
+                    :href="photo.credit.startsWith('@') ? `https://instagram.com/${photo.credit.slice(1)}` : photo.credit"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="hover:text-gray-600 hover:underline"
+                  >
+                    {{ photo.credit.startsWith('http') ? photo.credit.split('/').pop() : photo.credit }}
+                  </a>
+                  <span v-else>{{ photo.credit }}</span>
+                </p>
               </div>
             </div>
           </div>
