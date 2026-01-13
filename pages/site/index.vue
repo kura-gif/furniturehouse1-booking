@@ -47,6 +47,9 @@
       <div class="site-stay-inner">
         <div class="site-stay-image">
           <img src="/images/hero/07.webp" alt="家具の家 内観" loading="lazy" />
+          <div class="site-stay-image-credit">
+            Photo by <a href="https://instagram.com/martin_holtkamp" target="_blank" rel="noopener noreferrer">@martin_holtkamp</a>
+          </div>
         </div>
         <div class="site-stay-content">
           <h2 class="site-stay-title">家具の家 No.1に滞在する</h2>
@@ -607,6 +610,7 @@ useHead({
   width: 50%;
   margin: 0;
   padding: 0;
+  position: relative;
 }
 
 @media (max-width: 768px) {
@@ -619,6 +623,23 @@ useHead({
   width: 100%;
   height: auto;
   display: block;
+}
+
+.site-stay-image-credit {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  font-size: 12px;
+  color: #231815;
+}
+
+.site-stay-image-credit a {
+  color: #231815;
+  text-decoration: none;
+}
+
+.site-stay-image-credit a:hover {
+  text-decoration: underline;
 }
 
 .site-stay-content {
