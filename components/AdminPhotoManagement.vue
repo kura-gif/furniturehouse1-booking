@@ -356,24 +356,35 @@ const savePhoto = async () => {
     return
   }
 
+  // 保存用データを作成（空のcreditは除外）
+  const saveData = {
+    url: formData.value.url,
+    title: formData.value.title,
+    description: formData.value.description,
+    category: formData.value.category,
+    order: formData.value.order,
+    isVisible: formData.value.isVisible,
+    ...(formData.value.credit ? { credit: formData.value.credit } : {})
+  }
+
   try {
     if (editingPhoto.value) {
       // 編集
-      await updatePhoto(editingPhoto.value.id, formData.value)
+      await updatePhoto(editingPhoto.value.id, saveData)
       const index = localPhotos.value.findIndex(p => p.id === editingPhoto.value!.id)
       if (index !== -1) {
         localPhotos.value[index] = {
           ...localPhotos.value[index],
-          ...formData.value
+          ...saveData
         }
       }
     } else {
       // 新規追加
-      const newPhotoId = await createPhoto(formData.value)
+      const newPhotoId = await createPhoto(saveData)
 
       const newPhoto: Photo = {
         id: newPhotoId,
-        ...formData.value
+        ...saveData
       }
       localPhotos.value.push(newPhoto)
     }
