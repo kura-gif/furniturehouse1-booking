@@ -27,8 +27,18 @@
     <section class="site-hero">
       <div class="site-hero-main">
         <transition name="fade" mode="out-in">
-          <img :key="currentImageIndex" :src="heroImages[currentImageIndex]" :alt="`家具の家 No.1 写真${currentImageIndex + 1}`" class="site-hero-image" />
+          <img :key="currentImageIndex" :src="heroImages[currentImageIndex].src" :alt="heroImages[currentImageIndex].alt" class="site-hero-image" />
         </transition>
+        <div v-if="heroImages[currentImageIndex].credit" class="site-hero-credit">
+          <template v-if="heroImages[currentImageIndex].credit.includes('@')">
+            {{ heroImages[currentImageIndex].credit.split('@')[0] }}<a
+              :href="`https://instagram.com/${heroImages[currentImageIndex].credit.split('@')[1]}`"
+              target="_blank"
+              rel="noopener noreferrer"
+            >@{{ heroImages[currentImageIndex].credit.split('@')[1] }}</a>
+          </template>
+          <span v-else>{{ heroImages[currentImageIndex].credit }}</span>
+        </div>
       </div>
     </section>
 
@@ -238,14 +248,14 @@
 </template>
 
 <script setup lang="ts">
-// 画像スライダー
+// 画像スライダー（creditは任意、@usernameでInstagramリンク）
 const heroImages = [
-  '/images/hero/01.webp',
-  '/images/hero/02.webp',
-  '/images/hero/03.webp',
-  '/images/hero/04.webp',
-  '/images/hero/05.webp',
-  '/images/hero/06.webp',
+  { src: '/images/hero/01.webp', alt: '家具の家 No.1 写真1', credit: '' },
+  { src: '/images/hero/02.webp', alt: '家具の家 No.1 写真2', credit: '' },
+  { src: '/images/hero/03.webp', alt: '家具の家 No.1 写真3', credit: '' },
+  { src: '/images/hero/04.webp', alt: '家具の家 No.1 写真4', credit: '' },
+  { src: '/images/hero/05.webp', alt: '家具の家 No.1 写真5', credit: '' },
+  { src: '/images/hero/06.webp', alt: '家具の家 No.1 写真6', credit: '' },
 ]
 
 // 上部ギャラリー（4枚）
@@ -443,6 +453,26 @@ useHead({
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.site-hero-credit {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  font-size: 12px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 4px 10px;
+  border-radius: 4px;
+}
+
+.site-hero-credit a {
+  color: #fff;
+  text-decoration: none;
+}
+
+.site-hero-credit a:hover {
+  text-decoration: underline;
 }
 
 /* フェードトランジション */
