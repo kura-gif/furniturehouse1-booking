@@ -29,7 +29,7 @@
         <transition name="fade" mode="out-in">
           <img :key="currentImageIndex" :src="heroImages[currentImageIndex].src" :alt="heroImages[currentImageIndex].alt" class="site-hero-image" />
         </transition>
-        <div v-if="heroImages[currentImageIndex].credit" class="site-hero-credit">
+        <div v-if="heroImages[currentImageIndex].credit" :class="['site-hero-credit', { 'light-text': heroImages[currentImageIndex].lightText }]">
           <template v-if="heroImages[currentImageIndex].credit.includes('@')">
             {{ heroImages[currentImageIndex].credit.split('@')[0] }}<a
               :href="`https://instagram.com/${heroImages[currentImageIndex].credit.split('@')[1]}`"
@@ -248,14 +248,14 @@
 </template>
 
 <script setup lang="ts">
-// 画像スライダー（creditは任意、@usernameでInstagramリンク）
+// 画像スライダー（creditは任意、@usernameでInstagramリンク、lightTextで白文字）
 const heroImages = [
-  { src: '/images/hero/01.webp', alt: '家具の家 No.1 写真1', credit: 'Photo by @martin_holtkamp' },
-  { src: '/images/hero/02.webp', alt: '家具の家 No.1 写真2', credit: '' },
-  { src: '/images/hero/03.webp', alt: '家具の家 No.1 写真3', credit: '' },
-  { src: '/images/hero/04.webp', alt: '家具の家 No.1 写真4', credit: '' },
-  { src: '/images/hero/05.webp', alt: '家具の家 No.1 写真5', credit: '' },
-  { src: '/images/hero/06.webp', alt: '家具の家 No.1 写真6', credit: '' },
+  { src: '/images/hero/01.webp', alt: '家具の家 No.1 写真1', credit: 'Photo by @martin_holtkamp', lightText: false },
+  { src: '/images/hero/02.webp', alt: '家具の家 No.1 写真2', credit: 'Photo by @martin_holtkamp', lightText: true },
+  { src: '/images/hero/03.webp', alt: '家具の家 No.1 写真3', credit: '', lightText: false },
+  { src: '/images/hero/04.webp', alt: '家具の家 No.1 写真4', credit: '', lightText: false },
+  { src: '/images/hero/05.webp', alt: '家具の家 No.1 写真5', credit: '', lightText: false },
+  { src: '/images/hero/06.webp', alt: '家具の家 No.1 写真6', credit: '', lightText: false },
 ]
 
 // 上部ギャラリー（4枚）
@@ -471,6 +471,11 @@ useHead({
 
 .site-hero-credit a:hover {
   text-decoration: underline;
+}
+
+.site-hero-credit.light-text,
+.site-hero-credit.light-text a {
+  color: #fff;
 }
 
 /* フェードトランジション */
