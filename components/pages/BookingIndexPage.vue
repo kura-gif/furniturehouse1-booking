@@ -887,9 +887,10 @@ const fallbackPhotos = computed((): Photo[] => {
   }))
 })
 
-// 表示用の写真リスト
+// 表示用の写真リスト（orderでソート）
 const displayPhotos = computed(() => {
-  return allPhotos.value.length > 0 ? allPhotos.value : fallbackPhotos.value
+  const photos = allPhotos.value.length > 0 ? [...allPhotos.value] : fallbackPhotos.value
+  return photos.sort((a, b) => a.order - b.order)
 })
 
 // 写真ツアーを開く
