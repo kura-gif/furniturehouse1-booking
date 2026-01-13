@@ -1,0 +1,96 @@
+{
+  "site": {
+    "title": "Furniture House No.1",
+    "meta": {
+      "description": "Architecture to be experienced - where furniture supports the house. A unique stay experience surrounded by structural furniture in quiet moments."
+    },
+    "header": {
+      "instagramTooltip": "Follow on Instagram"
+    },
+    "hero": {
+      "photoCredit": "Photo by"
+    },
+    "stay": {
+      "title": "Stay at Furniture House No.1",
+      "text1": "This house is 'architecture to be experienced.'",
+      "text2": "Through seeing, touching, and spending time here, its essence gradually reveals itself.",
+      "text3": "A space where furniture supports the house and wind quietly passes through.",
+      "text3br": "There are moments when your body suddenly responds to sounds, presences, and temperature changes you hadn't noticed before.",
+      "text4": "Without trying to make anything special, time spent here sharpens the senses and becomes enriching.",
+      "text5": "Here, we introduce some hints to help you experience this more deeply.",
+      "notice": "*Due to winter closure, reservations open January 31, 2026, with available dates from April 1 onwards."
+    },
+    "structure": {
+      "title": "A House Where Wind Flows",
+      "titleBr": "Furniture as Structure",
+      "text1": "Our encounter with 'Furniture House No.1' was in the summer of 2023. We were naturally drawn to this space, quietly nestled in the forest by Lake Yamanaka. When we first stepped inside, what caught our eyes were the neatly arranged unit furniture and the roof lightly resting upon them. The furniture directly supporting the house—it felt less like architecture and more like 'structure itself' floating in space.",
+      "text2": "This house was designed in the 1990s by an architect who would later become internationally renowned. What characterizes this building is that the furniture units serve directly as the structural system. The furniture supports the roof, becomes walls, and divides the space.",
+      "text3": "The resort area at Lake Yamanaka where this house stands was once a place where Japan's leading creators built their own retreats. However, due to aging, these structures have been gradually disappearing. Among the three buildings designed by this architect, two have already been demolished due to deterioration.",
+      "text4": "'Furniture House No.1' also needed restoration. The humid environment of Lake Yamanaka had affected the foundation over many years. In winter 2024, we undertook restoration work, replacing all the corroded foundation and flooring while preserving the roof and furniture structure. The sight of the furniture floating in mid-air while the floor was being dismantled seemed to embody the very structure of this house.",
+      "text5": "Spending time in this house, you notice how the flow of air, the shifting light, and even the way sound is absorbed are all guided by the furniture. The boundary between inside and outside is infinitely gentle, the wind passes through freely, and the architecture seems to breathe quietly.",
+      "text6": "People use it, wind moves, architecture breathes—we were captivated by this experience. We want many people to not just observe, but actually stay and experience the mysterious sensation of being surrounded by furniture as structure in the quiet flow of time. That way, this house will continue to live on without decay.",
+      "credit": "Furniture House No.1 Management Committee",
+      "caption1": "Furniture functioning as structure",
+      "caption2": "Foundation and floor restoration process with furniture preserved"
+    },
+    "facility": {
+      "title": "Facility Information",
+      "purpose": "Use",
+      "purposeValue": "Retreat",
+      "design": "Design",
+      "designValue": "Shigeru Ban Architects",
+      "location": "Location",
+      "locationValue": "Yamanakako Village, Yamanashi",
+      "completion": "Completed",
+      "completionValue": "1995",
+      "structure": "Structure",
+      "structureValue": "Single-story wooden",
+      "area": "Area",
+      "areaValue": "Approx. 100㎡",
+      "layout": "Layout",
+      "layoutValue": "Living/Kitchen, Bathroom, Japanese room, Western room"
+    },
+    "resort": {
+      "title": "About the Resort Area",
+      "text1": "This resort area overlooking the magnificent Mt. Fuji and Lake Yamanaka was developed in the late 1960s. What characterized this place was that Japan's leading creators of the time commissioned their villas as opportunities for creative experimentation from renowned modern Japanese architects and young architects who would later gain international recognition, forming a community that inspired each other across disciplines.",
+      "text2": "However, as time passed, these precious architectural works have gradually disappeared, and with them, their memories and cultural value are being lost. Our wish is to deeply recognize the rich stories of this place and its influence on Japan's creative scene, and to pass them on to future generations."
+    },
+    "guide": {
+      "title": "Stay Guide",
+      "intro": "Gather for BBQ without worrying about the rain, lie down and gaze at the scenery, immerse yourself in reading.",
+      "introBr": "May you find your own way of spending time in this space.",
+      "item1": {
+        "title": "Large Windows",
+        "text": "The living room has four large glass doors. Please try opening them all at once. Feel the pleasant breeze flow through the room and experience the boundary between inside and outside melting away."
+      },
+      "item2": {
+        "title": "Coffee on the Terrace",
+        "text": "Rain or shine, enjoy your coffee on the deck terrace. Take a deep breath while gazing at Mt. Ohira, and let time flow through you with crystal clarity."
+      },
+      "item3": {
+        "title": "Morning Light, Full Body",
+        "text": "After sleeping soundly in the quiet, open the blackout curtains and soak in the morning sun. Your body and mind will gently awaken."
+      },
+      "item4": {
+        "title": "Kitchen in the Living Room",
+        "text": "With the kitchen in the living room, you can relax while cooking. We've prepared all the necessary tools, so you can feel at ease."
+      },
+      "item5": {
+        "title": "Bath in the Forest",
+        "text": "Due to the cold climate design, reheating isn't available, but open the blinds for a sense of openness that blends with the forest. Enjoy a quiet bath time while viewing the greenery outside."
+      },
+      "item6": {
+        "title": "Lake Yamanaka's Wind as Air Conditioning",
+        "text": "To let you feel the fresh air of Lake Yamanaka, we haven't installed air conditioning. Experience the natural cooling of Lake Yamanaka."
+      }
+    },
+    "footer": {
+      "credit": "Operated by: Furniture House No.1 Management Committee +",
+      "company": "Chladni Inc."
+    }
+  },
+  "common": {
+    "language": "English",
+    "languageSwitch": "日本語"
+  }
+}
