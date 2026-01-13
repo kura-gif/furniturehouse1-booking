@@ -82,15 +82,21 @@
                 <h3 class="font-medium text-gray-900">{{ photo.title }}</h3>
                 <p v-if="photo.description" class="text-sm text-gray-600">{{ photo.description }}</p>
                 <p v-if="photo.credit" class="text-xs text-gray-400 mt-1">
+                  <template v-if="photo.credit.includes('@')">
+                    {{ photo.credit.split('@')[0] }}<a
+                      :href="`https://instagram.com/${photo.credit.split('@')[1]}`"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="hover:text-gray-600 hover:underline"
+                    >@{{ photo.credit.split('@')[1] }}</a>
+                  </template>
                   <a
-                    v-if="photo.credit.includes('instagram.com') || photo.credit.startsWith('@')"
-                    :href="photo.credit.startsWith('@') ? `https://instagram.com/${photo.credit.slice(1)}` : photo.credit"
+                    v-else-if="photo.credit.includes('instagram.com')"
+                    :href="photo.credit"
                     target="_blank"
                     rel="noopener noreferrer"
                     class="hover:text-gray-600 hover:underline"
-                  >
-                    {{ photo.credit.startsWith('http') ? photo.credit.split('/').pop() : photo.credit }}
-                  </a>
+                  >{{ photo.credit.split('/').pop() }}</a>
                   <span v-else>{{ photo.credit }}</span>
                 </p>
               </div>
