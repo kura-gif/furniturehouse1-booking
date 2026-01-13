@@ -460,14 +460,12 @@ useHead({
   bottom: 16px;
   right: 16px;
   font-size: 12px;
-  color: #fff;
-  background: rgba(0, 0, 0, 0.5);
+  color: #231815;
   padding: 4px 10px;
-  border-radius: 4px;
 }
 
 .site-hero-credit a {
-  color: #fff;
+  color: #231815;
   text-decoration: none;
 }
 
