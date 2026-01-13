@@ -281,12 +281,13 @@ onMounted(() => {
   loadPhotos()
 })
 
-// フィルタリング
+// フィルタリング（orderでソート）
 const filteredPhotos = computed(() => {
-  if (selectedCategory.value === 'all') {
-    return localPhotos.value
-  }
-  return localPhotos.value.filter(p => p.category === selectedCategory.value)
+  const photos = selectedCategory.value === 'all'
+    ? [...localPhotos.value]
+    : localPhotos.value.filter(p => p.category === selectedCategory.value)
+
+  return photos.sort((a, b) => a.order - b.order)
 })
 
 // 画像読み込みエラー処理
@@ -362,6 +363,9 @@ const savePhoto = async () => {
       }
       localPhotos.value.push(newPhoto)
     }
+
+    // orderでソート
+    localPhotos.value.sort((a, b) => a.order - b.order)
 
     closeModal()
   } catch (error) {
