@@ -250,7 +250,7 @@
 <script setup lang="ts">
 // 画像スライダー（creditは任意、@usernameでInstagramリンク）
 const heroImages = [
-  { src: '/images/hero/01.webp', alt: '家具の家 No.1 写真1', credit: '' },
+  { src: '/images/hero/01.webp', alt: '家具の家 No.1 写真1', credit: 'Photo by @martin_holtkamp' },
   { src: '/images/hero/02.webp', alt: '家具の家 No.1 写真2', credit: '' },
   { src: '/images/hero/03.webp', alt: '家具の家 No.1 写真3', credit: '' },
   { src: '/images/hero/04.webp', alt: '家具の家 No.1 写真4', credit: '' },
