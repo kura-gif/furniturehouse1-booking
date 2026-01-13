@@ -200,6 +200,18 @@
             <p class="mt-1 text-sm text-gray-500">数字が小さいほど前に表示されます</p>
           </div>
 
+          <!-- クレジット -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">撮影者クレジット（任意）</label>
+            <input
+              v-model="formData.credit"
+              type="text"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              placeholder="例: Photo by 山田太郎"
+            />
+            <p class="mt-1 text-sm text-gray-500">入力すると写真に撮影者名が表示されます</p>
+          </div>
+
           <!-- 公開設定 -->
           <div class="flex items-center gap-2">
             <input
@@ -260,7 +272,8 @@ const formData = ref({
   description: '',
   category: 'exterior' as PhotoCategory,
   order: 0,
-  isVisible: true
+  isVisible: true,
+  credit: ''
 })
 
 // 写真データを取得
@@ -318,7 +331,8 @@ const editPhoto = (photo: Photo) => {
     description: photo.description || '',
     category: photo.category,
     order: photo.order,
-    isVisible: photo.isVisible
+    isVisible: photo.isVisible,
+    credit: photo.credit || ''
   }
   showUploadModal.value = true
 }
@@ -383,7 +397,8 @@ const closeModal = () => {
     description: '',
     category: 'exterior',
     order: 0,
-    isVisible: true
+    isVisible: true,
+    credit: ''
   }
 }
 </script>

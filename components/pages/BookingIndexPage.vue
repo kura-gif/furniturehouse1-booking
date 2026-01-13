@@ -81,6 +81,7 @@
               <div class="px-1">
                 <h3 class="font-medium text-gray-900">{{ photo.title }}</h3>
                 <p v-if="photo.description" class="text-sm text-gray-600">{{ photo.description }}</p>
+                <p v-if="photo.credit" class="text-xs text-gray-400 mt-1">{{ photo.credit }}</p>
               </div>
             </div>
           </div>

@@ -10,6 +10,7 @@ export interface Photo {
   description?: string
   order: number // 表示順序
   isVisible: boolean // 公開/非公開
+  credit?: string // フォトグラファークレジット（任意）
   uploadedAt?: Date
 }
 
