@@ -64,6 +64,9 @@ export default defineNuxtConfig({
           'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://m.stripe.com https://*.firebaseio.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: blob:; connect-src 'self' https: wss: blob:; frame-src https://js.stripe.com https://hooks.stripe.com https://*.firebaseapp.com; worker-src 'self' blob:;"
         }
       },
+      // /site から / へリダイレクト
+      '/site': { redirect: { to: '/', statusCode: 301 } },
+      '/site/': { redirect: { to: '/', statusCode: 301 } },
       // 静的アセットのキャッシュ（1年）
       '/_nuxt/**': { headers: { 'Cache-Control': 'public, max-age=31536000, immutable' } },
       '/images/**': { headers: { 'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800' } },
