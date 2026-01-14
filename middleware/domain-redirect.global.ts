@@ -1,10 +1,14 @@
-export default defineNuxtRouteMiddleware(() => {
+export default defineNuxtRouteMiddleware((to) => {
   // サーバーサイドでのみ実行
   if (import.meta.server) {
     const host = useRequestHeaders()['host'] || ''
 
-    // booking.furniturehouse1.com の場合、リダイレクトしない
+    // booking.furniturehouse1.com の場合、/booking にナビゲート
     if (host === 'booking.furniturehouse1.com') {
+      // すでに /booking パスにいる場合は何もしない
+      if (!to.path.startsWith('/booking')) {
+        return navigateTo('/booking')
+      }
       return
     }
 
