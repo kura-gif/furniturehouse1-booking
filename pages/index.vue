@@ -363,17 +363,30 @@ const toggleLocale = () => {
 
 // ドメイン判定
 const isChladniDomain = ref(false)
+const isBookingDomain = ref(false)
 
 // サーバーサイドでホストを取得
 if (import.meta.server) {
   const headers = useRequestHeaders()
   const host = headers['host'] || ''
   isChladniDomain.value = host === 'chladni.co.jp' || host === 'www.chladni.co.jp'
+  isBookingDomain.value = host === 'booking.furniturehouse1.com'
+
+  // booking.furniturehouse1.com の場合は /booking にリダイレクト
+  if (isBookingDomain.value) {
+    navigateTo('/booking')
+  }
 }
 
 // クライアントサイドでホストを取得
 if (import.meta.client) {
   isChladniDomain.value = window.location.host === 'chladni.co.jp' || window.location.host === 'www.chladni.co.jp'
+  isBookingDomain.value = window.location.host === 'booking.furniturehouse1.com'
+
+  // booking.furniturehouse1.com の場合は /booking にリダイレクト
+  if (isBookingDomain.value) {
+    navigateTo('/booking')
+  }
 }
 
 onMounted(() => {
