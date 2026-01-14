@@ -12,18 +12,20 @@ export default defineNuxtConfig({
 
   // Nuxt Image設定
   image: {
-    provider: 'vercel',
-    quality: 85,
-    format: ['webp', 'avif'],
+    quality: 90,
+    format: ['webp'],
     screens: {
       xs: 320,
       sm: 640,
       md: 768,
       lg: 1024,
       xl: 1280,
-      xxl: 1536
+      xxl: 1536,
+      '2xl': 1920,
+      '3xl': 2560
     },
-    densities: [1, 2]
+    densities: [1, 2],
+    domains: ['furniturehouse1.com', 'localhost']
   },
 
   // 多言語対応設定

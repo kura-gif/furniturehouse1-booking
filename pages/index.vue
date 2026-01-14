@@ -37,18 +37,12 @@
     <section class="site-hero">
       <div class="site-hero-main">
         <transition name="fade" mode="out-in">
-          <NuxtImg
+          <img
             :key="currentImageIndex"
             :src="heroImages[currentImageIndex].src"
             :alt="heroImages[currentImageIndex].alt"
             class="site-hero-image"
-            width="2400"
-            height="1600"
-            sizes="100vw"
-            format="webp"
-            quality="85"
             loading="eager"
-            preload
           />
         </transition>
         <div v-if="heroImages[currentImageIndex].credit" :class="['site-hero-credit', { 'light-text': heroImages[currentImageIndex].lightText }]">
@@ -68,7 +62,7 @@
     <section class="site-stay-section">
       <div class="site-stay-inner">
         <div class="site-stay-image">
-          <NuxtImg src="/images/hero/07.webp" alt="" width="1200" height="800" sizes="sm:100vw md:50vw" format="webp" quality="85" loading="lazy" />
+          <NuxtImg src="/images/hero/07.webp" alt="" width="810" height="1080" sizes="sm:100vw md:50vw" format="webp" quality="85" loading="lazy" />
           <div class="site-stay-image-credit">
             {{ $t('site.hero.photoCredit') }} <a href="https://instagram.com/martin_holtkamp" target="_blank" rel="noopener noreferrer">@martin_holtkamp</a>
           </div>
@@ -103,7 +97,7 @@
           </div>
           <div class="site-structure-images">
             <div class="site-structure-figure">
-              <NuxtImg src="/images/hero/08.webp" :alt="$t('site.structure.caption1')" width="800" height="600" sizes="sm:100vw md:33vw" format="webp" quality="85" loading="lazy" />
+              <NuxtImg src="/images/hero/08.webp" :alt="$t('site.structure.caption1')" width="730" height="964" sizes="sm:100vw md:33vw" format="webp" quality="85" loading="lazy" />
               <p class="site-image-caption">{{ $t('site.structure.caption1') }}</p>
             </div>
             <div class="site-structure-figure">
@@ -302,32 +296,32 @@ const heroImages = [
 
 // 上部ギャラリー（4枚）
 const galleryTopImages = [
-  { src: '/images/hero/gallery-1.webp', alt: 'Interior 1' },
-  { src: '/images/hero/gallery-2.webp', alt: 'Interior 2' },
-  { src: '/images/hero/gallery-3.webp', alt: 'Interior 3' },
-  { src: '/images/hero/gallery-4.webp', alt: 'Interior 4' },
+  { src: '/images/hero/gallery-top-1.webp', alt: 'Interior 1' },
+  { src: '/images/hero/gallery-top-2.webp', alt: 'Interior 2' },
+  { src: '/images/hero/gallery-top-3.webp', alt: 'Interior 3' },
+  { src: '/images/hero/gallery-top-4.webp', alt: 'Interior 4' },
 ]
 
 // 中間ギャラリー（4枚）
 const galleryMiddleImages = [
-  { src: '/images/hero/gallery-5.webp', alt: 'Exterior 1' },
-  { src: '/images/hero/gallery-6.webp', alt: 'Exterior 2' },
-  { src: '/images/hero/gallery-7.webp', alt: 'Exterior 3' },
-  { src: '/images/hero/gallery-8.webp', alt: 'Exterior 4' },
+  { src: '/images/hero/gallery-middle-1.webp', alt: 'Exterior 1' },
+  { src: '/images/hero/gallery-middle-2.webp', alt: 'Exterior 2' },
+  { src: '/images/hero/gallery-middle-3.webp', alt: 'Exterior 3' },
+  { src: '/images/hero/gallery-middle-4.webp', alt: 'Exterior 4' },
 ]
 
 // 下部ギャラリー（10枚、5x2グリッド）
 const galleryBottomImages = [
-  { src: '/images/hero/gallery-1.webp', alt: 'Photo 1' },
-  { src: '/images/hero/gallery-2.webp', alt: 'Photo 2' },
-  { src: '/images/hero/gallery-3.webp', alt: 'Photo 3' },
-  { src: '/images/hero/gallery-4.webp', alt: 'Photo 4' },
-  { src: '/images/hero/gallery-5.webp', alt: 'Photo 5' },
-  { src: '/images/hero/gallery-6.webp', alt: 'Photo 6' },
-  { src: '/images/hero/gallery-7.webp', alt: 'Photo 7' },
-  { src: '/images/hero/gallery-8.webp', alt: 'Photo 8' },
-  { src: '/images/hero/gallery-1.webp', alt: 'Photo 9' },
-  { src: '/images/hero/gallery-2.webp', alt: 'Photo 10' },
+  { src: '/images/hero/gallery-bottom-1.webp', alt: 'Photo 1' },
+  { src: '/images/hero/gallery-bottom-2.webp', alt: 'Photo 2' },
+  { src: '/images/hero/gallery-bottom-3.webp', alt: 'Photo 3' },
+  { src: '/images/hero/gallery-bottom-4.webp', alt: 'Photo 4' },
+  { src: '/images/hero/gallery-bottom-5.webp', alt: 'Photo 5' },
+  { src: '/images/hero/gallery-bottom-6.webp', alt: 'Photo 6' },
+  { src: '/images/hero/gallery-bottom-7.webp', alt: 'Photo 7' },
+  { src: '/images/hero/gallery-bottom-8.webp', alt: 'Photo 8' },
+  { src: '/images/hero/gallery-bottom-9.webp', alt: 'Photo 9' },
+  { src: '/images/hero/gallery-bottom-10.webp', alt: 'Photo 10' },
 ]
 
 const currentImageIndex = ref(0)
@@ -336,14 +330,16 @@ let autoplayInterval: ReturnType<typeof setInterval> | null = null
 
 // 画像読み込み完了時にフェードイン
 const onImageLoad = (e: Event) => {
-  const target = e.target as HTMLImageElement
-  target.classList.add('loaded')
+  const target = e.target as HTMLImageElement | null
+  if (target && target.classList) {
+    target.classList.add('loaded')
+  }
 }
 
 // キャッシュされた画像に対応するためのディレクティブ
 const vImgLoaded = {
-  mounted(el: HTMLImageElement) {
-    if (el.complete && el.naturalHeight !== 0) {
+  mounted(el: HTMLImageElement | null) {
+    if (el && el.classList && el.complete && el.naturalHeight !== 0) {
       el.classList.add('loaded')
     }
   }
@@ -683,7 +679,7 @@ useHead({
   display: flex;
   flex-direction: row;
   gap: 72px;
-  align-items: flex-start;
+  align-items: stretch;
   justify-content: flex-start;
 }
 
@@ -734,8 +730,10 @@ useHead({
 
 .site-stay-content {
   flex: 1;
-  height: auto;
-  margin-top: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-top: 0;
 }
 
 .site-stay-title {
