@@ -132,7 +132,7 @@ import { useRouter } from 'vue-router'
 import type { AdminInvitation } from '~/types'
 
 definePageMeta({
-  middleware: 'admin-auth'
+  middleware: 'admin'
 })
 
 const router = useRouter()
