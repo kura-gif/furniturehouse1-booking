@@ -37,7 +37,19 @@
     <section class="site-hero">
       <div class="site-hero-main">
         <transition name="fade" mode="out-in">
-          <img :key="currentImageIndex" :src="heroImages[currentImageIndex].src" :alt="heroImages[currentImageIndex].alt" class="site-hero-image" />
+          <NuxtImg
+            :key="currentImageIndex"
+            :src="heroImages[currentImageIndex].src"
+            :alt="heroImages[currentImageIndex].alt"
+            class="site-hero-image"
+            width="2400"
+            height="1600"
+            sizes="100vw"
+            format="webp"
+            quality="85"
+            loading="eager"
+            preload
+          />
         </transition>
         <div v-if="heroImages[currentImageIndex].credit" :class="['site-hero-credit', { 'light-text': heroImages[currentImageIndex].lightText }]">
           <template v-if="heroImages[currentImageIndex].credit.includes('@')">
@@ -56,7 +68,7 @@
     <section class="site-stay-section">
       <div class="site-stay-inner">
         <div class="site-stay-image">
-          <img src="/images/hero/07.webp" alt="" loading="lazy" />
+          <NuxtImg src="/images/hero/07.webp" alt="" width="1200" height="800" sizes="sm:100vw md:50vw" format="webp" quality="85" loading="lazy" />
           <div class="site-stay-image-credit">
             {{ $t('site.hero.photoCredit') }} <a href="https://instagram.com/martin_holtkamp" target="_blank" rel="noopener noreferrer">@martin_holtkamp</a>
           </div>
@@ -91,11 +103,11 @@
           </div>
           <div class="site-structure-images">
             <div class="site-structure-figure">
-              <img src="/images/hero/08.webp" :alt="$t('site.structure.caption1')" loading="lazy" />
+              <NuxtImg src="/images/hero/08.webp" :alt="$t('site.structure.caption1')" width="800" height="600" sizes="sm:100vw md:33vw" format="webp" quality="85" loading="lazy" />
               <p class="site-image-caption">{{ $t('site.structure.caption1') }}</p>
             </div>
             <div class="site-structure-figure">
-              <img src="/images/hero/09.webp" :alt="$t('site.structure.caption2')" loading="lazy" />
+              <NuxtImg src="/images/hero/09.webp" :alt="$t('site.structure.caption2')" width="800" height="600" sizes="sm:100vw md:33vw" format="webp" quality="85" loading="lazy" />
               <p class="site-image-caption">{{ $t('site.structure.caption2') }}</p>
             </div>
           </div>
@@ -108,7 +120,7 @@
       <div class="site-gallery-grid">
         <div v-for="(img, index) in galleryTopImages" :key="index" class="site-gallery-item">
           <div class="site-gallery-skeleton"></div>
-          <img v-img-loaded :src="img.src" :alt="img.alt" loading="lazy" class="site-gallery-img" @load="onImageLoad" />
+          <NuxtImg v-img-loaded :src="img.src" :alt="img.alt" width="800" height="800" sizes="sm:33vw md:25vw" format="webp" quality="85" loading="lazy" class="site-gallery-img" @load="onImageLoad" />
         </div>
       </div>
     </section>
@@ -160,7 +172,7 @@
       <div class="site-gallery-grid">
         <div v-for="(img, index) in galleryMiddleImages" :key="index" class="site-gallery-item">
           <div class="site-gallery-skeleton"></div>
-          <img v-img-loaded :src="img.src" :alt="img.alt" loading="lazy" class="site-gallery-img" @load="onImageLoad" />
+          <NuxtImg v-img-loaded :src="img.src" :alt="img.alt" width="800" height="800" sizes="sm:33vw md:25vw" format="webp" quality="85" loading="lazy" class="site-gallery-img" @load="onImageLoad" />
         </div>
       </div>
     </section>
@@ -181,7 +193,7 @@
       <div class="site-gallery-grid-10">
         <div v-for="(img, index) in galleryBottomImages" :key="index" class="site-gallery-item-10">
           <div class="site-gallery-skeleton"></div>
-          <img v-img-loaded :src="img.src" :alt="img.alt" loading="lazy" class="site-gallery-img" @load="onImageLoad" />
+          <NuxtImg v-img-loaded :src="img.src" :alt="img.alt" width="600" height="600" sizes="sm:33vw md:20vw" format="webp" quality="85" loading="lazy" class="site-gallery-img" @load="onImageLoad" />
         </div>
       </div>
     </section>
@@ -195,7 +207,7 @@
         <div class="site-guide-grid">
           <div class="site-guide-item">
             <div class="site-guide-item-image">
-              <img src="/images/hero/guide-1.webp" :alt="$t('site.guide.item1.title')" loading="lazy" />
+              <NuxtImg src="/images/hero/guide-1.webp" :alt="$t('site.guide.item1.title')" width="600" height="600" sizes="sm:100vw md:50vw lg:33vw" format="webp" quality="85" loading="lazy" />
             </div>
             <h3 class="site-guide-item-title">{{ $t('site.guide.item1.title') }}</h3>
             <p class="site-guide-item-text">{{ $t('site.guide.item1.text') }}</p>
@@ -203,7 +215,7 @@
 
           <div class="site-guide-item">
             <div class="site-guide-item-image">
-              <img src="/images/hero/guide-2.webp" :alt="$t('site.guide.item2.title')" loading="lazy" />
+              <NuxtImg src="/images/hero/guide-2.webp" :alt="$t('site.guide.item2.title')" width="600" height="600" sizes="sm:100vw md:50vw lg:33vw" format="webp" quality="85" loading="lazy" />
             </div>
             <h3 class="site-guide-item-title">{{ $t('site.guide.item2.title') }}</h3>
             <p class="site-guide-item-text">{{ $t('site.guide.item2.text') }}</p>
@@ -211,7 +223,7 @@
 
           <div class="site-guide-item">
             <div class="site-guide-item-image">
-              <img src="/images/hero/guide-3.webp" :alt="$t('site.guide.item3.title')" loading="lazy" />
+              <NuxtImg src="/images/hero/guide-3.webp" :alt="$t('site.guide.item3.title')" width="600" height="600" sizes="sm:100vw md:50vw lg:33vw" format="webp" quality="85" loading="lazy" />
             </div>
             <h3 class="site-guide-item-title">{{ $t('site.guide.item3.title') }}</h3>
             <p class="site-guide-item-text">{{ $t('site.guide.item3.text') }}</p>
@@ -219,7 +231,7 @@
 
           <div class="site-guide-item">
             <div class="site-guide-item-image">
-              <img src="/images/hero/guide-4.webp" :alt="$t('site.guide.item4.title')" loading="lazy" />
+              <NuxtImg src="/images/hero/guide-4.webp" :alt="$t('site.guide.item4.title')" width="600" height="600" sizes="sm:100vw md:50vw lg:33vw" format="webp" quality="85" loading="lazy" />
             </div>
             <h3 class="site-guide-item-title">{{ $t('site.guide.item4.title') }}</h3>
             <p class="site-guide-item-text">{{ $t('site.guide.item4.text') }}</p>
@@ -227,7 +239,7 @@
 
           <div class="site-guide-item">
             <div class="site-guide-item-image">
-              <img src="/images/hero/guide-5.webp" :alt="$t('site.guide.item5.title')" loading="lazy" />
+              <NuxtImg src="/images/hero/guide-5.webp" :alt="$t('site.guide.item5.title')" width="600" height="600" sizes="sm:100vw md:50vw lg:33vw" format="webp" quality="85" loading="lazy" />
             </div>
             <h3 class="site-guide-item-title">{{ $t('site.guide.item5.title') }}</h3>
             <p class="site-guide-item-text">{{ $t('site.guide.item5.text') }}</p>
@@ -235,7 +247,7 @@
 
           <div class="site-guide-item">
             <div class="site-guide-item-image">
-              <img src="/images/hero/guide-6.webp" :alt="$t('site.guide.item6.title')" loading="lazy" />
+              <NuxtImg src="/images/hero/guide-6.webp" :alt="$t('site.guide.item6.title')" width="600" height="600" sizes="sm:100vw md:50vw lg:33vw" format="webp" quality="85" loading="lazy" />
             </div>
             <h3 class="site-guide-item-title">{{ $t('site.guide.item6.title') }}</h3>
             <p class="site-guide-item-text">{{ $t('site.guide.item6.text') }}</p>
