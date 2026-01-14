@@ -39,7 +39,7 @@
       </div>
 
       <div class="border-t border-gray-700 pt-8 text-center text-sm text-gray-400">
-        <p class="mb-2">連絡：<a href="mailto:info@furniturehouse1.com" class="underline hover:text-white transition-colors">info@furniturehouse1.com</a></p>
+        <p class="mb-2">連絡：<a href="mailto:furniturehouse1@chladni.co.jp" class="underline hover:text-white transition-colors">furniturehouse1@chladni.co.jp</a></p>
         <p class="mb-4">運営：家具の家 No.1 運営委員会 ＋ <a href="https://chladni.co.jp/" target="_blank" rel="noopener noreferrer" class="underline hover:text-white transition-colors">株式会社クラドニ</a></p>
         <p>&copy; {{ currentYear }} 家具の家 No.1. All rights reserved.</p>
       </div>

@@ -28,7 +28,7 @@
     "zod": "^4.2.1"
   },
   "devDependencies": {
-    "@nuxt/image": "^1.8.1",
+    "@nuxt/image": "^2.0.0",
     "@nuxtjs/tailwindcss": "^6.12.2",
     "@types/nodemailer": "^6.4.16",
     "dotenv": "^16.4.5",
