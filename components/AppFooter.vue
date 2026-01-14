@@ -20,7 +20,7 @@
               <NuxtLink to="/access" class="hover:text-white transition-colors">アクセス</NuxtLink>
             </li>
             <li>
-              <a href="https://booking.furniturehouse1.com/booking" class="hover:text-white transition-colors">宿泊予約</a>
+              <a href="https://booking.furniturehouse1.com/" class="hover:text-white transition-colors">宿泊予約</a>
             </li>
           </ul>
         </div>
