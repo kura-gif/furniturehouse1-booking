@@ -136,7 +136,7 @@ definePageMeta({
 })
 
 const router = useRouter()
-const { appUser, logout } = useAuth()
+const { user, appUser, logout } = useAuth()
 
 const invitationEmail = ref('')
 const sending = ref(false)
@@ -150,7 +150,7 @@ const loadInvitations = async () => {
   errorMessage.value = ''
 
   try {
-    const token = await appUser.value?.getIdToken()
+    const token = await user.value?.getIdToken()
     const response = await fetch('/api/admin/invitations', {
       headers: {
         'Authorization': `Bearer ${token}`
@@ -177,7 +177,7 @@ const sendInvitation = async () => {
   successMessage.value = ''
 
   try {
-    const token = await appUser.value?.getIdToken()
+    const token = await user.value?.getIdToken()
     const response = await fetch('/api/admin/invite', {
       method: 'POST',
       headers: {
@@ -210,7 +210,7 @@ const resendInvitation = async (invitationId: string) => {
   if (!confirm('この招待を再送信しますか？')) return
 
   try {
-    const token = await appUser.value?.getIdToken()
+    const token = await user.value?.getIdToken()
     const response = await fetch(`/api/admin/invitations/${invitationId}/resend`, {
       method: 'POST',
       headers: {
@@ -234,7 +234,7 @@ const revokeInvitation = async (invitationId: string) => {
   if (!confirm('この招待を取り消しますか？')) return
 
   try {
-    const token = await appUser.value?.getIdToken()
+    const token = await user.value?.getIdToken()
     const response = await fetch(`/api/admin/invitations/${invitationId}/revoke`, {
       method: 'DELETE',
       headers: {
