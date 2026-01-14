@@ -16,7 +16,6 @@
   },
   "dependencies": {
     "@heroicons/vue": "^2.2.0",
-    "@nuxtjs/i18n": "^10.2.1",
     "@stripe/stripe-js": "^8.6.0",
     "firebase": "^12.7.0",
     "nodemailer": "^6.9.15",
@@ -28,7 +27,6 @@
     "zod": "^4.2.1"
   },
   "devDependencies": {
-    "@nuxt/image": "^2.0.0",
     "@nuxtjs/tailwindcss": "^6.12.2",
     "@types/nodemailer": "^6.4.16",
     "dotenv": "^16.4.5",

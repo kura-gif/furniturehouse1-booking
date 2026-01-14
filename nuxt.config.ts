@@ -5,42 +5,8 @@ export default defineNuxtConfig({
 
   modules: [
     '@nuxtjs/tailwindcss',
-    'nuxt-csurf',
-    '@nuxtjs/i18n',
-    '@nuxt/image'
+    'nuxt-csurf'
   ],
-
-  // Nuxt Image設定
-  image: {
-    quality: 90,
-    format: ['webp'],
-    screens: {
-      xs: 320,
-      sm: 640,
-      md: 768,
-      lg: 1024,
-      xl: 1280,
-      xxl: 1536,
-      '2xl': 1920,
-      '3xl': 2560
-    },
-    densities: [1, 2],
-    domains: ['furniturehouse1.com', 'localhost']
-  },
-
-  // 多言語対応設定
-  i18n: {
-    locales: [
-      { code: 'ja', file: 'ja.json', name: '日本語' },
-      { code: 'en', file: 'en.json', name: 'English' }
-    ],
-    defaultLocale: 'ja',
-    lazy: true,
-    langDir: 'locales',
-    strategy: 'prefix_except_default',
-    detectBrowserLanguage: false,
-    vueI18n: './i18n.config.ts'
-  },
 
   // CSRF保護設定
   csurf: {
