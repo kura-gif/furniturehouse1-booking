@@ -106,15 +106,19 @@
 </template>
 
 <script setup lang="ts">
+import { useGuideState } from '~/middleware/guest-guide'
+
 definePageMeta({
-  layout: 'guide'
+  layout: 'guide',
+  middleware: ['guest-guide']
 })
 
 const { t } = useI18n()
 
-// ゲスト認証状態 (後で実装)
-const isAuthenticated = ref(false)
-const guestName = ref('')
+// ゲスト認証状態
+const guideState = useGuideState()
+const isAuthenticated = computed(() => guideState.value?.isAuthenticated ?? false)
+const guestName = computed(() => guideState.value?.guestName ?? '')
 
 // Wi-Fiパスワードコピー
 const copied = ref(false)

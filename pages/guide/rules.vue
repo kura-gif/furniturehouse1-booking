@@ -28,7 +28,7 @@
         </div>
       </div>
 
-      <!-- 同意チェック (認証済みの場合のみ表示) -->
+      <!-- 同意チェック (認証済みかつ未同意の場合のみ表示) -->
       <section v-if="showAgreement" class="mt-8">
         <div class="bg-gray-50 border border-gray-200 p-4">
           <label class="flex items-start gap-3 cursor-pointer">
@@ -50,6 +50,14 @@
         </div>
       </section>
 
+      <!-- 同意完了メッセージ -->
+      <section v-if="agreementSuccess || alreadyAgreed" class="mt-8">
+        <div class="bg-green-50 border border-green-200 p-4 text-center">
+          <span class="text-2xl">✅</span>
+          <p class="text-sm text-green-800 mt-2">{{ $t('guestGuide.rules.success') }}</p>
+        </div>
+      </section>
+
       <!-- 最後のメッセージ -->
       <div class="mt-8 text-center">
         <p class="text-sm text-gray-600">{{ $t('guestGuide.rules.enjoy') }}</p>
@@ -59,16 +67,26 @@
 </template>
 
 <script setup lang="ts">
+import { useGuideState } from '~/middleware/guest-guide'
+
 definePageMeta({
-  layout: 'guide'
+  layout: 'guide',
+  middleware: ['guest-guide']
 })
 
 const { t } = useI18n()
+const { recordRulesAgreement } = useGuestGuide()
 
-// 認証状態（後で実装）
-const showAgreement = ref(false)
+// ゲスト認証状態
+const guideState = useGuideState()
+const isAuthenticated = computed(() => guideState.value?.isAuthenticated ?? false)
+const alreadyAgreed = computed(() => guideState.value?.rulesAgreed ?? false)
+
+// 認証済みかつ未同意の場合のみ同意フォームを表示
+const showAgreement = computed(() => isAuthenticated.value && !alreadyAgreed.value && !agreementSuccess.value)
 const agreed = ref(false)
 const submitting = ref(false)
+const agreementSuccess = ref(false)
 
 const rules = [
   { id: 1, icon: '🔧', titleKey: 'guestGuide.rules.rule1.title', descKey: 'guestGuide.rules.rule1.desc' },
@@ -85,13 +103,25 @@ const rules = [
 ]
 
 const submitAgreement = async () => {
+  if (!guideState.value?.tokenData) return
+
   submitting.value = true
   try {
-    // TODO: 同意を保存するAPIを呼び出す
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    alert(t('guestGuide.rules.success'))
+    const tokenData = guideState.value.tokenData
+    await recordRulesAgreement(
+      tokenData.id,
+      tokenData.bookingId,
+      tokenData.bookingReference,
+      tokenData.guestName,
+      tokenData.guestEmail
+    )
+    agreementSuccess.value = true
+    // stateも更新
+    if (guideState.value) {
+      guideState.value.rulesAgreed = true
+    }
   } catch (e) {
-    console.error(e)
+    console.error('Failed to record agreement:', e)
   } finally {
     submitting.value = false
   }

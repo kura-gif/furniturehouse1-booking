@@ -880,3 +880,110 @@ export interface MaintenanceRecord {
   createdAt: Timestamp
   updatedAt: Timestamp
 }
+
+/**
+ * ゲストガイドアクセストークン
+ */
+export interface GuestGuideToken {
+  id: string
+  bookingId: string
+  bookingReference: string
+  token: string // セキュアなランダム文字列
+  guestName: string
+  guestEmail: string
+  checkInDate: Timestamp
+  checkOutDate: Timestamp
+  isActive: boolean
+  rulesAgreedAt?: Timestamp
+  accessedAt?: Timestamp
+  expiresAt: Timestamp // チェックアウト後7日など
+  createdAt: Timestamp
+  updatedAt: Timestamp
+}
+
+/**
+ * ガイドコンテンツカテゴリ
+ */
+export type GuideContentCategory = 'amenities' | 'area' | 'faq' | 'rules'
+
+/**
+ * 周辺スポットカテゴリ
+ */
+export type AreaSpotCategory = 'cafe' | 'restaurant' | 'shopping' | 'activity' | 'spa'
+
+/**
+ * アメニティカテゴリ
+ */
+export type AmenityCategory = 'kitchen' | 'bath' | 'amenity' | 'appliance'
+
+/**
+ * ガイドブック - アメニティアイテム
+ */
+export interface GuideAmenityItem {
+  id: string
+  name: string
+  nameEn?: string
+  category: AmenityCategory
+  description?: string
+  descriptionEn?: string
+  imageUrl?: string
+  brandUrl?: string
+  order: number
+  isActive: boolean
+  createdAt: Timestamp
+  updatedAt: Timestamp
+}
+
+/**
+ * ガイドブック - 周辺スポット
+ */
+export interface GuideAreaSpot {
+  id: string
+  name: string
+  nameEn?: string
+  category: AreaSpotCategory
+  description?: string
+  descriptionEn?: string
+  address?: string
+  phone?: string
+  website?: string
+  googleMapsUrl?: string
+  imageUrl?: string
+  distanceMinutes?: number // 車で何分
+  isRecommended: boolean
+  order: number
+  isActive: boolean
+  createdAt: Timestamp
+  updatedAt: Timestamp
+}
+
+/**
+ * ガイドブック - FAQ
+ */
+export interface GuideFaq {
+  id: string
+  question: string
+  questionEn?: string
+  answer: string
+  answerEn?: string
+  category?: string
+  order: number
+  isActive: boolean
+  createdAt: Timestamp
+  updatedAt: Timestamp
+}
+
+/**
+ * ガイドブック - ハウスルール同意記録
+ */
+export interface GuideRulesAgreement {
+  id: string
+  tokenId: string
+  bookingId: string
+  bookingReference: string
+  guestName: string
+  guestEmail: string
+  agreedAt: Timestamp
+  ipAddress?: string
+  userAgent?: string
+}
