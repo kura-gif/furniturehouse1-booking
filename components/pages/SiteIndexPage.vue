@@ -278,32 +278,32 @@ const heroImages = [
 
 // 上部ギャラリー（4枚）
 const galleryTopImages = [
-  { src: '/images/hero/gallery-1.webp', alt: '内観1' },
-  { src: '/images/hero/gallery-2.webp', alt: '内観2' },
-  { src: '/images/hero/gallery-3.webp', alt: '内観3' },
-  { src: '/images/hero/gallery-4.webp', alt: '内観4' },
+  { src: '/images/hero/gallery-top-1.webp', alt: '内観1' },
+  { src: '/images/hero/gallery-top-2.webp', alt: '内観2' },
+  { src: '/images/hero/gallery-top-3.webp', alt: '内観3' },
+  { src: '/images/hero/gallery-top-4.webp', alt: '内観4' },
 ]
 
 // 中間ギャラリー（4枚）
 const galleryMiddleImages = [
-  { src: '/images/hero/gallery-5.webp', alt: '外観1' },
-  { src: '/images/hero/gallery-6.webp', alt: '外観2' },
-  { src: '/images/hero/gallery-7.webp', alt: '外観3' },
-  { src: '/images/hero/gallery-8.webp', alt: '外観4' },
+  { src: '/images/hero/gallery-middle-1.webp', alt: '外観1' },
+  { src: '/images/hero/gallery-middle-2.webp', alt: '外観2' },
+  { src: '/images/hero/gallery-middle-3.webp', alt: '外観3' },
+  { src: '/images/hero/gallery-middle-4.webp', alt: '外観4' },
 ]
 
 // 下部ギャラリー（10枚、5x2グリッド）
 const galleryBottomImages = [
-  { src: '/images/hero/gallery-1.webp', alt: '写真1' },
-  { src: '/images/hero/gallery-2.webp', alt: '写真2' },
-  { src: '/images/hero/gallery-3.webp', alt: '写真3' },
-  { src: '/images/hero/gallery-4.webp', alt: '写真4' },
-  { src: '/images/hero/gallery-5.webp', alt: '写真5' },
-  { src: '/images/hero/gallery-6.webp', alt: '写真6' },
-  { src: '/images/hero/gallery-7.webp', alt: '写真7' },
-  { src: '/images/hero/gallery-8.webp', alt: '写真8' },
-  { src: '/images/hero/gallery-1.webp', alt: '写真9' },
-  { src: '/images/hero/gallery-2.webp', alt: '写真10' },
+  { src: '/images/hero/gallery-bottom-1.webp', alt: '写真1' },
+  { src: '/images/hero/gallery-bottom-2.webp', alt: '写真2' },
+  { src: '/images/hero/gallery-bottom-3.webp', alt: '写真3' },
+  { src: '/images/hero/gallery-bottom-4.webp', alt: '写真4' },
+  { src: '/images/hero/gallery-bottom-5.webp', alt: '写真5' },
+  { src: '/images/hero/gallery-bottom-6.webp', alt: '写真6' },
+  { src: '/images/hero/gallery-bottom-7.webp', alt: '写真7' },
+  { src: '/images/hero/gallery-bottom-8.webp', alt: '写真8' },
+  { src: '/images/hero/gallery-bottom-9.webp', alt: '写真9' },
+  { src: '/images/hero/gallery-bottom-10.webp', alt: '写真10' },
 ]
 
 const currentImageIndex = ref(0)
