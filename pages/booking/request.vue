@@ -1079,6 +1079,7 @@ const proceedToPayment = async () => {
     })
 
     // 予約をFirestoreに保存
+    const paymentIntentId = clientSecret.value.split('_secret_')[0]
     const bookingData = {
       type: 'stay' as const,
       startDate: new Date(checkInDate.value),
@@ -1092,9 +1093,10 @@ const proceedToPayment = async () => {
       discountAmount: couponDiscountAmount.value,
       couponCode: appliedCoupon.value?.code || null,
       couponId: appliedCoupon.value?.id || null,
-      notes: `決済ID: ${clientSecret.value.split('_secret_')[0]}`,
+      notes: `決済ID: ${paymentIntentId}`,
       selectedOptions: selectedOptions.value,
-      optionsTotalPrice: optionsTotalPrice.value
+      optionsTotalPrice: optionsTotalPrice.value,
+      stripePaymentIntentId: paymentIntentId
     }
 
     const bookingId = await createBooking(bookingData)

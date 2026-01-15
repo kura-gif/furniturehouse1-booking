@@ -285,6 +285,43 @@ export default defineEventHandler(async (event) => {
       `
       break
 
+    case 'booking_modified':
+      subject = `【予約変更】${bookingReference} - ${guestName}様`
+      headerColor = '#3b82f6' // blue
+      headerIcon = '📝'
+      headerText = '予約が変更されました'
+      contentHtml = `
+        <div class="info-box" style="border-left-color: #3b82f6;">
+          <h3 style="margin-top: 0;">変更情報</h3>
+          <div class="info-row">
+            <span class="label">予約番号</span>
+            <span class="value" style="font-family: monospace; font-weight: bold;">${bookingReference}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">お客様名</span>
+            <span class="value">${guestName}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">メール</span>
+            <span class="value">${guestEmail}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">変更後金額</span>
+            <span class="value" style="font-weight: bold; color: #3b82f6;">¥${totalAmount?.toLocaleString() || 0}</span>
+          </div>
+        </div>
+        <p style="background: #eff6ff; padding: 15px; border-radius: 6px; color: #1e40af;">
+          予約内容が変更されました。ゲストに通知メールが送信されています。
+        </p>
+        <p style="margin-top: 20px;">
+          <a href="${config.public.siteUrl || 'http://localhost:3000'}/admin"
+             style="display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">
+            管理画面で確認
+          </a>
+        </p>
+      `
+      break
+
     default:
       subject = `【通知】${bookingReference || '予約通知'}`
       headerColor = '#6b7280' // gray

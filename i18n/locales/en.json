@@ -101,8 +101,8 @@
       "description": "Guestbook for Furniture House no.1"
     },
     "hero": {
-      "welcome": "Welcome",
-      "title": "Furniture House no.1",
+      "welcome": "Welcome to Furniture House no.1",
+      "title": "",
       "greeting": "Thank you for your reservation, {name}"
     },
     "wifi": {

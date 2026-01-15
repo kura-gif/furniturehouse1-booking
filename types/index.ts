@@ -263,6 +263,7 @@ export interface CreateBookingRequest {
   notes?: string
   selectedOptions?: SelectedBookingOption[]  // 選択したオプション
   optionsTotalPrice?: number                 // オプション合計金額
+  stripePaymentIntentId?: string             // Stripe Payment Intent ID
 }
 
 /**

@@ -67,6 +67,7 @@ export const useBookings = () => {
           selectedOptions: bookingData.selectedOptions,
           optionsTotalPrice: bookingData.optionsTotalPrice || 0
         }),
+        ...(bookingData.stripePaymentIntentId && { stripePaymentIntentId: bookingData.stripePaymentIntentId }),
         createdAt: Timestamp.now(),
         updatedAt: Timestamp.now()
       }

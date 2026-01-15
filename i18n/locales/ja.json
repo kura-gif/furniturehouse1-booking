@@ -101,8 +101,8 @@
       "description": "家具の家 no.1 の宿泊ガイドブック"
     },
     "hero": {
-      "welcome": "ようこそ",
-      "title": "家具の家 no.1",
+      "welcome": "ようこそ 家具の家 no.1 へ",
+      "title": "",
       "greeting": "{name} 様、ご予約ありがとうございます"
     },
     "wifi": {

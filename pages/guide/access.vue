@@ -70,6 +70,30 @@
         </div>
       </section>
 
+      <!-- ゲートから現地までの道順（動画） -->
+      <section class="mb-8">
+        <div class="flex items-center gap-2 mb-4">
+          <span class="text-2xl">🎥</span>
+          <h2 class="text-lg font-bold text-gray-900">ゲートから現地までの道順</h2>
+        </div>
+        <div class="guide-card overflow-hidden">
+          <div class="aspect-video">
+            <iframe
+              class="w-full h-full"
+              src="https://www.youtube.com/embed/H20Sqd7OYZA?si=G4sTLo7WTtBmx9ZD"
+              title="ゲートから家具の家 no.1 までの道順"
+              frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              referrerpolicy="strict-origin-when-cross-origin"
+              allowfullscreen
+            ></iframe>
+          </div>
+          <div class="p-4">
+            <p class="text-sm text-gray-700">ゲートを通過後、家具の家 no.1 までの道順を動画でご確認いただけます。</p>
+          </div>
+        </div>
+      </section>
+
       <!-- 別荘地地図 -->
       <section class="mb-8">
         <div class="flex items-center gap-2 mb-4">

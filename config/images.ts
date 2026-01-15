@@ -33,8 +33,8 @@ export const images = {
   // ギャラリーセクション画像（Vercel CDN経由で配信）
   gallery: [
     {
-      src: '/images/hero/01.webp',
-      alt: '家具の家 No.1 全景',
+      src: '/images/hero/guide-top.webp',
+      alt: '家具の家 No.1 外観',
       category: '外観'
     },
     {

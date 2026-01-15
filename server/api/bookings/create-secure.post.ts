@@ -162,7 +162,37 @@ export default defineEventHandler(async (event) => {
       }
     })
 
-    // 9. 成功レスポンス
+    // 9. 管理者に新規予約通知メールを送信
+    try {
+      const checkIn = new Date(validatedData.checkInDate)
+      const checkOut = new Date(validatedData.checkOutDate)
+
+      await $fetch('/api/emails/send-admin-notification', {
+        method: 'POST',
+        headers: {
+          'x-internal-secret': config.internalApiSecret,
+        },
+        body: {
+          type: 'new_booking_request',
+          bookingId: result.bookingId,
+          bookingReference: result.bookingReference,
+          guestName: validatedData.guestName,
+          guestEmail: validatedData.guestEmail,
+          guestPhone: validatedData.guestPhone || '',
+          checkInDate: `${checkIn.getFullYear()}年${checkIn.getMonth() + 1}月${checkIn.getDate()}日`,
+          checkOutDate: `${checkOut.getFullYear()}年${checkOut.getMonth() + 1}月${checkOut.getDate()}日`,
+          guestCount: validatedData.guestCount,
+          totalAmount: calculatedAmount,
+          notes: validatedData.notes || '',
+        },
+      })
+      console.log('✅ 管理者通知メール送信成功')
+    } catch (emailError) {
+      // メール送信失敗は予約作成の成功に影響させない
+      console.error('⚠️ 管理者通知メール送信失敗:', emailError)
+    }
+
+    // 10. 成功レスポンス
     console.log('✅ 予約作成成功:', result)
 
     return {
