@@ -105,7 +105,8 @@
       "Bash(du -sh:*)",
       "Bash(gh auth status:*)",
       "Bash(gh auth login:*)",
-      "Bash(openssl dgst:*)"
+      "Bash(openssl dgst:*)",
+      "Bash(openssl rand:*)"
     ],
     "additionalDirectories": [
       "/Users/kurashimayouichi/Documents/furniturehouse1"
