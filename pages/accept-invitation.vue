@@ -102,9 +102,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
-import { doc, setDoc, updateDoc, Timestamp, collection, query, where, limit, getDocs } from 'firebase/firestore'
-import type { AdminInvitation } from '~/types'
 
 const route = useRoute()
 const router = useRouter()
@@ -114,7 +111,7 @@ const creating = ref(false)
 const error = ref('')
 const errorMessage = ref('')
 
-const invitation = ref<AdminInvitation | null>(null)
+const invitation = ref<any>(null)
 const displayName = ref('')
 const password = ref('')
 const passwordConfirm = ref('')
@@ -129,37 +126,28 @@ const loadInvitation = async () => {
   }
 
   try {
-    const { $db } = useNuxtApp()
-    if (!$db) {
-      throw new Error('Firebase が初期化されていません')
-    }
+    // サーバーサイドで招待を検証
+    const response = await fetch('/api/public/verify-invitation', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ token })
+    })
 
-    const invitationsRef = collection($db, 'adminInvitations')
-    const q = query(invitationsRef, where('token', '==', token), where('status', '==', 'pending'), limit(1))
-    const snapshot = await getDocs(q)
+    const data = await response.json()
 
-    if (snapshot.empty) {
-      error.value = '招待が見つからないか、既に使用されています'
+    if (!response.ok || !data.valid) {
+      error.value = data.error || '招待の確認に失敗しました'
       loading.value = false
       return
     }
 
-    const invitationDoc = snapshot.docs[0]
-    const invitationData = invitationDoc.data() as AdminInvitation
-    invitation.value = { ...invitationData, id: invitationDoc.id }
-
-    // 有効期限チェック
-    const expiresAt = invitationData.expiresAt as any
-    const expiryDate = expiresAt.toDate ? expiresAt.toDate() : new Date(expiresAt)
-    if (expiryDate < new Date()) {
-      error.value = '招待の有効期限が切れています'
-      // ステータスを期限切れに更新
-      await updateDoc(doc($db, 'adminInvitations', invitationDoc.id), {
-        status: 'expired'
-      })
-      loading.value = false
-      return
-    }
+    // 招待情報を保存
+    invitation.value = {
+      ...data.invitation,
+      token
+    } as any
 
     loading.value = false
   } catch (err: any) {
@@ -196,64 +184,31 @@ const createAccount = async () => {
   creating.value = true
 
   try {
-    const { $auth, $db } = useNuxtApp()
-    if (!$auth || !$db) {
-      throw new Error('Firebase が初期化されていません')
+    // サーバーサイドでアカウント作成
+    const response = await fetch('/api/public/accept-invitation', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        token: (invitation.value as any).token,
+        displayName: displayName.value,
+        password: password.value
+      })
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      throw new Error(data.message || 'アカウント作成に失敗しました')
     }
 
-    // Firebase Authでアカウント作成
-    const userCredential = await createUserWithEmailAndPassword(
-      $auth,
-      invitation.value.email,
-      password.value
-    )
-
-    const user = userCredential.user
-
-    // プロフィール更新
-    await updateProfile(user, {
-      displayName: displayName.value
-    })
-
-    // Firestoreにユーザードキュメント作成
-    await setDoc(doc($db, 'users', user.uid), {
-      id: user.uid,
-      uid: user.uid,
-      email: invitation.value.email,
-      displayName: displayName.value,
-      role: 'admin',
-      invitedBy: invitation.value.invitedBy,
-      createdAt: Timestamp.now(),
-      updatedAt: Timestamp.now(),
-      lastLoginAt: Timestamp.now()
-    })
-
-    // 招待ステータスを承認済みに更新
-    await updateDoc(doc($db, 'adminInvitations', invitation.value.id), {
-      status: 'accepted',
-      acceptedAt: Timestamp.now()
-    })
-
-    // 成功メッセージ表示後、管理画面へリダイレクト
-    alert('アカウントを作成しました。管理画面にログインします。')
-    router.push('/admin')
+    // 成功メッセージ表示後、ログインページへリダイレクト
+    alert(`アカウントを作成しました！\nメールアドレス: ${data.email}\n\nログインページに移動します。`)
+    router.push('/admin/login')
   } catch (err: any) {
     console.error('アカウント作成エラー:', err)
-
-    // Firebase エラーメッセージを日本語化
-    switch (err.code) {
-      case 'auth/email-already-in-use':
-        errorMessage.value = 'このメールアドレスは既に使用されています'
-        break
-      case 'auth/invalid-email':
-        errorMessage.value = '無効なメールアドレスです'
-        break
-      case 'auth/weak-password':
-        errorMessage.value = 'パスワードが弱すぎます'
-        break
-      default:
-        errorMessage.value = `アカウント作成に失敗しました: ${err.message}`
-    }
+    errorMessage.value = err.message || 'アカウント作成に失敗しました'
   } finally {
     creating.value = false
   }
