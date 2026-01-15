@@ -109,6 +109,23 @@
       "copyPassword": "パスワードをコピー",
       "copied": "コピーしました"
     },
+    "wifiPage": {
+      "title": "Wi-Fi接続",
+      "subtitle": "インターネット接続について",
+      "meta": { "title": "Wi-Fi | ガイドブック" },
+      "mainTitle": "Wi-Fi情報",
+      "networkName": "ネットワーク名",
+      "password": "パスワード（共通）",
+      "howToConnect": "接続方法",
+      "step1": "スマートフォンやPCの設定画面を開く",
+      "step2": "Wi-Fi設定から「Furniture-a」または「Furniture-b」を選択",
+      "step3": "パスワード「House-01」を入力",
+      "step4": "接続完了",
+      "notesTitle": "ご注意",
+      "note1": "2つのネットワークはどちらも同じパスワードです",
+      "note2": "電波状況により接続が不安定な場合があります",
+      "note3": "接続できない場合はホストまでご連絡ください"
+    },
     "nav": {
       "home": "ホーム",
       "homeDesc": "ガイドブックトップ",

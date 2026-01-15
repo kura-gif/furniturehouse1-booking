@@ -109,6 +109,23 @@
       "copyPassword": "Copy Password",
       "copied": "Copied!"
     },
+    "wifiPage": {
+      "title": "Wi-Fi Connection",
+      "subtitle": "Internet access information",
+      "meta": { "title": "Wi-Fi | Guestbook" },
+      "mainTitle": "Wi-Fi Information",
+      "networkName": "Network Name",
+      "password": "Password (same for both)",
+      "howToConnect": "How to Connect",
+      "step1": "Open your device's settings",
+      "step2": "Select 'Furniture-a' or 'Furniture-b' from Wi-Fi settings",
+      "step3": "Enter password 'House-01'",
+      "step4": "Connection complete",
+      "notesTitle": "Notes",
+      "note1": "Both networks use the same password",
+      "note2": "Connection may be unstable depending on signal strength",
+      "note3": "Please contact the host if you cannot connect"
+    },
     "nav": {
       "home": "Home",
       "homeDesc": "Guestbook Top",

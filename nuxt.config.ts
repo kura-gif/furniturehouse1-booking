@@ -5,8 +5,25 @@ export default defineNuxtConfig({
 
   modules: [
     '@nuxtjs/tailwindcss',
-    'nuxt-csurf'
+    'nuxt-csurf',
+    '@nuxtjs/i18n'
   ],
+
+  // 多言語対応設定
+  i18n: {
+    locales: [
+      { code: 'ja', language: 'ja-JP', file: 'ja.json', name: '日本語' },
+      { code: 'en', language: 'en-US', file: 'en.json', name: 'English' }
+    ],
+    defaultLocale: 'ja',
+    langDir: 'locales',
+    strategy: 'no_prefix',
+    detectBrowserLanguage: {
+      useCookie: true,
+      cookieKey: 'i18n_redirected',
+      redirectOn: 'root'
+    }
+  },
 
   // CSRF保護設定
   csurf: {

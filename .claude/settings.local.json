@@ -92,7 +92,22 @@
       "Bash(/opt/homebrew/bin/gsutil ls:*)",
       "Bash(/opt/homebrew/bin/gcloud config set:*)",
       "Bash(/opt/homebrew/bin/gcloud auth activate-service-account:*)",
-      "Bash(gsutil cors get:*)"
+      "Bash(gsutil cors get:*)",
+      "Bash(git gc:*)",
+      "Bash(for i in {1..10})",
+      "Bash(do echo \"=== gallery-$i.webp ===\")",
+      "Bash(git ls-tree:*)",
+      "Bash(git hash-object:*)",
+      "Bash(gh api:*)",
+      "Read(//private/tmp/claude/-Users-kurashimayouichi-Documents-furniturehouse1/tasks/**)",
+      "Bash(git revert:*)",
+      "Bash(git -C /Users/kurashimayouichi/Documents/furniturehouse1 status)",
+      "Bash(du -sh:*)",
+      "Bash(gh auth status:*)",
+      "Bash(gh auth login:*)"
+    ],
+    "additionalDirectories": [
+      "/Users/kurashimayouichi/Documents/furniturehouse1"
     ]
   }
 }

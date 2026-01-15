@@ -1,0 +1,42 @@
+# 依存関係
+node_modules/
+
+# ビルド出力
+.nuxt/
+.output/
+dist/
+
+# Vercelキャッシュ
+.vercel/
+
+# Git
+.git/
+
+# 画像・メディア
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.webp
+*.ico
+*.svg
+*.mp4
+*.mov
+
+# ログ・キャッシュ
+*.log
+.cache/
+
+# システムファイル
+.DS_Store
+Thumbs.db
+
+# ロックファイル（大きい）
+package-lock.json
+
+# Firebase認証キー（セキュリティ）
+*.json
+!firebase.json
+!firestore.indexes.json
+!tsconfig.json
+!package.json
