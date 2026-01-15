@@ -39,12 +39,13 @@ export default defineEventHandler(async (event) => {
     }
   })
 
-  const senderEmail = config.emailUser || process.env.EMAIL_USER || 'noreply@furniturehouse1.com'
-  const replyToEmail = config.emailReplyTo || process.env.EMAIL_REPLY_TO || senderEmail
+  // 送信元はグループメール（furniturehouse1@）を表示
+  const fromEmail = config.emailFrom || config.emailReplyTo || config.emailUser || 'noreply@furniturehouse1.com'
+  const replyToEmail = config.emailReplyTo || config.emailFrom || config.emailUser
   const brandSiteUrl = config.brandSiteUrl || 'https://furniturehouse1.com'
 
   const mailOptions = {
-    from: `"家具の家 No.1" <${senderEmail}>`,
+    from: `"家具の家 No.1" <${fromEmail}>`,
     to,
     replyTo: replyToEmail,
     subject: `【ありがとうございました】ご滞在のお礼 - ${bookingReference}`,

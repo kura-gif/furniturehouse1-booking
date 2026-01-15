@@ -99,6 +99,7 @@ export default defineNuxtConfig({
     internalApiSecret: process.env.INTERNAL_API_SECRET || process.env.STRIPE_WEBHOOK_SECRET || '',
     emailUser: process.env.EMAIL_USER || '',
     emailPassword: process.env.EMAIL_PASSWORD || '',
+    emailFrom: process.env.EMAIL_FROM || process.env.EMAIL_REPLY_TO || '',
     emailReplyTo: process.env.EMAIL_REPLY_TO || '',
     firebaseAdminKey: process.env.FIREBASE_ADMIN_KEY || '',
     firebaseClientEmail: process.env.FIREBASE_CLIENT_EMAIL || '',

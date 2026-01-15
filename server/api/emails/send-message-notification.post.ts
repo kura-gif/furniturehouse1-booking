@@ -57,8 +57,9 @@ export default defineEventHandler(async (event) => {
     }
   })
 
-  const senderEmail = config.emailUser || process.env.EMAIL_USER || 'noreply@furniturehouse1.com'
-  const adminEmail = config.emailReplyTo || process.env.EMAIL_REPLY_TO || senderEmail
+  // 送信元はグループメール（furniturehouse1@）を表示
+  const fromEmail = config.emailFrom || config.emailReplyTo || config.emailUser || 'noreply@furniturehouse1.com'
+  const adminEmail = config.emailReplyTo || config.emailFrom || config.emailUser
   const siteUrl = config.public.siteUrl || 'http://localhost:3000'
 
   let toEmail: string
@@ -157,8 +158,9 @@ export default defineEventHandler(async (event) => {
   }
 
   const mailOptions = {
-    from: `"家具の家 No.1" <${senderEmail}>`,
+    from: `"家具の家 No.1" <${fromEmail}>`,
     to: toEmail,
+    replyTo: adminEmail,
     subject,
     html: `
       <!DOCTYPE html>

@@ -49,6 +49,10 @@ export default defineEventHandler(async (event) => {
     const siteUrl = config.public.siteUrl || 'http://localhost:3000'
     const bookingUrl = retryUrl || `${siteUrl}/booking`
 
+    // 送信元はグループメール（furniturehouse1@）を表示
+    const fromEmail = config.emailFrom || config.emailReplyTo || config.emailUser
+    const replyToEmail = config.emailReplyTo || config.emailFrom || config.emailUser
+
     // 金額フォーマット
     const formattedAmount = totalAmount
       ? `¥${totalAmount.toLocaleString()}`
@@ -183,8 +187,9 @@ export default defineEventHandler(async (event) => {
 `
 
     await transporter.sendMail({
-      from: `"家具の家 No.1" <${config.emailUser}>`,
+      from: `"家具の家 No.1" <${fromEmail}>`,
       to,
+      replyTo: replyToEmail,
       subject: `【重要】お支払いエラーのお知らせ - ${bookingReference}`,
       html: htmlContent,
     })
