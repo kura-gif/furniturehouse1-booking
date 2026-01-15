@@ -102,8 +102,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getAuth, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
-import { getFirestore, doc, setDoc, getDoc, updateDoc, Timestamp, collection, query, where, limit, getDocs } from 'firebase/firestore'
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
+import { doc, setDoc, updateDoc, Timestamp, collection, query, where, limit, getDocs } from 'firebase/firestore'
 import type { AdminInvitation } from '~/types'
 
 const route = useRoute()
@@ -129,8 +129,12 @@ const loadInvitation = async () => {
   }
 
   try {
-    const db = getFirestore()
-    const invitationsRef = collection(db, 'adminInvitations')
+    const { $db } = useNuxtApp()
+    if (!$db) {
+      throw new Error('Firebase が初期化されていません')
+    }
+
+    const invitationsRef = collection($db, 'adminInvitations')
     const q = query(invitationsRef, where('token', '==', token), where('status', '==', 'pending'), limit(1))
     const snapshot = await getDocs(q)
 
@@ -150,7 +154,7 @@ const loadInvitation = async () => {
     if (expiryDate < new Date()) {
       error.value = '招待の有効期限が切れています'
       // ステータスを期限切れに更新
-      await updateDoc(doc(db, 'adminInvitations', invitationDoc.id), {
+      await updateDoc(doc($db, 'adminInvitations', invitationDoc.id), {
         status: 'expired'
       })
       loading.value = false
@@ -160,7 +164,7 @@ const loadInvitation = async () => {
     loading.value = false
   } catch (err: any) {
     console.error('招待取得エラー:', err)
-    error.value = '招待の確認中にエラーが発生しました'
+    error.value = `招待の確認中にエラーが発生しました: ${err.message}`
     loading.value = false
   }
 }
@@ -192,12 +196,14 @@ const createAccount = async () => {
   creating.value = true
 
   try {
-    const auth = getAuth()
-    const db = getFirestore()
+    const { $auth, $db } = useNuxtApp()
+    if (!$auth || !$db) {
+      throw new Error('Firebase が初期化されていません')
+    }
 
     // Firebase Authでアカウント作成
     const userCredential = await createUserWithEmailAndPassword(
-      auth,
+      $auth,
       invitation.value.email,
       password.value
     )
@@ -210,7 +216,7 @@ const createAccount = async () => {
     })
 
     // Firestoreにユーザードキュメント作成
-    await setDoc(doc(db, 'users', user.uid), {
+    await setDoc(doc($db, 'users', user.uid), {
       id: user.uid,
       uid: user.uid,
       email: invitation.value.email,
@@ -223,7 +229,7 @@ const createAccount = async () => {
     })
 
     // 招待ステータスを承認済みに更新
-    await updateDoc(doc(db, 'adminInvitations', invitation.value.id), {
+    await updateDoc(doc($db, 'adminInvitations', invitation.value.id), {
       status: 'accepted',
       acceptedAt: Timestamp.now()
     })
