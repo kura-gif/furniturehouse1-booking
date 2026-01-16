@@ -168,6 +168,7 @@ async function handleAuthorizationSuccess(
   // 予約ステータスを「審査中」に更新
   await bookingDoc.ref.update({
     status: 'pending_review',
+    reviewStatus: 'pending_review',
     paymentStatus: 'authorized',
     authorizedAt: FieldValue.serverTimestamp(),
     updatedAt: FieldValue.serverTimestamp(),
