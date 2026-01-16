@@ -77,6 +77,8 @@ export default defineNuxtConfig({
       '/api/bookings/create': { csurf: false },
       '/api/bookings/calculate-refund': { csurf: false },
       '/api/bookings/guest-cancel': { csurf: false },
+      '/api/bookings/approve': { csurf: false },
+      '/api/bookings/reject': { csurf: false },
       '/api/emails/**': { csurf: false },
       '/api/emails/send-booking-confirmation': { csurf: false },
       '/api/admin/**': { csurf: false },
