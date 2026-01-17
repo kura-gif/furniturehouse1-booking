@@ -121,12 +121,12 @@ export default defineNuxtConfig({
 
     // クライアント・サーバー両方で使用（公開情報）
     public: {
-      firebaseApiKey: process.env.FIREBASE_API_KEY || '',
-      firebaseAuthDomain: process.env.FIREBASE_AUTH_DOMAIN || '',
-      firebaseProjectId: process.env.FIREBASE_PROJECT_ID || '',
-      firebaseStorageBucket: process.env.FIREBASE_STORAGE_BUCKET || '',
-      firebaseMessagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || '',
-      firebaseAppId: process.env.FIREBASE_APP_ID || '',
+      firebaseApiKey: (process.env.FIREBASE_API_KEY || '').trim(),
+      firebaseAuthDomain: (process.env.FIREBASE_AUTH_DOMAIN || '').trim(),
+      firebaseProjectId: (process.env.FIREBASE_PROJECT_ID || '').trim(),
+      firebaseStorageBucket: (process.env.FIREBASE_STORAGE_BUCKET || '').trim(),
+      firebaseMessagingSenderId: (process.env.FIREBASE_MESSAGING_SENDER_ID || '').trim(),
+      firebaseAppId: (process.env.FIREBASE_APP_ID || '').trim(),
       stripePublicKey: process.env.STRIPE_PUBLIC_KEY || '',
       siteUrl: process.env.SITE_URL || 'http://localhost:3000',
       brandSiteUrl: process.env.BRAND_SITE_URL || 'https://furniturehouse1.com'
