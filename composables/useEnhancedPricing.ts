@@ -80,21 +80,21 @@ export function getEnhancedSeasonType(
  * 泊数に応じた料金率を取得
  */
 export function getNightRate(nightNumber: number, multiNightPricing: MultiNightPricing): number {
-  const { rates } = multiNightPricing
+  const rates = multiNightPricing?.rates
 
   switch (nightNumber) {
     case 1:
-      return rates.night1
+      return rates?.night1 ?? 1.0
     case 2:
-      return rates.night2
+      return rates?.night2 ?? 0.9
     case 3:
-      return rates.night3
+      return rates?.night3 ?? 0.8
     case 4:
-      return rates.night4
+      return rates?.night4 ?? 0.7
     case 5:
-      return rates.night5
+      return rates?.night5 ?? 0.6
     default:
-      return rates.night6Plus
+      return rates?.night6Plus ?? 0.6
   }
 }
 
@@ -123,12 +123,12 @@ export function calculateGuestCountCharges(
   } = { total: 0 }
 
   // 2人以下は追加料金なし
-  if (totalAdults <= guestCountPricing.baseGuestCount) {
+  if (totalAdults <= (guestCountPricing.baseGuestCount ?? 2)) {
     return charges
   }
 
   // 3人目の料金
-  const thirdGuestCharge = Math.floor(basePrice * guestCountPricing.thirdGuestRate)
+  const thirdGuestCharge = Math.floor(basePrice * (guestCountPricing.thirdGuestRate ?? 0.5))
 
   if (totalAdults >= 3) {
     charges.guest3rd = thirdGuestCharge
@@ -137,19 +137,19 @@ export function calculateGuestCountCharges(
 
   // 4人目の料金
   if (totalAdults >= 4) {
-    charges.guest4th = Math.floor(thirdGuestCharge * guestCountPricing.additionalGuestRates.fourth)
+    charges.guest4th = Math.floor(thirdGuestCharge * (guestCountPricing.additionalGuestRates?.fourth ?? 0.9))
     charges.total += charges.guest4th
   }
 
   // 5人目の料金
   if (totalAdults >= 5) {
-    charges.guest5th = Math.floor(thirdGuestCharge * guestCountPricing.additionalGuestRates.fifth)
+    charges.guest5th = Math.floor(thirdGuestCharge * (guestCountPricing.additionalGuestRates?.fifth ?? 0.8))
     charges.total += charges.guest5th
   }
 
   // 6人目の料金
   if (totalAdults >= 6) {
-    charges.guest6th = Math.floor(thirdGuestCharge * guestCountPricing.additionalGuestRates.sixth)
+    charges.guest6th = Math.floor(thirdGuestCharge * (guestCountPricing.additionalGuestRates?.sixth ?? 0.7))
     charges.total += charges.guest6th
   }
 
@@ -279,8 +279,8 @@ export function calculateEnhancedPrice(
     const dayType = getEnhancedDayType(currentDate, pricingSetting.holidayCalendar)
 
     // 基本料金を計算
-    const basePrice = pricingSetting.basePriceAdult
-    const seasonMultiplier = pricingSetting.seasonMultipliers[seasonType]
+    const basePrice = pricingSetting.basePriceAdult ?? 35000
+    const seasonMultiplier = pricingSetting.seasonMultipliers?.[seasonType] ?? 1.0
     const dayTypeMultiplier = pricingSetting.dayTypeMultipliers?.[dayType] ??
                               (dayType === 'weekend' ? 1.3 : 1.0)
 

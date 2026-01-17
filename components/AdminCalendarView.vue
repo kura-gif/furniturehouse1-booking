@@ -314,10 +314,12 @@ function createCalendarDate(date: Date, isCurrentMonth: boolean): CalendarDate {
   today.setHours(0, 0, 0, 0)
   const isToday = date.getTime() === today.getTime()
 
-  // その日に予約があるか確認
   const booking = props.bookings.find(b => {
-    const startDate = b.startDate.toDate()
-    const endDate = b.endDate.toDate()
+    const startTimestamp = b.startDate ?? b.checkInDate
+    const endTimestamp = b.endDate ?? b.checkOutDate
+    if (!startTimestamp || !endTimestamp) return false
+    const startDate = startTimestamp.toDate()
+    const endDate = endTimestamp.toDate()
     startDate.setHours(0, 0, 0, 0)
     endDate.setHours(0, 0, 0, 0)
     return date >= startDate && date < endDate && b.status !== 'cancelled'
@@ -389,21 +391,31 @@ function formatPrice(price: number): string {
 }
 
 function getStatusLabel(status: BookingStatus) {
-  const labels = {
+  const labels: Record<string, string> = {
     pending: '保留中',
+    pending_review: '審査中',
     confirmed: '確定',
     cancelled: 'キャンセル',
-    completed: '完了'
+    completed: '完了',
+    payment_failed: '決済失敗',
+    refunded: '返金済み',
+    rejected: '却下',
+    expired: '期限切れ'
   }
   return labels[status] || status
 }
 
 function getStatusColor(status: BookingStatus) {
-  const colors = {
+  const colors: Record<string, string> = {
     pending: 'bg-yellow-100 text-yellow-800',
+    pending_review: 'bg-orange-100 text-orange-800',
     confirmed: 'bg-green-100 text-green-800',
     cancelled: 'bg-red-100 text-red-800',
-    completed: 'bg-gray-100 text-gray-800'
+    completed: 'bg-gray-100 text-gray-800',
+    payment_failed: 'bg-red-100 text-red-800',
+    refunded: 'bg-blue-100 text-blue-800',
+    rejected: 'bg-red-100 text-red-800',
+    expired: 'bg-gray-100 text-gray-600'
   }
   return colors[status] || 'bg-gray-100 text-gray-800'
 }

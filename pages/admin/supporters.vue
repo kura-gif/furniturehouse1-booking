@@ -316,6 +316,7 @@ const averageHourlyRate = computed(() => {
 
 // サポーター一覧を読み込み（supportersコレクションから）
 const loadSupporters = async () => {
+  if (!$db) return
   loading.value = true
   try {
     const supportersRef = collection($db, 'supporters')
@@ -376,10 +377,10 @@ const closeModal = () => {
 
 // サポーター追加/更新
 const submitSupporter = async () => {
+  if (!$db) return
   submitting.value = true
   try {
     if (editingSupporter.value) {
-      // 更新（supportersコレクション）
       const supporterRef = doc($db, 'supporters', editingSupporter.value.id)
       await updateDoc(supporterRef, {
         name: supporterForm.value.displayName,
@@ -425,7 +426,8 @@ const submitSupporter = async () => {
 
 // サポーターのアクティブ状態を切り替え
 const toggleSupporterStatus = async (supporter: User) => {
-  const newStatus = !supporter.isActive
+  if (!$db) return
+  const newStatus = supporter.isActive !== true
   const action = newStatus ? '有効化' : '無効化'
 
   if (!confirm(`${supporter.displayName}さんを${action}しますか？`)) {

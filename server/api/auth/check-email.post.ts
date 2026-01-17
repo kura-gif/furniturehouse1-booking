@@ -13,12 +13,11 @@ export default defineEventHandler(async (event) => {
   try {
     const body = await readBody(event)
 
-    // バリデーション
     const result = checkEmailSchema.safeParse(body)
     if (!result.success) {
       throw createError({
         statusCode: 400,
-        message: result.error.errors[0]?.message || '無効なメールアドレスです'
+        message: result.error.issues[0]?.message || '無効なメールアドレスです'
       })
     }
 
@@ -35,9 +34,9 @@ export default defineEventHandler(async (event) => {
         exists: true,
         message: 'このメールアドレスは既に登録されています。ログインしてください。'
       }
-    } catch (error: any) {
-      // ユーザーが見つからない場合はエラーがスローされる
-      if (error.code === 'auth/user-not-found') {
+    } catch (error: unknown) {
+      const firebaseError = error as { code?: string }
+      if (firebaseError.code === 'auth/user-not-found') {
         return {
           exists: false,
           message: ''

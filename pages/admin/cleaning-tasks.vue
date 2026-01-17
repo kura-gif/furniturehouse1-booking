@@ -345,7 +345,7 @@
           </div>
 
           <!-- 写真 -->
-          <div v-if="viewingTask.photos?.length > 0">
+          <div v-if="(viewingTask.photos?.length ?? 0) > 0">
             <h4 class="font-semibold mb-2">清掃完了写真</h4>
             <div class="grid grid-cols-3 gap-2">
               <img
@@ -360,7 +360,7 @@
           </div>
 
           <!-- 使用備品 -->
-          <div v-if="viewingTask.suppliesUsed?.length > 0">
+          <div v-if="(viewingTask.suppliesUsed?.length ?? 0) > 0">
             <h4 class="font-semibold mb-2">使用備品</h4>
             <div class="bg-gray-50 p-4 rounded-lg">
               <div v-for="supply in viewingTask.suppliesUsed" :key="supply.name" class="text-sm">
@@ -432,6 +432,7 @@ const activeSupporters = computed(() => supporters.value.filter(s => s.isActive 
 
 // タスク一覧を読み込み
 const loadAllTasks = async () => {
+  if (!$db) return
   loading.value = true
   try {
     const tasksRef = collection($db, 'cleaningTasks')
@@ -451,6 +452,7 @@ const loadAllTasks = async () => {
 
 // サポーター一覧を読み込み（supportersコレクションから）
 const loadSupporters = async () => {
+  if (!$db) return
   try {
     const supportersRef = collection($db, 'supporters')
     const snapshot = await getDocs(supportersRef)
@@ -475,6 +477,7 @@ const loadSupporters = async () => {
 
 // フィルタ適用
 const applyFilters = async () => {
+  if (!$db) return
   loading.value = true
   try {
     const tasksRef = collection($db, 'cleaningTasks')

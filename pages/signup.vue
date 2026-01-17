@@ -139,8 +139,7 @@ const handleGoogleSignup = async () => {
   try {
     const user = await loginWithGoogle()
 
-    // 予約がある場合、予約にuserIdを紐付ける
-    if (bookingId.value && user) {
+    if (bookingId.value && user && $db) {
       const { doc, updateDoc, Timestamp } = await import('firebase/firestore')
       await updateDoc(doc($db, 'bookings', bookingId.value), {
         userId: user.uid,

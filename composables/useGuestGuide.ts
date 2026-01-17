@@ -30,6 +30,7 @@ export const useGuestGuide = () => {
    * トークンでゲストガイドアクセス情報を取得
    */
   const getGuideAccessByToken = async (token: string): Promise<GuestGuideToken | null> => {
+    if (!$db) throw new Error('Database not initialized')
     const tokensRef = collection($db, 'guestGuideTokens')
     const q = query(
       tokensRef,
@@ -45,14 +46,13 @@ export const useGuestGuide = () => {
     const docData = snapshot.docs[0]
     const data = docData.data() as GuestGuideToken
 
-    // 有効期限チェック
-    if (data.expiresAt && data.expiresAt.toDate() < new Date()) {
+    if (data.expiresAt?.toDate() < new Date()) {
       return null
     }
 
     return {
-      id: docData.id,
-      ...data
+      ...data,
+      id: docData.id
     }
   }
 
@@ -60,6 +60,7 @@ export const useGuestGuide = () => {
    * 予約IDからトークンを取得
    */
   const getGuideTokenByBookingId = async (bookingId: string): Promise<GuestGuideToken | null> => {
+    if (!$db) throw new Error('Database not initialized')
     const tokensRef = collection($db, 'guestGuideTokens')
     const q = query(
       tokensRef,
@@ -90,16 +91,15 @@ export const useGuestGuide = () => {
     checkInDate: Date,
     checkOutDate: Date
   ): Promise<string> => {
-    // 既存トークンを無効化
+    if (!$db) throw new Error('Database not initialized')
+
     const existingToken = await getGuideTokenByBookingId(bookingId)
-    if (existingToken) {
+    if (existingToken?.id) {
       await deactivateToken(existingToken.id)
     }
 
-    // 新しいトークンを生成（32文字のランダム文字列）
     const token = generateSecureToken()
 
-    // 有効期限: チェックアウト後7日
     const expiresAt = new Date(checkOutDate)
     expiresAt.setDate(expiresAt.getDate() + 7)
 
@@ -125,6 +125,7 @@ export const useGuestGuide = () => {
    * トークンを無効化
    */
   const deactivateToken = async (tokenId: string): Promise<void> => {
+    if (!$db) throw new Error('Database not initialized')
     const tokenRef = doc($db, 'guestGuideTokens', tokenId)
     await updateDoc(tokenRef, {
       isActive: false,
@@ -136,6 +137,7 @@ export const useGuestGuide = () => {
    * アクセス日時を記録
    */
   const recordAccess = async (tokenId: string): Promise<void> => {
+    if (!$db) throw new Error('Database not initialized')
     const tokenRef = doc($db, 'guestGuideTokens', tokenId)
     await updateDoc(tokenRef, {
       accessedAt: serverTimestamp(),
@@ -149,6 +151,7 @@ export const useGuestGuide = () => {
    * アメニティ一覧を取得
    */
   const getAmenities = async (category?: AmenityCategory): Promise<GuideAmenityItem[]> => {
+    if (!$db) throw new Error('Database not initialized')
     const amenitiesRef = collection($db, 'guideAmenities')
     let q = query(
       amenitiesRef,
@@ -178,6 +181,7 @@ export const useGuestGuide = () => {
    * 周辺スポット一覧を取得
    */
   const getAreaSpots = async (category?: AreaSpotCategory): Promise<GuideAreaSpot[]> => {
+    if (!$db) throw new Error('Database not initialized')
     const spotsRef = collection($db, 'guideAreaSpots')
     let q = query(
       spotsRef,
@@ -205,6 +209,7 @@ export const useGuestGuide = () => {
    * おすすめスポットを取得
    */
   const getRecommendedSpots = async (): Promise<GuideAreaSpot[]> => {
+    if (!$db) throw new Error('Database not initialized')
     const spotsRef = collection($db, 'guideAreaSpots')
     const q = query(
       spotsRef,
@@ -225,6 +230,7 @@ export const useGuestGuide = () => {
    * FAQ一覧を取得
    */
   const getFaqs = async (): Promise<GuideFaq[]> => {
+    if (!$db) throw new Error('Database not initialized')
     const faqsRef = collection($db, 'guideFaqs')
     const q = query(
       faqsRef,
@@ -250,6 +256,7 @@ export const useGuestGuide = () => {
     guestName: string,
     guestEmail: string
   ): Promise<string> => {
+    if (!$db) throw new Error('Database not initialized')
     const agreementsRef = collection($db, 'guideRulesAgreements')
     const docRef = await addDoc(agreementsRef, {
       tokenId,
@@ -260,7 +267,6 @@ export const useGuestGuide = () => {
       agreedAt: serverTimestamp()
     })
 
-    // トークンにも同意日時を記録
     const tokenRef = doc($db, 'guestGuideTokens', tokenId)
     await updateDoc(tokenRef, {
       rulesAgreedAt: serverTimestamp(),
@@ -274,6 +280,7 @@ export const useGuestGuide = () => {
    * 同意記録を確認
    */
   const checkRulesAgreement = async (bookingId: string): Promise<GuideRulesAgreement | null> => {
+    if (!$db) throw new Error('Database not initialized')
     const agreementsRef = collection($db, 'guideRulesAgreements')
     const q = query(agreementsRef, where('bookingId', '==', bookingId))
     const snapshot = await getDocs(q)

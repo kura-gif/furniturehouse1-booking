@@ -39,9 +39,14 @@ Vercel ダッシュボード → Settings → Environment Variables で設定
 
 | 変数名 | 説明 | 必須 | 例 |
 |--------|------|------|-----|
-| `INTERNAL_API_SECRET` | 内部API呼び出し用シークレット | ✅ | `STRIPE_WEBHOOK_SECRET` と同じ値でOK |
+| `INTERNAL_API_SECRET` | 内部API呼び出し用シークレット | ✅ | 独自に生成した値 |
 
-**注**: `INTERNAL_API_SECRET` は、Nuxt内部のAPI間での認証に使用されます。設定されていない場合は `STRIPE_WEBHOOK_SECRET` にフォールバックします。
+**重要**: `INTERNAL_API_SECRET` は、Nuxt内部のAPI間での認証に使用されます。セキュリティのため、`STRIPE_WEBHOOK_SECRET` とは異なる独立した値を設定してください。
+
+**生成方法**:
+```bash
+openssl rand -base64 32
+```
 
 ### メール送信設定
 

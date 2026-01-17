@@ -27,6 +27,7 @@ export const useConversations = () => {
     guestEmail: string,
     guestUserId?: string
   ): Promise<Conversation> => {
+    if (!$db) throw new Error('Firestore is not initialized')
     const conversationsRef = collection($db, 'conversations')
 
     // 既存の会話を検索
@@ -62,6 +63,7 @@ export const useConversations = () => {
    * 会話一覧を取得（管理者用）
    */
   const getAllConversations = async (): Promise<Conversation[]> => {
+    if (!$db) throw new Error('Firestore is not initialized')
     const conversationsRef = collection($db, 'conversations')
     const q = query(conversationsRef, orderBy('lastMessageAt', 'desc'))
     const snapshot = await getDocs(q)
@@ -76,6 +78,7 @@ export const useConversations = () => {
    * ゲストの会話一覧を取得
    */
   const getGuestConversations = async (guestUserId: string): Promise<Conversation[]> => {
+    if (!$db) throw new Error('Firestore is not initialized')
     const conversationsRef = collection($db, 'conversations')
     const q = query(
       conversationsRef,
@@ -94,6 +97,7 @@ export const useConversations = () => {
    * 会話を取得
    */
   const getConversation = async (conversationId: string): Promise<Conversation | null> => {
+    if (!$db) throw new Error('Firestore is not initialized')
     const conversationRef = doc($db, 'conversations', conversationId)
     const snapshot = await getDoc(conversationRef)
 
@@ -109,6 +113,7 @@ export const useConversations = () => {
    * guestEmailも条件に含めてFirestoreルールを満たす
    */
   const getConversationByBookingId = async (bookingId: string, guestEmail?: string): Promise<Conversation | null> => {
+    if (!$db) throw new Error('Firestore is not initialized')
     const conversationsRef = collection($db, 'conversations')
 
     // guestEmailが指定されている場合は複合条件でクエリ
@@ -138,6 +143,7 @@ export const useConversations = () => {
    * メッセージ一覧を取得
    */
   const getMessages = async (conversationId: string): Promise<Message[]> => {
+    if (!$db) throw new Error('Firestore is not initialized')
     const messagesRef = collection($db, 'messages')
     const q = query(
       messagesRef,
@@ -159,6 +165,7 @@ export const useConversations = () => {
     conversationId: string,
     callback: (messages: Message[]) => void
   ) => {
+    if (!$db) throw new Error('Firestore is not initialized')
     const messagesRef = collection($db, 'messages')
     const q = query(
       messagesRef,
@@ -190,8 +197,8 @@ export const useConversations = () => {
     senderId?: string
   ): Promise<string> => {
     const { $auth } = useNuxtApp()
+    if (!$auth) throw new Error('Firebase Auth is not initialized')
 
-    // 認証トークンを取得
     const currentUser = $auth.currentUser
     if (!currentUser) {
       throw new Error('認証が必要です')
@@ -234,6 +241,7 @@ export const useConversations = () => {
    * メッセージを既読にする（管理者用）
    */
   const markAsReadByAdmin = async (conversationId: string): Promise<void> => {
+    if (!$db) throw new Error('Firestore is not initialized')
     const conversationRef = doc($db, 'conversations', conversationId)
     await updateDoc(conversationRef, {
       unreadByAdmin: 0,
@@ -260,6 +268,7 @@ export const useConversations = () => {
    * メッセージを既読にする（ゲスト用）
    */
   const markAsReadByGuest = async (conversationId: string): Promise<void> => {
+    if (!$db) throw new Error('Firestore is not initialized')
     const conversationRef = doc($db, 'conversations', conversationId)
     await updateDoc(conversationRef, {
       unreadByGuest: 0,
@@ -286,6 +295,7 @@ export const useConversations = () => {
    * 会話をクローズ
    */
   const closeConversation = async (conversationId: string): Promise<void> => {
+    if (!$db) throw new Error('Firestore is not initialized')
     const conversationRef = doc($db, 'conversations', conversationId)
     await updateDoc(conversationRef, {
       status: 'closed',
@@ -297,6 +307,7 @@ export const useConversations = () => {
    * 会話をリオープン
    */
   const reopenConversation = async (conversationId: string): Promise<void> => {
+    if (!$db) throw new Error('Firestore is not initialized')
     const conversationRef = doc($db, 'conversations', conversationId)
     await updateDoc(conversationRef, {
       status: 'open',
@@ -308,6 +319,7 @@ export const useConversations = () => {
    * 未読会話数を取得（管理者用）
    */
   const getUnreadCount = async (): Promise<number> => {
+    if (!$db) throw new Error('Firestore is not initialized')
     const conversationsRef = collection($db, 'conversations')
     const q = query(conversationsRef, where('unreadByAdmin', '>', 0))
     const snapshot = await getDocs(q)

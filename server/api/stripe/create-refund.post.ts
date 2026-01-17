@@ -8,8 +8,13 @@
 
 import Stripe from 'stripe'
 import { FieldValue } from 'firebase-admin/firestore'
+import { requireAdmin } from '~/server/utils/auth'
 
 export default defineEventHandler(async (event) => {
+  // 管理者認証を確認
+  const admin = await requireAdmin(event)
+  console.log('👤 Refund requested by admin:', admin.email)
+
   const config = useRuntimeConfig()
   const stripe = new Stripe(config.stripeSecretKey)
 
@@ -142,6 +147,8 @@ export default defineEventHandler(async (event) => {
       reason: reason || 'customer_request',
       guestEmail: booking.guestEmail,
       guestName: booking.guestName,
+      processedBy: admin.uid,
+      processedByEmail: admin.email,
       createdAt: FieldValue.serverTimestamp(),
     })
 

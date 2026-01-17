@@ -271,7 +271,7 @@
                         ・{{ night.dayType === 'weekend' ? '休日前日' : '平日' }}
                       </div>
                     </div>
-                    <span class="text-gray-900 ml-2">¥{{ night.nightTotal.toLocaleString() }}</span>
+                    <span class="text-gray-900 ml-2">¥{{ (night.nightTotal ?? 0).toLocaleString() }}</span>
                   </div>
                 </div>
 
@@ -1079,22 +1079,19 @@ const proceedToPayment = async () => {
       }
     })
 
-    // 予約をFirestoreに保存
     const paymentIntentId = clientSecret.value.split('_secret_')[0]
     const bookingData = {
       type: 'stay' as const,
-      startDate: new Date(checkInDate.value),
-      endDate: new Date(checkOutDate.value),
+      checkInDate: new Date(checkInDate.value),
+      checkOutDate: new Date(checkOutDate.value),
       guestCount: adults.value + children.value,
       guestName: guestName.value,
       guestEmail: guestEmail.value,
       guestPhone: guestPhone.value,
-      userId: user.value?.uid || null,  // ログインユーザーのIDを紐付け
       totalAmount: finalTotalAmount.value,
       baseAmount: subtotal.value,
       discountAmount: couponDiscountAmount.value,
-      couponCode: appliedCoupon.value?.code || null,
-      couponId: appliedCoupon.value?.id || null,
+      couponCode: appliedCoupon.value?.code ?? undefined,
       notes: `決済ID: ${paymentIntentId}`,
       selectedOptions: selectedOptions.value,
       optionsTotalPrice: optionsTotalPrice.value,

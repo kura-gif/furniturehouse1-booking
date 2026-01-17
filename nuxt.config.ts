@@ -98,7 +98,7 @@ export default defineNuxtConfig({
     // サーバーサイドのみで使用（秘密情報）
     stripeSecretKey: process.env.STRIPE_SECRET_KEY || '',
     stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
-    internalApiSecret: process.env.INTERNAL_API_SECRET || process.env.STRIPE_WEBHOOK_SECRET || '',
+    internalApiSecret: process.env.INTERNAL_API_SECRET || '',
     emailUser: process.env.EMAIL_USER || '',
     emailPassword: process.env.EMAIL_PASSWORD || '',
     emailFrom: process.env.EMAIL_FROM || process.env.EMAIL_REPLY_TO || '',
@@ -133,8 +133,8 @@ export default defineNuxtConfig({
   },
 
   typescript: {
-    strict: false,
-    typeCheck: false
+    strict: true,
+    typeCheck: 'build'
   },
 
   // 本番ビルドでconsole.logを削除

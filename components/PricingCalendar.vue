@@ -261,8 +261,8 @@ function createCalendarDate(date: Date, isCurrentMonth: boolean): CalendarDate {
 
   // Check if date is selected or in range
   const isSelected = dateString === checkInDate.value || dateString === checkOutDate.value
-  const isInRange = checkInDate.value && checkOutDate.value &&
-    dateString > checkInDate.value && dateString < checkOutDate.value
+  const isInRange = !!(checkInDate.value && checkOutDate.value &&
+    dateString > checkInDate.value && dateString < checkOutDate.value)
 
   // Calculate price for this date
   let price: number | null = null

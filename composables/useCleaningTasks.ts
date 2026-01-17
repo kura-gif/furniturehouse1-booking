@@ -23,6 +23,13 @@ export const useCleaningTasks = () => {
   const loading = ref(false)
   const error = ref<string | null>(null)
 
+  const getDb = () => {
+    if (!$db) {
+      throw new Error('Firestore is not initialized')
+    }
+    return $db
+  }
+
   // デフォルトチェックリスト
   const defaultChecklist: Omit<ChecklistItem, 'id'>[] = [
     { label: 'ベッドシーツ交換', completed: false, isCustom: false },
@@ -43,7 +50,7 @@ export const useCleaningTasks = () => {
       loading.value = true
       error.value = null
 
-      const tasksRef = collection($db, 'cleaningTasks')
+      const tasksRef = collection(getDb(), 'cleaningTasks')
 
       // チェックイン日とチェックアウト日を取得（useBookings側ではstartDate/endDateとして保存されている場合もある）
       const checkInDate = (booking as any).startDate || booking.checkInDate
@@ -111,7 +118,7 @@ export const useCleaningTasks = () => {
       loading.value = true
       error.value = null
 
-      const tasksRef = collection($db, 'cleaningTasks')
+      const tasksRef = collection(getDb(), 'cleaningTasks')
       const constraints: QueryConstraint[] = [orderBy('scheduledDate', 'desc')]
 
       // フィルタ適用
@@ -154,7 +161,7 @@ export const useCleaningTasks = () => {
       loading.value = true
       error.value = null
 
-      const taskRef = doc($db, 'cleaningTasks', taskId)
+      const taskRef = doc(getDb(), 'cleaningTasks', taskId)
       const taskDoc = await getDoc(taskRef)
 
       if (!taskDoc.exists()) {
@@ -188,10 +195,10 @@ export const useCleaningTasks = () => {
       loading.value = true
       error.value = null
 
-      const taskRef = doc($db, 'cleaningTasks', taskId)
+      const taskRef = doc(getDb(), 'cleaningTasks', taskId)
 
       // サポーター情報を取得して時給と交通費を設定（supportersコレクションから）
-      const supporterRef = doc($db, 'supporters', supporterId)
+      const supporterRef = doc(getDb(), 'supporters', supporterId)
       const supporterDoc = await getDoc(supporterRef)
 
       if (!supporterDoc.exists()) {
@@ -237,7 +244,7 @@ export const useCleaningTasks = () => {
       loading.value = true
       error.value = null
 
-      const taskRef = doc($db, 'cleaningTasks', taskId)
+      const taskRef = doc(getDb(), 'cleaningTasks', taskId)
 
       await updateDoc(taskRef, {
         assignedTo: null,
@@ -272,7 +279,7 @@ export const useCleaningTasks = () => {
       loading.value = true
       error.value = null
 
-      const taskRef = doc($db, 'cleaningTasks', taskId)
+      const taskRef = doc(getDb(), 'cleaningTasks', taskId)
       await updateDoc(taskRef, {
         status,
         updatedAt: Timestamp.now()
@@ -296,7 +303,7 @@ export const useCleaningTasks = () => {
       loading.value = true
       error.value = null
 
-      const taskRef = doc($db, 'cleaningTasks', taskId)
+      const taskRef = doc(getDb(), 'cleaningTasks', taskId)
       await updateDoc(taskRef, {
         startedAt: Timestamp.now(),
         status: 'assigned',
@@ -326,7 +333,7 @@ export const useCleaningTasks = () => {
       loading.value = true
       error.value = null
 
-      const taskRef = doc($db, 'cleaningTasks', taskId)
+      const taskRef = doc(getDb(), 'cleaningTasks', taskId)
       const taskDoc = await getDoc(taskRef)
 
       if (!taskDoc.exists()) {
@@ -383,7 +390,7 @@ export const useCleaningTasks = () => {
       loading.value = true
       error.value = null
 
-      const taskRef = doc($db, 'cleaningTasks', taskId)
+      const taskRef = doc(getDb(), 'cleaningTasks', taskId)
       await updateDoc(taskRef, {
         checklist,
         updatedAt: Timestamp.now()
@@ -412,7 +419,7 @@ export const useCleaningTasks = () => {
       loading.value = true
       error.value = null
 
-      const taskRef = doc($db, 'cleaningTasks', taskId)
+      const taskRef = doc(getDb(), 'cleaningTasks', taskId)
       const taskDoc = await getDoc(taskRef)
 
       if (!taskDoc.exists()) {
@@ -470,7 +477,7 @@ export const useCleaningTasks = () => {
       const downloadURL = await getDownloadURL(fileRef)
 
       // タスクに写真情報を追加
-      const taskRef = doc($db, 'cleaningTasks', taskId)
+      const taskRef = doc(getDb(), 'cleaningTasks', taskId)
       const taskDoc = await getDoc(taskRef)
 
       if (!taskDoc.exists()) {
@@ -486,7 +493,7 @@ export const useCleaningTasks = () => {
         uploadedBy: user.value?.uid || ''
       }
 
-      const updatedPhotos = [...taskData.photos, newPhoto]
+      const updatedPhotos = [...(taskData.photos ?? []), newPhoto]
 
       await updateDoc(taskRef, {
         photos: updatedPhotos,
@@ -520,7 +527,7 @@ export const useCleaningTasks = () => {
       loading.value = true
       error.value = null
 
-      const taskRef = doc($db, 'cleaningTasks', taskId)
+      const taskRef = doc(getDb(), 'cleaningTasks', taskId)
       await updateDoc(taskRef, {
         photoRequestedByAdmin: true,
         updatedAt: Timestamp.now()
@@ -549,7 +556,7 @@ export const useCleaningTasks = () => {
       loading.value = true
       error.value = null
 
-      const taskRef = doc($db, 'cleaningTasks', taskId)
+      const taskRef = doc(getDb(), 'cleaningTasks', taskId)
       const taskDoc = await getDoc(taskRef)
 
       if (!taskDoc.exists()) {
@@ -557,7 +564,7 @@ export const useCleaningTasks = () => {
       }
 
       const taskData = taskDoc.data() as CleaningTask
-      const updatedSupplies = [...taskData.usedSupplies, supply]
+      const updatedSupplies = [...(taskData.usedSupplies ?? []), supply]
 
       await updateDoc(taskRef, {
         usedSupplies: updatedSupplies,
@@ -591,7 +598,7 @@ export const useCleaningTasks = () => {
       loading.value = true
       error.value = null
 
-      const taskRef = doc($db, 'cleaningTasks', taskId)
+      const taskRef = doc(getDb(), 'cleaningTasks', taskId)
       await updateDoc(taskRef, {
         'compensation.isPaid': true,
         'compensation.paidAt': Timestamp.now(),
@@ -625,7 +632,7 @@ export const useCleaningTasks = () => {
       loading.value = true
       error.value = null
 
-      const taskRef = doc($db, 'cleaningTasks', taskId)
+      const taskRef = doc(getDb(), 'cleaningTasks', taskId)
       await deleteDoc(taskRef)
 
       console.log('✅ タスク削除完了')
@@ -654,7 +661,7 @@ export const useCleaningTasks = () => {
       loading.value = true
       error.value = null
 
-      const taskRef = doc($db, 'cleaningTasks', taskId)
+      const taskRef = doc(getDb(), 'cleaningTasks', taskId)
       const updateData: any = {
         updatedAt: Timestamp.now()
       }
@@ -694,7 +701,7 @@ export const useCleaningTasks = () => {
    */
   const getTask = async (taskId: string): Promise<CleaningTask | null> => {
     try {
-      const taskRef = doc($db, 'cleaningTasks', taskId)
+      const taskRef = doc(getDb(), 'cleaningTasks', taskId)
       const taskDoc = await getDoc(taskRef)
 
       if (!taskDoc.exists()) {
@@ -717,7 +724,7 @@ export const useCleaningTasks = () => {
    */
   const getTasksBySupporter = async (supporterId: string): Promise<CleaningTask[]> => {
     try {
-      const tasksRef = collection($db, 'cleaningTasks')
+      const tasksRef = collection(getDb(), 'cleaningTasks')
       // セキュリティルールがassignedToUidでチェックするため、
       // uidでクエリを実行する（user.valueはFirebase AuthのUser）
       const supporterUid = user.value?.uid
@@ -748,7 +755,7 @@ export const useCleaningTasks = () => {
    */
   const updateTask = async (taskId: string, data: Partial<CleaningTask>): Promise<void> => {
     try {
-      const taskRef = doc($db, 'cleaningTasks', taskId)
+      const taskRef = doc(getDb(), 'cleaningTasks', taskId)
       await updateDoc(taskRef, {
         ...data,
         updatedAt: Timestamp.now()
@@ -765,7 +772,7 @@ export const useCleaningTasks = () => {
    */
   const getAllTasks = async (): Promise<CleaningTask[]> => {
     try {
-      const tasksRef = collection($db, 'cleaningTasks')
+      const tasksRef = collection(getDb(), 'cleaningTasks')
       const q = query(tasksRef, orderBy('scheduledDate', 'desc'))
       const snapshot = await getDocs(q)
 

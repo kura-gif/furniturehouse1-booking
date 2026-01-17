@@ -34,7 +34,15 @@ export default defineEventHandler(async (event) => {
   } = body
 
   // 施設設定を取得
-  const facilitySettings = await getFacilitySettings()
+  const facilitySettings = await getFacilitySettings() as {
+    checkInTime: string;
+    checkOutTime: string;
+    maxGuests: number;
+    keyInfo?: string;
+    wifiPassword?: string;
+    parkingInfo?: string;
+    ownerPhone?: string;
+  }
 
   // メール送信設定（Gmail）
   const transporter = nodemailer.createTransport({
