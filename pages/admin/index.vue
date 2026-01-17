@@ -3059,6 +3059,11 @@ async function processRefund() {
 
   isRefunding.value = true
   try {
+    const token = await getIdToken()
+    if (!token) {
+      throw new Error('認証が必要です。再ログインしてください。')
+    }
+
     const response = await $fetch<{
       success: boolean
       refundId: string
@@ -3067,6 +3072,9 @@ async function processRefund() {
       isFullRefund: boolean
     }>('/api/stripe/create-refund', {
       method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
       body: {
         bookingId: selectedBooking.value.id,
         reason: refundReason.value,
