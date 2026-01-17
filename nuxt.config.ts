@@ -53,21 +53,21 @@ export default defineNuxtConfig({
       link: [
         { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
       ],
-      script: [
+      script: process.env.DIFY_CHATBOT_TOKEN ? [
         {
           innerHTML: `
             window.difyChatbotConfig = {
-              token: 'wZhzVdZCEOQWZogG'
+              token: '${process.env.DIFY_CHATBOT_TOKEN}'
             }
           `,
           type: 'text/javascript'
         },
         {
           src: 'https://udify.app/embed.min.js',
-          id: 'wZhzVdZCEOQWZogG',
+          id: process.env.DIFY_CHATBOT_TOKEN,
           defer: true
         }
-      ]
+      ] : []
     }
   },
 
