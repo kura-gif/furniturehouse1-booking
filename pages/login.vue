@@ -286,11 +286,17 @@ const handleGoogleLogin = async () => {
   error.value = ''
 
   try {
+    console.log('[Login] Starting Google login...')
     await loginWithGoogle()
+    console.log('[Login] Google login successful')
     // ログイン成功後、リダイレクトURLまたはトップページへ
     const redirectUrl = (route.query.redirect as string) || '/'
     router.push(redirectUrl)
   } catch (e: any) {
+    console.error('[Login] Google login error:', e)
+    console.error('[Login] Error code:', e.code)
+    console.error('[Login] Error message:', e.message)
+    console.error('[Login] Full error:', JSON.stringify(e, Object.getOwnPropertyNames(e)))
     error.value = e.message || 'エラーが発生しました'
   } finally {
     isLoading.value = false

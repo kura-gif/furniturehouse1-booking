@@ -173,7 +173,7 @@ const emit = defineEmits<{
   'datesSelected': [checkIn: string, checkOut: string, nights: number, totalPrice: number]
 }>()
 
-const { blockedDates, loadBlockedDates, isDateBlocked } = useBlockedDates()
+const { blockedDates, loadBlockedDates, loadBookedDates, isDateBlocked, isDateBooked } = useBlockedDates()
 const { calculatePrice, loadFromFirestore } = useEnhancedPricing()
 
 const isLoading = ref(true)
@@ -191,10 +191,11 @@ watch(() => props.modelCheckOut, (newVal) => {
   checkOutDate.value = newVal || ''
 })
 
-// Load blocked dates and pricing settings on mount
+// Load blocked dates, booked dates, and pricing settings on mount
 onMounted(async () => {
   await Promise.all([
     loadBlockedDates(),
+    loadBookedDates(),
     loadFromFirestore()
   ])
   isLoading.value = false
@@ -256,6 +257,7 @@ function createCalendarDate(date: Date, isCurrentMonth: boolean): CalendarDate {
   const isToday = date.getTime() === today.getTime()
   const isPast = date < today
   const blocked = isDateBlocked(date)
+  const booked = isDateBooked(date)
 
   // Check if date is selected or in range
   const isSelected = dateString === checkInDate.value || dateString === checkOutDate.value
@@ -264,7 +266,7 @@ function createCalendarDate(date: Date, isCurrentMonth: boolean): CalendarDate {
 
   // Calculate price for this date
   let price: number | null = null
-  if (isCurrentMonth && !blocked && !isPast) {
+  if (isCurrentMonth && !blocked && !booked && !isPast) {
     try {
       const nextDay = new Date(date)
       nextDay.setDate(nextDay.getDate() + 1)
@@ -287,8 +289,8 @@ function createCalendarDate(date: Date, isCurrentMonth: boolean): CalendarDate {
     isToday,
     isSelected,
     isInRange,
-    disabled: isPast || blocked,
-    isBlocked: blocked,
+    disabled: isPast || blocked || booked,
+    isBlocked: blocked || booked,
     isSunday: isSunday(date),
     isSaturday: isSaturday(date),
     isHoliday: isHoliday(date),

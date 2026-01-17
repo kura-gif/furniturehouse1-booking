@@ -106,7 +106,8 @@
       "Bash(gh auth status:*)",
       "Bash(gh auth login:*)",
       "Bash(openssl dgst:*)",
-      "Bash(openssl rand:*)"
+      "Bash(openssl rand:*)",
+      "Bash(npm run cleanup:*)"
     ],
     "additionalDirectories": [
       "/Users/kurashimayouichi/Documents/furniturehouse1"

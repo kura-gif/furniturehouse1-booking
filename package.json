@@ -11,6 +11,7 @@
     "postinstall": "nuxt prepare",
     "seed": "tsx scripts/seedSampleData.ts",
     "seed:email-templates": "tsx scripts/seedEmailTemplates.ts",
+    "cleanup": "tsx scripts/cleanupTestData.ts",
     "deploy": "./scripts/deploy.sh",
     "deploy:env": "./scripts/setup-env.sh"
   },

@@ -178,9 +178,13 @@
               class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
             >
               <option value="all">すべて</option>
-              <option value="pending">保留中</option>
+              <option value="pending_review">承認待ち</option>
               <option value="confirmed">確定</option>
               <option value="cancelled">キャンセル</option>
+              <option value="completed">完了</option>
+              <option value="payment_failed">決済失敗</option>
+              <option value="refunded">返金済み</option>
+              <option value="rejected">却下</option>
             </select>
           </div>
         </div>
@@ -1973,13 +1977,6 @@
               キャンセル
             </button>
             <button
-              v-if="['confirmed', 'pending_review'].includes(selectedBooking.status)"
-              @click="openModifyModal"
-              class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              予約変更
-            </button>
-            <button
               @click="openMessage(selectedBooking)"
               class="btn-secondary flex-1"
             >
@@ -2897,7 +2894,7 @@ const useQuickReply = (template: string) => {
 function getStatusLabel(status: BookingStatus) {
   const labels: Record<string, string> = {
     pending: '保留中',
-    pending_review: '審査中',
+    pending_review: '承認待ち',
     confirmed: '確定',
     cancelled: 'キャンセル',
     completed: '完了',

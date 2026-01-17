@@ -396,37 +396,30 @@
             </div>
           </div>
 
-          <!-- ステップ2: ゲスト情報の入力 -->
+          <!-- ステップ2: ゲスト情報の確認 -->
           <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
             <h2 class="text-xl font-semibold mb-4" style="color: #231815;">
-              2. ゲスト情報を入力してください
+              2. ゲスト情報をご確認ください
             </h2>
 
             <div class="space-y-4 mb-6">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  お名前 <span class="text-red-500">*</span>
+                  お名前
                 </label>
-                <input
-                  v-model="guestName"
-                  type="text"
-                  placeholder="山田 太郎"
-                  required
-                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                />
+                <div class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900">
+                  {{ guestName }}
+                </div>
               </div>
 
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                  メールアドレス <span class="text-red-500">*</span>
+                  メールアドレス
                 </label>
-                <input
-                  v-model="guestEmail"
-                  type="email"
-                  placeholder="example@email.com"
-                  required
-                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                />
+                <div class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900">
+                  {{ guestEmail }}
+                </div>
+                <p class="mt-1 text-xs text-gray-500">予約確認メールはこのアドレスに送信されます</p>
               </div>
 
               <div>
@@ -440,6 +433,7 @@
                   required
                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 />
+                <p class="mt-1 text-xs text-gray-500">緊急連絡先として使用します</p>
               </div>
             </div>
 
@@ -667,11 +661,13 @@
 import type { BookingOption, SelectedBookingOption, Coupon } from '~/types'
 
 definePageMeta({
-  layout: false
+  layout: false,
+  middleware: 'auth'
 })
 
 const route = useRoute()
 const router = useRouter()
+const { user, appUser } = useAuth()
 const { createBooking } = useBookings()
 const { createPaymentIntent, initializeElements, confirmCardPayment } = useStripePayment()
 const { calculatePrice, pricingSetting, loadFromFirestore } = useEnhancedPricing()
@@ -910,10 +906,10 @@ const pricePerNight = computed(() => {
   return Math.floor(subtotal.value / numberOfNights.value)
 })
 
-// ゲスト情報
-const guestName = ref('')
-const guestEmail = ref('')
-const guestPhone = ref('')
+// ゲスト情報（ログインユーザーから自動取得）
+const guestName = computed(() => appUser.value?.displayName || '')
+const guestEmail = computed(() => appUser.value?.email || '')
+const guestPhone = ref('')  // 電話番号はアカウントに無い可能性があるため入力式
 
 // 支払い関連（Stripe）
 const paymentReady = ref(false)
@@ -1018,8 +1014,13 @@ onMounted(async () => {
 
 // バリデーション
 const isFormValid = computed(() => {
-  // ゲスト情報のチェック
-  if (!guestName.value.trim() || !guestEmail.value.trim() || !guestPhone.value.trim()) {
+  // ログイン済みユーザー情報のチェック
+  if (!guestName.value || !guestEmail.value) {
+    return false
+  }
+
+  // 電話番号のチェック
+  if (!guestPhone.value.trim()) {
     return false
   }
 
@@ -1088,6 +1089,7 @@ const proceedToPayment = async () => {
       guestName: guestName.value,
       guestEmail: guestEmail.value,
       guestPhone: guestPhone.value,
+      userId: user.value?.uid || null,  // ログインユーザーのIDを紐付け
       totalAmount: finalTotalAmount.value,
       baseAmount: subtotal.value,
       discountAmount: couponDiscountAmount.value,

@@ -91,7 +91,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
 interface CalendarDate {
   date: Date
@@ -119,9 +119,21 @@ const emit = defineEmits<{
   'update:dateRange': [range: DateRange]
 }>()
 
+const { loadBlockedDates, loadBookedDates, isDateBlocked, isDateBooked } = useBlockedDates()
+
 const weekDays = ['日', '月', '火', '水', '木', '金', '土']
 const currentDate = ref(new Date())
 const selectedRange = ref<DateRange>({ start: null, end: null })
+const isLoading = ref(true)
+
+// Load blocked dates and booked dates on mount
+onMounted(async () => {
+  await Promise.all([
+    loadBlockedDates(),
+    loadBookedDates()
+  ])
+  isLoading.value = false
+})
 
 const currentMonthYear = computed(() => {
   return `${currentDate.value.getFullYear()}年 ${currentDate.value.getMonth() + 1}月`
@@ -174,16 +186,25 @@ function createCalendarDate(date: Date, isCurrentMonth: boolean): CalendarDate {
   today.setHours(0, 0, 0, 0)
 
   const isToday = date.getTime() === today.getTime()
-  const isBooked = props.bookedDates?.some(d =>
+
+  // propsからの予約済み日付チェック（後方互換性）
+  const isBookedFromProps = props.bookedDates?.some(d =>
     d.toISOString().split('T')[0] === dateString
   ) || false
+
+  // useBlockedDatesからの予約済み日付チェック（pending_review, confirmedステータス）
+  const isBookedFromApi = isDateBooked(date)
+
+  // ブロック日付チェック
+  const isBlocked = isDateBlocked(date)
 
   const isUnavailable = props.unavailableDates?.some(d =>
     d.toISOString().split('T')[0] === dateString
   ) || false
 
   const isPast = date < today
-  const isAvailable = !isBooked && !isUnavailable && !isPast
+  const isBooked = isBookedFromProps || isBookedFromApi
+  const isAvailable = !isBooked && !isUnavailable && !isBlocked && !isPast
 
   const isSelected = !!(
     (selectedRange.value.start && date.getTime() === selectedRange.value.start.getTime()) ||

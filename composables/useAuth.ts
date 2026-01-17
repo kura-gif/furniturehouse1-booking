@@ -111,11 +111,14 @@ export const useAuth = () => {
     if (!$auth || !$db) throw new Error('Firebase is not initialized')
 
     try {
+      console.log('[Auth] Starting Google login with popup...')
       const provider = new GoogleAuthProvider()
       provider.addScope('profile')
       provider.addScope('email')
+      console.log('[Auth] Provider configured, calling signInWithPopup...')
 
       const userCredential = await signInWithPopup($auth, provider)
+      console.log('[Auth] signInWithPopup succeeded')
       const firebaseUser = userCredential.user
 
       // Firestore にユーザーが存在するか確認
@@ -145,7 +148,10 @@ export const useAuth = () => {
 
       return firebaseUser
     } catch (error: any) {
-      console.error('Google login error:', error)
+      console.error('[Auth] Google login error:', error)
+      console.error('[Auth] Error code:', error.code)
+      console.error('[Auth] Error message:', error.message)
+      console.error('[Auth] Error customData:', error.customData)
       // ポップアップがブロックされた場合やキャンセルされた場合のエラー処理
       if (error.code === 'auth/popup-closed-by-user') {
         throw new Error('ログインがキャンセルされました')
@@ -153,7 +159,9 @@ export const useAuth = () => {
       if (error.code === 'auth/popup-blocked') {
         throw new Error('ポップアップがブロックされました。ポップアップを許可してください')
       }
-      throw new Error(getErrorMessage(error.code))
+      // エラーコードも含めて表示
+      const errorMsg = getErrorMessage(error.code)
+      throw new Error(`${errorMsg} (${error.code || 'unknown'})`)
     }
   }
 
