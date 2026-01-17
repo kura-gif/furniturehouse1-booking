@@ -52,6 +52,21 @@ export default defineNuxtConfig({
       ],
       link: [
         { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
+      ],
+      script: [
+        {
+          innerHTML: `
+            window.difyChatbotConfig = {
+              token: 'wZhzVdZCEOQWZogG'
+            }
+          `,
+          type: 'text/javascript'
+        },
+        {
+          src: 'https://udify.app/embed.min.js',
+          id: 'wZhzVdZCEOQWZogG',
+          defer: true
+        }
       ]
     }
   },
@@ -63,7 +78,7 @@ export default defineNuxtConfig({
     routeRules: {
       '/**': {
         headers: {
-          'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://m.stripe.com https://*.firebaseio.com https://apis.google.com https://accounts.google.com https://*.firebaseapp.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: blob:; connect-src 'self' https: wss: blob:; frame-src https://js.stripe.com https://hooks.stripe.com https://*.firebaseapp.com https://www.youtube.com https://youtube.com https://accounts.google.com https://apis.google.com; worker-src 'self' blob:;"
+          'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://m.stripe.com https://*.firebaseio.com https://apis.google.com https://accounts.google.com https://*.firebaseapp.com https://udify.app; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: blob:; connect-src 'self' https: wss: blob:; frame-src https://js.stripe.com https://hooks.stripe.com https://*.firebaseapp.com https://www.youtube.com https://youtube.com https://accounts.google.com https://apis.google.com https://udify.app; worker-src 'self' blob:;"
         }
       },
       // 静的アセットのキャッシュ（1年）
