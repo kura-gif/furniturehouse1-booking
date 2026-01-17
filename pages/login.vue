@@ -293,11 +293,9 @@ const handleGoogleLogin = async () => {
     const redirectUrl = (route.query.redirect as string) || '/'
     router.push(redirectUrl)
   } catch (e: any) {
-    console.error('[Login] Google login error:', e)
-    console.error('[Login] Error code:', e.code)
-    console.error('[Login] Error message:', e.message)
-    console.error('[Login] Full error:', JSON.stringify(e, Object.getOwnPropertyNames(e)))
-    error.value = e.message || 'エラーが発生しました'
+    // エラー詳細を画面に表示（本番環境ではconsole.logが削除されるため）
+    const errorDetail = e.code || e.message || (typeof e === 'object' ? JSON.stringify(e) : String(e))
+    error.value = e.message || `エラーが発生しました: ${errorDetail}`
   } finally {
     isLoading.value = false
   }

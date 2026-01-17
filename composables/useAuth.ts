@@ -161,7 +161,8 @@ export const useAuth = () => {
       }
       // エラーコードも含めて表示
       const errorMsg = getErrorMessage(error.code)
-      throw new Error(`${errorMsg} (${error.code || 'unknown'})`)
+      const errorDetail = error.code || error.message || JSON.stringify(error)
+      throw new Error(`${errorMsg} (${errorDetail})`)
     }
   }
 
