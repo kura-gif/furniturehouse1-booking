@@ -74,6 +74,7 @@ export default defineNuxtConfig({
       '/api/stripe/create-payment-intent': { csurf: false },
       '/api/stripe/create-payment-intent-secure': { csurf: false },
       '/api/stripe/update-payment-intent': { csurf: false },
+      '/api/stripe/create-refund': { csurf: false },
       '/api/bookings/create': { csurf: false },
       '/api/bookings/calculate-refund': { csurf: false },
       '/api/bookings/guest-cancel': { csurf: false },
