@@ -120,32 +120,32 @@
           </div>
 
           <div class="space-y-1 text-xs text-gray-600">
-            <div>基本(1〜2人) ¥{{ night.basePriceAfterAdjustments.toLocaleString() }}</div>
+            <div>基本(1〜2人) ¥{{ (night.basePriceAfterAdjustments ?? 0).toLocaleString() }}</div>
 
-            <div v-if="night.guestCountCharges.guest3rd">
-              + 3人目 ¥{{ night.guestCountCharges.guest3rd.toLocaleString() }}
+            <div v-if="night.guestCountCharges?.guest3rd">
+              + 3人目 ¥{{ (night.guestCountCharges?.guest3rd ?? 0).toLocaleString() }}
             </div>
-            <div v-if="night.guestCountCharges.guest4th">
-              + 4人目 ¥{{ night.guestCountCharges.guest4th.toLocaleString() }}
+            <div v-if="night.guestCountCharges?.guest4th">
+              + 4人目 ¥{{ (night.guestCountCharges?.guest4th ?? 0).toLocaleString() }}
             </div>
-            <div v-if="night.guestCountCharges.guest5th">
-              + 5人目 ¥{{ night.guestCountCharges.guest5th.toLocaleString() }}
+            <div v-if="night.guestCountCharges?.guest5th">
+              + 5人目 ¥{{ (night.guestCountCharges?.guest5th ?? 0).toLocaleString() }}
             </div>
-            <div v-if="night.guestCountCharges.guest6th">
-              + 6人目 ¥{{ night.guestCountCharges.guest6th.toLocaleString() }}
+            <div v-if="night.guestCountCharges?.guest6th">
+              + 6人目 ¥{{ (night.guestCountCharges?.guest6th ?? 0).toLocaleString() }}
             </div>
 
-            <div v-if="night.childCharges.total > 0">
-              + 子供料金 ¥{{ night.childCharges.total.toLocaleString() }}
+            <div v-if="(night.childCharges?.total ?? 0) > 0">
+              + 子供料金 ¥{{ (night.childCharges?.total ?? 0).toLocaleString() }}
               <span class="text-gray-500">
-                ({{ night.childCharges.discountedChildren }}名)
+                ({{ night.childCharges?.discountedChildren ?? 0 }}名)
               </span>
             </div>
 
             <div class="pt-1 border-t font-medium text-gray-700">
-              小計: ¥{{ night.subtotalBeforeNightRate.toLocaleString() }}
-              × {{ Math.round(night.nightRate * 100) }}%
-              = ¥{{ night.nightTotal.toLocaleString() }}
+              小計: ¥{{ (night.subtotalBeforeNightRate ?? 0).toLocaleString() }}
+              × {{ Math.round((night.nightRate ?? 1) * 100) }}%
+              = ¥{{ (night.nightTotal ?? 0).toLocaleString() }}
             </div>
           </div>
         </div>
@@ -154,12 +154,12 @@
         <div class="border-t pt-3 space-y-2">
           <div class="flex justify-between text-sm">
             <span>合計</span>
-            <span class="font-medium">¥{{ calculation.subtotal.toLocaleString() }}</span>
+            <span class="font-medium">¥{{ (calculation.subtotal ?? 0).toLocaleString() }}</span>
           </div>
 
-          <div v-if="calculation.couponDiscount > 0" class="flex justify-between text-sm text-green-600">
+          <div v-if="(calculation.couponDiscount ?? 0) > 0" class="flex justify-between text-sm text-green-600">
             <span>クーポン -{{ couponDiscountPercent }}%</span>
-            <span>-¥{{ calculation.couponDiscount.toLocaleString() }}</span>
+            <span>-¥{{ (calculation.couponDiscount ?? 0).toLocaleString() }}</span>
           </div>
 
           <div class="border-t pt-2">
@@ -172,8 +172,8 @@
           </div>
 
           <div class="grid grid-cols-2 gap-2 text-xs text-gray-600 pt-2">
-            <div>1泊あたり平均: ¥{{ calculation.summary.averagePricePerNight.toLocaleString() }}</div>
-            <div>1人あたり平均: ¥{{ calculation.summary.averagePricePerPerson.toLocaleString() }}</div>
+            <div>1泊あたり平均: ¥{{ (calculation.summary?.averagePricePerNight ?? 0).toLocaleString() }}</div>
+            <div>1人あたり平均: ¥{{ (calculation.summary?.averagePricePerPerson ?? 0).toLocaleString() }}</div>
           </div>
         </div>
       </div>

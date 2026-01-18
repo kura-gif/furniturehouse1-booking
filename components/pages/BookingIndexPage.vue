@@ -294,6 +294,8 @@
         <!-- 右側: 予約カード（スティッキー） -->
         <div class="lg:col-span-1">
           <div class="sticky top-24">
+            <!-- 天気・室内温湿度 -->
+            <WeatherWidget />
             <div class="border border-gray-300 rounded-xl p-6 shadow-lg">
               <div class="mb-6">
                 <div class="flex items-baseline gap-2 mb-2">

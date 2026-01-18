@@ -39,6 +39,9 @@ export const useBookings = () => {
       const bookingReference = generateBookingReference()
       const bookingToken = generateBookingToken()
 
+      if (!bookingData.startDate || !bookingData.endDate) {
+        throw new Error('開始日と終了日は必須です')
+      }
       const startDateTimestamp = Timestamp.fromDate(bookingData.startDate)
       const endDateTimestamp = Timestamp.fromDate(bookingData.endDate)
 
@@ -67,6 +70,7 @@ export const useBookings = () => {
           selectedOptions: bookingData.selectedOptions,
           optionsTotalPrice: bookingData.optionsTotalPrice || 0
         }),
+        ...(bookingData.stripePaymentIntentId && { stripePaymentIntentId: bookingData.stripePaymentIntentId }),
         createdAt: Timestamp.now(),
         updatedAt: Timestamp.now()
       }
@@ -280,6 +284,7 @@ export const useBookings = () => {
 
       querySnapshot.forEach(doc => {
         const booking = doc.data() as Booking
+        if (!booking.startDate || !booking.endDate) return
         const start = booking.startDate.toDate()
         const end = booking.endDate.toDate()
 

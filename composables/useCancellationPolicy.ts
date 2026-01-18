@@ -34,6 +34,7 @@ export const useCancellationPolicy = () => {
    * 有効なキャンセルポリシーを取得
    */
   const getActivePolicy = async (): Promise<CancellationPolicy> => {
+    if (!$db) return defaultPolicy
     try {
       const policiesRef = collection($db, 'cancellationPolicies')
       const q = query(policiesRef, where('isActive', '==', true), limit(1))
@@ -55,6 +56,7 @@ export const useCancellationPolicy = () => {
    * キャンセルポリシーを保存
    */
   const savePolicy = async (policy: CancellationPolicy): Promise<string> => {
+    if (!$db) throw new Error('Firestore is not initialized')
     const policiesRef = collection($db, 'cancellationPolicies')
 
     // 既存の有効なポリシーを無効化

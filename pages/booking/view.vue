@@ -274,11 +274,13 @@ const formatDate = (timestamp: any) => {
   }).format(date)
 }
 
-// 宿泊数計算
 const nights = computed(() => {
   if (!booking.value) return 0
-  const start = booking.value.startDate.toDate()
-  const end = booking.value.endDate.toDate()
+  const startTimestamp = booking.value.startDate ?? booking.value.checkInDate
+  const endTimestamp = booking.value.endDate ?? booking.value.checkOutDate
+  if (!startTimestamp || !endTimestamp) return 0
+  const start = startTimestamp.toDate()
+  const end = endTimestamp.toDate()
   return Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
 })
 

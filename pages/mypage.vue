@@ -90,17 +90,17 @@
                 <div class="grid md:grid-cols-2 gap-4 text-sm">
                   <div>
                     <p class="text-gray-600 mb-1">チェックイン</p>
-                    <p class="font-semibold">{{ formatDateWithDay(booking.startDate.toDate()) }}</p>
+                    <p class="font-semibold">{{ formatDateWithDay((booking.startDate ?? booking.checkInDate).toDate()) }}</p>
                     <p class="text-xs text-gray-500">{{ siteSettings.checkInTime }}〜</p>
                   </div>
                   <div>
                     <p class="text-gray-600 mb-1">チェックアウト</p>
-                    <p class="font-semibold">{{ formatDateWithDay(booking.endDate.toDate()) }}</p>
+                    <p class="font-semibold">{{ formatDateWithDay((booking.endDate ?? booking.checkOutDate).toDate()) }}</p>
                     <p class="text-xs text-gray-500">〜{{ siteSettings.checkOutTime }}</p>
                   </div>
                   <div>
                     <p class="text-gray-600 mb-1">宿泊日数</p>
-                    <p class="font-semibold">{{ calculateNights(booking.startDate.toDate(), booking.endDate.toDate()) }}泊</p>
+                    <p class="font-semibold">{{ calculateNights((booking.startDate ?? booking.checkInDate).toDate(), (booking.endDate ?? booking.checkOutDate).toDate()) }}泊</p>
                   </div>
                   <div>
                     <p class="text-gray-600 mb-1">宿泊者数</p>
@@ -110,7 +110,7 @@
                 <div class="mt-3 pt-3 border-t border-gray-100">
                   <div class="flex justify-between items-center">
                     <span class="text-gray-600 text-sm">合計金額</span>
-                    <span class="font-bold text-lg text-purple-700">¥{{ booking.totalAmount.toLocaleString() }}</span>
+                    <span class="font-bold text-lg text-purple-700">¥{{ (booking.totalAmount ?? 0).toLocaleString() }}</span>
                   </div>
                 </div>
 
@@ -186,11 +186,11 @@
             <div class="grid grid-cols-2 gap-3 text-sm">
               <div>
                 <p class="text-gray-500">チェックイン</p>
-                <p class="font-medium">{{ formatDate(cancelTargetBooking.startDate.toDate()) }}</p>
+                <p class="font-medium">{{ formatDate((cancelTargetBooking.startDate ?? cancelTargetBooking.checkInDate).toDate()) }}</p>
               </div>
               <div>
                 <p class="text-gray-500">チェックアウト</p>
-                <p class="font-medium">{{ formatDate(cancelTargetBooking.endDate.toDate()) }}</p>
+                <p class="font-medium">{{ formatDate((cancelTargetBooking.endDate ?? cancelTargetBooking.checkOutDate).toDate()) }}</p>
               </div>
             </div>
           </div>
@@ -444,7 +444,7 @@ const loadBookings = async () => {
     const past: Booking[] = []
 
     for (const booking of allBookings) {
-      const checkInDate = booking.startDate.toDate()
+      const checkInDate = (booking.startDate ?? booking.checkInDate).toDate()
       if (checkInDate >= today || ['pending', 'pending_review', 'confirmed'].includes(booking.status)) {
         upcoming.push(booking)
       } else {
@@ -453,8 +453,8 @@ const loadBookings = async () => {
     }
 
     // 今後の予約はチェックイン日が近い順、過去の予約はチェックイン日が新しい順
-    upcoming.sort((a, b) => a.startDate.toDate().getTime() - b.startDate.toDate().getTime())
-    past.sort((a, b) => b.startDate.toDate().getTime() - a.startDate.toDate().getTime())
+    upcoming.sort((a, b) => (a.startDate ?? a.checkInDate).toDate().getTime() - (b.startDate ?? b.checkInDate).toDate().getTime())
+    past.sort((a, b) => (b.startDate ?? b.checkInDate).toDate().getTime() - (a.startDate ?? a.checkInDate).toDate().getTime())
 
     bookings.value = [...upcoming, ...past]
   } catch (error) {

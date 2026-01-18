@@ -224,25 +224,66 @@ export default defineEventHandler(async (event) => {
       createdAt: FieldValue.serverTimestamp(),
     })
 
-    // 11. キャンセル確認メールを送信
+    // 11. キャンセル確認メールをゲストに送信
     try {
-      const baseUrl = config.public.siteUrl || 'http://localhost:3000'
-      if (refundAmount > 0) {
-        await $fetch(`${baseUrl}/api/emails/send-refund-confirmation`, {
-          method: 'POST',
-          headers: {
-            'x-internal-secret': config.internalApiSecret,
-          },
-          body: {
-            to: booking.guestEmail,
-            bookingReference: booking.bookingReference,
-            guestName: booking.guestName,
-            refundAmount: refundAmount,
-          },
-        })
+      const checkInFormatted = `${checkInDate.getFullYear()}年${checkInDate.getMonth() + 1}月${checkInDate.getDate()}日`
+      let checkOutDate: Date
+      if (booking.endDate && booking.endDate.toDate) {
+        checkOutDate = booking.endDate.toDate()
+      } else if (booking.checkOutDate && booking.checkOutDate.toDate) {
+        checkOutDate = booking.checkOutDate.toDate()
+      } else {
+        checkOutDate = new Date(checkInDate)
+        checkOutDate.setDate(checkOutDate.getDate() + 1)
       }
+      const checkOutFormatted = `${checkOutDate.getFullYear()}年${checkOutDate.getMonth() + 1}月${checkOutDate.getDate()}日`
+
+      await $fetch('/api/emails/send-booking-cancelled', {
+        method: 'POST',
+        headers: {
+          'x-internal-secret': config.internalApiSecret,
+        },
+        body: {
+          to: booking.guestEmail,
+          bookingReference: booking.bookingReference,
+          guestName: booking.guestName,
+          checkInDate: checkInFormatted,
+          checkOutDate: checkOutFormatted,
+          refundAmount: refundAmount,
+          refundPercentage: refundPercentage,
+        },
+      })
+      console.log('✅ Guest cancellation email sent')
     } catch (emailError: any) {
-      console.error('⚠️ Email send error:', emailError.message)
+      console.error('⚠️ Guest email send error:', emailError.message)
+    }
+
+    // 12. 管理者にキャンセル通知メールを送信
+    try {
+      await $fetch('/api/emails/send-admin-notification', {
+        method: 'POST',
+        headers: {
+          'x-internal-secret': config.internalApiSecret,
+        },
+        body: {
+          type: 'booking_cancelled',
+          bookingId,
+          bookingReference: booking.bookingReference,
+          guestName: booking.guestName,
+          guestEmail: booking.guestEmail,
+          checkInDate: `${checkInDate.getFullYear()}年${checkInDate.getMonth() + 1}月${checkInDate.getDate()}日`,
+          checkOutDate: booking.checkOutDate || booking.endDate
+            ? (() => {
+                const d = (booking.checkOutDate || booking.endDate).toDate()
+                return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`
+              })()
+            : '',
+          refundAmount: refundAmount,
+        },
+      })
+      console.log('✅ Admin cancellation notification sent')
+    } catch (emailError: any) {
+      console.error('⚠️ Admin email send error:', emailError.message)
     }
 
     return {

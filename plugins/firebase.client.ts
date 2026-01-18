@@ -1,15 +1,14 @@
-import { initializeApp } from 'firebase/app'
-import { initializeFirestore } from 'firebase/firestore'
-import { getAuth } from 'firebase/auth'
-import { getStorage } from 'firebase/storage'
+import { initializeApp, type FirebaseApp } from 'firebase/app'
+import { initializeFirestore, type Firestore } from 'firebase/firestore'
+import { getAuth, type Auth } from 'firebase/auth'
+import { getStorage, type FirebaseStorage } from 'firebase/storage'
 import { VueFire, VueFireAuth } from 'vuefire'
 
-export default defineNuxtPlugin((nuxtApp) => {
+export default defineNuxtPlugin((nuxtApp): { provide: { firebase: FirebaseApp | null, db: Firestore | null, auth: Auth | null, storage: FirebaseStorage | null } } => {
   // Firebase設定（環境変数から取得）
   const config = useRuntimeConfig()
 
-  // 環境変数が設定されていない場合、または開発モードの場合はFirebaseを初期化しない
-  const apiKey = config.public.firebaseApiKey || ''
+  const apiKey = (config.public.firebaseApiKey as string | undefined) ?? ''
 
   // 環境変数チェック
   console.log('[Firebase] Config check:', {

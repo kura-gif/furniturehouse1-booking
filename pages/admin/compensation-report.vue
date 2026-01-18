@@ -377,6 +377,7 @@ const unpaidTotalAmount = computed(() =>
 
 // サポーター一覧を読み込み
 const loadSupporters = async () => {
+  if (!$db) return
   try {
     const supportersRef = collection($db, 'supporters')
     const snapshot = await getDocs(supportersRef)
@@ -393,9 +394,9 @@ const loadSupporters = async () => {
 
 // レポートデータを読み込み
 const loadReport = async () => {
+  if (!$db) return
   loading.value = true
   try {
-    // 選択された月の開始・終了日を計算
     const startDate = new Date(selectedYear.value, selectedMonth.value - 1, 1)
     const endDate = new Date(selectedYear.value, selectedMonth.value, 0, 23, 59, 59)
 
@@ -430,6 +431,7 @@ const loadReport = async () => {
 
 // 単一タスクを支払い済みにする
 const markAsPaidSingle = async (taskId: string) => {
+  if (!$db) return
   if (!confirm('このタスクを支払い済みにしますか？')) return
 
   try {
@@ -449,6 +451,7 @@ const markAsPaidSingle = async (taskId: string) => {
 
 // 全て支払い済みにする
 const markAllAsPaid = async () => {
+  if (!$db) return
   if (!confirm(`${unpaidTasks.value.length}件のタスクを全て支払い済みにしますか？\n合計金額: ¥${unpaidTotalAmount.value.toLocaleString()}`)) {
     return
   }

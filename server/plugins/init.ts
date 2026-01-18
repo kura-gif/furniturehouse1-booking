@@ -36,6 +36,14 @@ function validateEnvironmentVariables() {
     { name: 'FIREBASE_API_KEY', value: config.public.firebaseApiKey },
     { name: 'STRIPE_SECRET_KEY', value: config.stripeSecretKey },
     { name: 'STRIPE_PUBLIC_KEY', value: config.public.stripePublicKey },
+    { name: 'INTERNAL_API_SECRET', value: config.internalApiSecret },
+  ]
+
+  // 本番環境のみ必須
+  const productionRequiredVars = [
+    { name: 'STRIPE_WEBHOOK_SECRET', value: config.stripeWebhookSecret },
+    { name: 'EMAIL_PASSWORD', value: config.emailPassword },
+    { name: 'SITE_URL', value: config.public.siteUrl },
   ]
 
   const missing: string[] = []
@@ -59,8 +67,17 @@ function validateEnvironmentVariables() {
     console.log('✅ All required environment variables are set')
   }
 
-  // Webhook Secretの確認（本番環境のみ必須）
-  if (process.env.NODE_ENV === 'production' && !config.stripeWebhookSecret) {
-    console.warn('⚠️ STRIPE_WEBHOOK_SECRET is not set (required for production)')
+  // 本番環境のみ必須の変数をチェック
+  if (process.env.NODE_ENV === 'production') {
+    const missingProd: string[] = []
+    productionRequiredVars.forEach(({ name, value }) => {
+      if (!value || value === '') {
+        missingProd.push(name)
+      }
+    })
+
+    if (missingProd.length > 0) {
+      throw new Error(`Missing production-required environment variables: ${missingProd.join(', ')}`)
+    }
   }
 }

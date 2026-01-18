@@ -51,6 +51,10 @@ export default defineEventHandler(async (event) => {
     const viewUrl = `${siteUrl}/booking/view?token=${bookingToken}`
     const bookingUrl = `${siteUrl}/booking`
 
+    // 送信元はグループメール（furniturehouse1@）を表示
+    const fromEmail = config.emailFrom || config.emailReplyTo || config.emailUser
+    const replyToEmail = config.emailReplyTo || config.emailFrom || config.emailUser
+
     const htmlContent = `
 <!DOCTYPE html>
 <html>
@@ -170,8 +174,9 @@ export default defineEventHandler(async (event) => {
 `
 
     await transporter.sendMail({
-      from: `"家具の家 No.1" <${config.emailUser}>`,
+      from: `"家具の家 No.1" <${fromEmail}>`,
       to,
+      replyTo: replyToEmail,
       subject: `【予約リクエスト】ご予約について - ${bookingReference}`,
       html: htmlContent,
     })

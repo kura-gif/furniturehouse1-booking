@@ -4,6 +4,8 @@ import {
   signOut,
   onAuthStateChanged,
   sendPasswordResetEmail,
+  signInWithPopup,
+  GoogleAuthProvider,
   type User
 } from 'firebase/auth'
 import { doc, setDoc, Timestamp } from 'firebase/firestore'
@@ -101,6 +103,66 @@ export const useAuth = () => {
     } catch (error: any) {
       console.error('Login error:', error)
       throw new Error(getErrorMessage(error.code))
+    }
+  }
+
+  // Google ログイン
+  const loginWithGoogle = async () => {
+    if (!$auth || !$db) throw new Error('Firebase is not initialized')
+
+    try {
+      console.log('[Auth] Starting Google login with popup...')
+      const provider = new GoogleAuthProvider()
+      provider.addScope('profile')
+      provider.addScope('email')
+      console.log('[Auth] Provider configured, calling signInWithPopup...')
+
+      const userCredential = await signInWithPopup($auth, provider)
+      console.log('[Auth] signInWithPopup succeeded')
+      const firebaseUser = userCredential.user
+
+      // Firestore にユーザーが存在するか確認
+      const idToken = await firebaseUser.getIdToken()
+      const response = await fetch('/api/auth/user', {
+        headers: {
+          'Authorization': `Bearer ${idToken}`
+        }
+      })
+
+      const data = await response.json()
+
+      // ユーザーが存在しない場合は新規作成
+      if (!data.success || !data.user) {
+        const now = Timestamp.now()
+        const userData: Omit<AppUser, 'id'> = {
+          email: firebaseUser.email!,
+          displayName: firebaseUser.displayName || firebaseUser.email!.split('@')[0],
+          role: 'user',
+          createdAt: now,
+          updatedAt: now
+        }
+
+        await setDoc(doc($db, 'users', firebaseUser.uid), userData)
+        console.log('[Auth] Created new user from Google login:', firebaseUser.email)
+      }
+
+      return firebaseUser
+    } catch (error: any) {
+      console.error('[Auth] Google login error:', error)
+      console.error('[Auth] Error code:', error.code)
+      console.error('[Auth] Error message:', error.message)
+      console.error('[Auth] Error customData:', error.customData)
+      // ポップアップがブロックされた場合やキャンセルされた場合のエラー処理
+      if (error.code === 'auth/popup-closed-by-user') {
+        throw new Error('ログインがキャンセルされました')
+      }
+      if (error.code === 'auth/popup-blocked') {
+        throw new Error('ポップアップがブロックされました。ポップアップを許可してください')
+      }
+      // エラーコードも含めて表示
+      const errorMsg = getErrorMessage(error.code)
+      const errorDetail = error.code || error.message || JSON.stringify(error)
+      throw new Error(`${errorMsg} (${errorDetail})`)
     }
   }
 
@@ -224,6 +286,7 @@ export const useAuth = () => {
     isSupporter,
     initAuth,
     login,
+    loginWithGoogle,
     signup,
     logout,
     resetPassword,

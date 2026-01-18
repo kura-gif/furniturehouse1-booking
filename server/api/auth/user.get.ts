@@ -80,11 +80,11 @@ export default defineEventHandler(async (event) => {
       error: 'User not found',
       user: null
     }
-  } catch (error: any) {
-    console.error('[API /auth/user] Error:', error.message, error.stack)
+  } catch (error: unknown) {
+    console.error('[API /auth/user] Error:', error)
     throw createError({
       statusCode: 401,
-      message: `Authentication failed: ${error.message}`
+      message: '認証に失敗しました'
     })
   }
 })

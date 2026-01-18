@@ -211,7 +211,7 @@ export const amenities: Amenity[] = [
   }
 ]
 
-export const amenityCategories = {
+export const amenityCategories: Record<string, string> = {
   basic: '基本設備',
   cooking: 'キッチン・調理',
   bathroom: 'バスルーム',

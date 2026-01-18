@@ -178,9 +178,13 @@
               class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
             >
               <option value="all">すべて</option>
-              <option value="pending">保留中</option>
+              <option value="pending_review">承認待ち</option>
               <option value="confirmed">確定</option>
               <option value="cancelled">キャンセル</option>
+              <option value="completed">完了</option>
+              <option value="payment_failed">決済失敗</option>
+              <option value="refunded">返金済み</option>
+              <option value="rejected">却下</option>
             </select>
           </div>
         </div>
@@ -1592,6 +1596,36 @@
         </template>
       </div>
 
+      <!-- 管理者招待タブ -->
+      <div v-if="currentTab === 'admin-invitations'" class="card">
+        <h2 class="text-2xl font-semibold mb-6">管理者招待</h2>
+        <p class="text-gray-600 mb-8">
+          新しい管理者を招待して、管理画面へのアクセス権を付与できます。<br>
+          招待されたユーザーは専用のリンクからアカウントを作成し、すぐに管理機能を利用できます。
+        </p>
+
+        <div class="text-center py-12 border-2 border-dashed border-gray-300 rounded-xl">
+          <div class="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg class="w-10 h-10 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">管理者招待機能</h3>
+          <p class="text-gray-600 mb-6">
+            専用の招待ページで招待メールの送信と管理ができます。
+          </p>
+          <NuxtLink
+            to="/admin/invitations"
+            class="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+          >
+            管理者招待ページを開く
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </NuxtLink>
+        </div>
+      </div>
+
       <!-- システムタブ -->
       <div v-if="currentTab === 'system'" class="space-y-6">
         <div class="card">
@@ -1941,13 +1975,6 @@
               class="btn-secondary flex-1"
             >
               キャンセル
-            </button>
-            <button
-              v-if="['confirmed', 'pending_review'].includes(selectedBooking.status)"
-              @click="openModifyModal"
-              class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              予約変更
             </button>
             <button
               @click="openMessage(selectedBooking)"
@@ -2575,6 +2602,7 @@ const tabs = [
   { id: 'coupons', name: 'クーポン' },
   { id: 'cancellation', name: 'キャンセルポリシー' },
   { id: 'settings', name: '設定' },
+  { id: 'admin-invitations', name: '管理者招待' },
   { id: 'system', name: 'システム' }
 ]
 
@@ -2866,7 +2894,7 @@ const useQuickReply = (template: string) => {
 function getStatusLabel(status: BookingStatus) {
   const labels: Record<string, string> = {
     pending: '保留中',
-    pending_review: '審査中',
+    pending_review: '承認待ち',
     confirmed: '確定',
     cancelled: 'キャンセル',
     completed: '完了',
@@ -3031,6 +3059,11 @@ async function processRefund() {
 
   isRefunding.value = true
   try {
+    const token = await getIdToken()
+    if (!token) {
+      throw new Error('認証が必要です。再ログインしてください。')
+    }
+
     const response = await $fetch<{
       success: boolean
       refundId: string
@@ -3039,6 +3072,9 @@ async function processRefund() {
       isFullRefund: boolean
     }>('/api/stripe/create-refund', {
       method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
       body: {
         bookingId: selectedBooking.value.id,
         reason: refundReason.value,

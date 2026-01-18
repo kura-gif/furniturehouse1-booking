@@ -18,13 +18,14 @@ export default defineEventHandler(async (event) => {
     }
   })
 
-  const senderEmail = String(config.emailUser || process.env.EMAIL_USER || 'noreply@furniturehouse1.com')
-  const adminEmail = String(config.adminEmail || process.env.ADMIN_EMAIL || senderEmail)
+  // 送信元はグループメール（furniturehouse1@）を表示
+  const fromEmail = String(config.emailFrom || config.emailReplyTo || config.emailUser || 'noreply@furniturehouse1.com')
+  const adminEmail = String(config.emailReplyTo || config.emailFrom || config.emailUser)
 
   const taskTypeLabel = taskType === 'pre_checkin' ? 'チェックイン前清掃' : 'チェックアウト後清掃'
 
   const mailOptions = {
-    from: `"家具の家 No.1 システム" <${senderEmail}>`,
+    from: `"家具の家 No.1 システム" <${fromEmail}>`,
     to: adminEmail,
     subject: `【清掃完了】${taskTypeLabel} - ${bookingReference}`,
     html: `

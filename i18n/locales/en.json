@@ -92,5 +92,252 @@
   "common": {
     "language": "English",
     "languageSwitch": "日本語"
+  },
+  "guestGuide": {
+    "title": "Furniture House no.1 Guestbook",
+    "menu": "Menu",
+    "meta": {
+      "title": "Guestbook | Furniture House no.1",
+      "description": "Guestbook for Furniture House no.1"
+    },
+    "hero": {
+      "welcome": "Welcome to Furniture House no.1",
+      "title": "",
+      "greeting": "Thank you for your reservation, {name}"
+    },
+    "wifi": {
+      "copyPassword": "Copy Password",
+      "copied": "Copied!"
+    },
+    "wifiPage": {
+      "title": "Wi-Fi Connection",
+      "subtitle": "Internet access information",
+      "meta": { "title": "Wi-Fi | Guestbook" },
+      "mainTitle": "Wi-Fi Information",
+      "networkName": "Network Name",
+      "password": "Password (same for both)",
+      "howToConnect": "How to Connect",
+      "step1": "Open your device's settings",
+      "step2": "Select 'Furniture-a' or 'Furniture-b' from Wi-Fi settings",
+      "step3": "Enter password 'House-01'",
+      "step4": "Connection complete",
+      "notesTitle": "Notes",
+      "note1": "Both networks use the same password",
+      "note2": "Connection may be unstable depending on signal strength",
+      "note3": "Please contact the host if you cannot connect"
+    },
+    "nav": {
+      "home": "Home",
+      "homeDesc": "Guestbook Top",
+      "homeShort": "Home",
+      "about": "About the House",
+      "aboutDesc": "Architecture & History",
+      "checkin": "Check-in",
+      "checkinDesc": "How to get the key",
+      "checkinShort": "Key",
+      "amenities": "Amenities",
+      "amenitiesDesc": "Usage guide",
+      "amenitiesShort": "Amenities",
+      "area": "Nearby Spots",
+      "areaDesc": "Recommended places",
+      "areaShort": "Area",
+      "faq": "FAQ",
+      "faqDesc": "When you need help",
+      "faqShort": "FAQ"
+    },
+    "quick": {
+      "checkin": "Check-in",
+      "wifi": "Wi-Fi",
+      "amenities": "Amenities",
+      "area": "Area"
+    },
+    "notice": {
+      "title": "Before You Go Out",
+      "item1": "Be careful if driving a low-clearance vehicle",
+      "item2": "We recommend wearing long pants outdoors near the property",
+      "item3": "Insect repellent is essential due to bugs in the area"
+    },
+    "sections": {
+      "title": "Sections",
+      "about": "About Furniture House no.1",
+      "aboutDesc": "Architect Shigeru Ban & Building History",
+      "access": "Access",
+      "accessDesc": "Directions from Tokyo & Resort Gate",
+      "checkin": "Check-in & Check-out",
+      "checkinDesc": "Key pickup & departure procedures",
+      "amenities": "Amenities & Equipment",
+      "amenitiesDesc": "Usage guide",
+      "area": "Nearby Spots",
+      "areaDesc": "Cafes, Restaurants & Attractions",
+      "rules": "House Rules",
+      "rulesDesc": "For a comfortable stay",
+      "faq": "FAQ",
+      "faqDesc": "When you need help"
+    },
+    "emergency": {
+      "title": "Emergency Contact",
+      "host": "Host",
+      "note": "Please call anytime if you need assistance"
+    },
+    "about": {
+      "title": "About Furniture House no.1",
+      "meta": { "title": "About | Guestbook" },
+      "architect": {
+        "title": "Architect Shigeru Ban & Furniture House",
+        "desc": "Furniture House no.1 was designed by Pritzker Prize-winning architect Shigeru Ban. Completed in 1995, it features an innovative concept where furniture units serve as structural elements supporting the roof. In 2024, major restoration of the foundation and flooring was completed to preserve this architectural heritage for future generations."
+      },
+      "video1": "Shigeru Ban 2013 Presentation",
+      "video2": "Furniture House no.1 recreated at Simose Art Museum 2024",
+      "history": {
+        "title": "Records & Documents",
+        "renovation": "Restoration Records 2024",
+        "construction": "Construction Records 1995"
+      },
+      "environment": {
+        "title": "Surrounding Environment",
+        "desc": "Located in a resort area by Lake Yamanaka, surrounded by a quiet forest with views of Mt. Fuji. This historic area has been home to Japan's leading creators since the 1960s."
+      },
+      "links": {
+        "title": "Related Links",
+        "official": "Furniture House no.1 Official Site"
+      }
+    },
+    "checkin": {
+      "title": "Check-in & Check-out",
+      "subtitle": "For a smooth stay",
+      "meta": { "title": "Check-in | Guestbook" },
+      "parking": {
+        "title": "Parking",
+        "desc": "Up to 3 vehicles (approx. 180cm width) can be parked"
+      },
+      "key": {
+        "title": "About Guest Key",
+        "desc": "We will send you a guest key for the 'Qrio Lock' smartphone app the day before. Please follow the instructions to set it up.",
+        "app": "App Used"
+      },
+      "steps": { "title": "Check-in Steps" },
+      "step1": {
+        "title": "Install Qrio Lock App",
+        "desc": "Download from App Store or Google Play"
+      },
+      "step2": {
+        "title": "Register Guest Key",
+        "desc": "Register the guest key sent via email in the app"
+      },
+      "step3": {
+        "title": "Unlock at Entrance",
+        "desc": "Unlock with Qrio app to complete check-in. The manager will be notified"
+      },
+      "trouble": {
+        "title": "If you cannot unlock",
+        "item1": "Key box: Located near the propane gas tank",
+        "item2": "PIN code: 0315",
+        "item3": "Open it and retrieve the key"
+      }
+    },
+    "checkout": {
+      "title": "Check-out",
+      "time": "Lock with Qrio by 11:00 AM to check out",
+      "trash": "Please sort your garbage and leave it inside",
+      "card": "Don't forget to return the gate access card",
+      "lock": "Please lock all windows",
+      "checklist": {
+        "title": "Departure Checklist",
+        "desc": "Please confirm before leaving"
+      }
+    },
+    "amenities": {
+      "title": "Amenities & Equipment",
+      "subtitle": "Everything in unlocked shelves is available for use",
+      "meta": { "title": "Amenities | Guestbook" },
+      "viewDetail": "View Details",
+      "viewBrand": "Brand Website",
+      "ih": {
+        "title": "IH Cooktop",
+        "warning": "Some guests find the control panel confusing"
+      },
+      "cooking": { "title": "Kitchen Appliances" },
+      "bath": { "title": "Bath & Toilet", "shampoo": "Shampoo & Conditioner" },
+      "amenity": { "title": "Amenities" },
+      "appliance": { "title": "Electronics" },
+      "cat": { "all": "All", "kitchen": "Kitchen", "bath": "Bath", "amenity": "Amenities", "appliance": "Electronics" },
+      "item": {
+        "riceCooker": "Rice Cooker", "coffeeMaker": "Coffee Maker", "kettle": "Electric Kettle", "toaster": "Toaster",
+        "cassette": "Portable Gas Stove", "pot": "Pot", "frypan": "Frying Pan", "shampoo": "Shampoo",
+        "bodySoap": "Body Soap", "bathSalt": "Bath Salt", "bathMat": "Bath Mat", "toothbrush": "Toothbrush",
+        "tissue": "Tissue", "medicine": "Medicine Kit", "towel": "Towels", "bugSpray": "Insect Repellent",
+        "slippers": "Slippers", "dryer": "Hair Dryer", "speaker": "Bluetooth Speaker", "fan": "Fan",
+        "washer": "Washer/Dryer", "heater": "Heater"
+      }
+    },
+    "area": {
+      "title": "Nearby Spots",
+      "meta": { "title": "Nearby Spots | Guestbook" },
+      "recommended": "Recommended",
+      "minutes": "min",
+      "openMap": "Open Map",
+      "website": "Website",
+      "noSpots": "No spots found",
+      "cat": { "all": "All", "cafe": "Cafe", "restaurant": "Restaurant", "shopping": "Shopping", "activity": "Activity", "spa": "Hot Spring/Sauna" },
+      "spots": {
+        "papermoon": "Paper Moon", "papermoonDesc": "No children allowed, so takeout recommended. Popular, so arrive early",
+        "fabcafe": "FabCafe", "fabcafeDesc": "Located on a street overlooking Mt. Fuji. Also has art and architecture book corner",
+        "newmid": "NEW MID", "newmidDesc": "Popular spot, we recommend arriving at opening time on holidays",
+        "nagaike": "Nagaike Butcher Shop", "nagaikeDesc": "Quality meat popular with villa residents. Frozen hamburgers are excellent",
+        "ogino": "OGINO Supermarket", "oginoDesc": "Nearest supermarket. Well-stocked for BBQ",
+        "benifuji": "Benifuji no Yu", "benifujiDesc": "Hot spring with Mt. Fuji view. Affordable",
+        "cycl": "CYCL Sauna", "cyclDesc": "After sweating in the sauna, relax with outdoor air bathing facing Lake Yamanaka",
+        "fujiQ": "Fuji-Q Highland", "fujiQDesc": "One of Japan's premier thrill ride amusement parks"
+      }
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "subtitle": "Please check here if you need help",
+      "meta": { "title": "FAQ | Guestbook" },
+      "q1": "How do I check in?", "a1": "Check-in is complete when the entrance is unlocked on the day of arrival. The manager will be notified.",
+      "q2": "Is there parking?", "a2": "Up to 3 vehicles (approx. 180cm width) can be parked.",
+      "q3": "What's the Wi-Fi password?", "a3": "SSID: Furniture-a or Furniture-b, Password: House-01",
+      "q4": "What should I do with garbage?", "a4": "Please sort into burnable, non-burnable, and plastic bottles. Leave them inside.",
+      "q5": "What time is check-out?", "a5": "Please lock with Qrio Lock by 11:00 AM.",
+      "q6": "Is there air conditioning?", "a6": "We haven't installed AC so you can enjoy Lake Yamanaka's fresh air.",
+      "q7": "Can I bring pets?", "a7": "Pets are welcome, but please be careful about dirt and damage.",
+      "contact": { "title": "Still need help?", "desc": "If you have any other questions, please feel free to contact us", "call": "Call Host" }
+    },
+    "rules": {
+      "title": "House Rules",
+      "subtitle": "For a comfortable stay",
+      "meta": { "title": "House Rules | Guestbook" },
+      "intro": "Please follow these rules for a relaxing and comfortable stay at Furniture House.",
+      "rule1": { "title": "Damage or Issues", "desc": "If you accidentally break any equipment or have any problems, please contact us immediately." },
+      "rule2": { "title": "Using the IH Cooktop", "desc": "The ventilation fan cannot be used while cooking. Please open windows for ventilation." },
+      "rule3": { "title": "Consideration for Neighbors", "desc": "Please be considerate so neighbors can enjoy their stay as well." },
+      "rule4": { "title": "Guests with Pets", "desc": "Pets are welcome, but please be careful about dirt and damage." },
+      "rule5": { "title": "When Going Out", "desc": "When leaving, please check door locks and turn off lights and electrical appliances." },
+      "rule6": { "title": "No Smoking Indoors", "desc": "Smoking indoors is not permitted." },
+      "rule7": { "title": "Nighttime Noise", "desc": "Please be quiet after 9 PM." },
+      "rule8": { "title": "No Parties", "desc": "Loud parties or activities that disturb other guests or neighbors are prohibited." },
+      "rule9": { "title": "Registered Guests Only", "desc": "Only registered guests may stay overnight." },
+      "rule10": { "title": "Garbage Sorting", "desc": "Please sort into burnable, non-burnable, and plastic bottles." },
+      "rule11": { "title": "Check-in/Check-out Times", "desc": "Please strictly follow check-in and check-out times." },
+      "agree": "I have read and agree to the house rules above",
+      "submit": "Submit Agreement",
+      "submitting": "Submitting...",
+      "success": "Agreement recorded",
+      "enjoy": "Follow the rules and enjoy your stay!"
+    },
+    "access": {
+      "title": "Access",
+      "subtitle": "Directions to Furniture House no.1",
+      "meta": { "title": "Access | Guestbook" },
+      "address": { "title": "Address", "value": "415 Hirano, Yamanakako Village, Minamitsuru District, Yamanashi" },
+      "openMap": "Open in Google Maps",
+      "fromTokyo": {
+        "title": "From Tokyo",
+        "car": { "title": "By Car", "step1": "Exit at Kawaguchiko IC on Chuo Expressway", "step2": "Head toward Lake Yamanaka via Route 138", "step3": "About 10 min from Yamanakako IC", "time": "About 2 hours from Tokyo" }
+      },
+      "gate": { "title": "[Important] Resort Gate", "desc": "Tell the management office you are 'a guest of 415'. The gate will open.", "tellLabel": "What to say", "tellValue": "Guest of 415", "time": "About 4 minutes from gate to property" },
+      "map": { "title": "Map Inside Resort", "placeholder": "Loading map...", "desc": "Roads inside the resort are complex. Set '415 Hirano, Yamanakako Village, Minamitsuru District, Yamanashi' in your navigation." },
+      "notes": { "title": "Notes", "note1": "Be careful if driving a low-clearance vehicle", "note2": "Few street lights at night - we recommend arriving while it's still bright", "note3": "Cell signal may be weak in some areas. We recommend downloading offline maps in advance" }
+    }
   }
 }

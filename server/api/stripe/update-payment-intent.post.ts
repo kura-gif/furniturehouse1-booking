@@ -56,11 +56,11 @@ export default defineEventHandler(async (event) => {
       success: true,
       paymentIntentId: paymentIntent.id
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Payment Intent更新エラー:', error)
     throw createError({
       statusCode: 500,
-      message: error.message || 'Payment Intentの更新に失敗しました'
+      message: 'Payment Intentの更新に失敗しました'
     })
   }
 })

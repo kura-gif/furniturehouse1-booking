@@ -218,6 +218,68 @@ export default defineEventHandler(async (event) => {
 
     console.log(`✅ Booking ${bookingId} modified by ${admin.uid}`)
 
+    // ゲストに変更通知メールを送信
+    try {
+      const formatDate = (date: Date) => `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`
+
+      await $fetch('/api/emails/send-booking-modified', {
+        method: 'POST',
+        headers: {
+          'x-internal-secret': config.internalApiSecret,
+        },
+        body: {
+          to: booking.guestEmail,
+          bookingReference: booking.bookingReference,
+          bookingToken: booking.bookingToken,
+          guestName: booking.guestName,
+          changes: {
+            checkInDate: newCheckInDate ? {
+              from: formatDate(currentCheckIn),
+              to: formatDate(finalCheckIn)
+            } : null,
+            checkOutDate: newCheckOutDate ? {
+              from: formatDate(currentCheckOut),
+              to: formatDate(finalCheckOut)
+            } : null,
+            guestCount: newGuestCount !== undefined ? {
+              from: currentGuestCount,
+              to: newGuestCount
+            } : null
+          },
+          previousAmount: currentAmount,
+          newAmount: newAmount,
+          amountDifference: amountDifference,
+          refundAmount: paymentAction === 'refund' ? refundAmount : 0,
+          additionalChargeAmount: paymentAction === 'additional_charge' ? additionalChargeAmount : 0,
+          reason: reason
+        },
+      })
+      console.log('✅ Guest modification notification sent')
+    } catch (emailError: any) {
+      console.error('⚠️ Guest email send error:', emailError.message)
+    }
+
+    // 管理者に変更完了通知を送信
+    try {
+      await $fetch('/api/emails/send-admin-notification', {
+        method: 'POST',
+        headers: {
+          'x-internal-secret': config.internalApiSecret,
+        },
+        body: {
+          type: 'booking_modified',
+          bookingId,
+          bookingReference: booking.bookingReference,
+          guestName: booking.guestName,
+          guestEmail: booking.guestEmail,
+          totalAmount: newAmount,
+        },
+      })
+      console.log('✅ Admin modification notification sent')
+    } catch (emailError: any) {
+      console.error('⚠️ Admin email send error:', emailError.message)
+    }
+
     return {
       success: true,
       bookingId,

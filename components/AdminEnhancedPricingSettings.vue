@@ -97,7 +97,7 @@
           <span class="text-gray-600">%</span>
         </div>
         <p class="text-sm text-gray-600 mt-2">
-          計算例: ¥{{ formatPrice(settings.basePrice) }} × {{ thirdGuestRatePercent }}% = ¥{{ formatPrice(Math.floor(settings.basePrice * thirdGuestRatePercent / 100)) }}
+          計算例: ¥{{ formatPrice(settings.basePrice ?? 0) }} × {{ thirdGuestRatePercent }}% = ¥{{ formatPrice(Math.floor((settings.basePrice ?? 0) * thirdGuestRatePercent / 100)) }}
         </p>
       </div>
 
@@ -146,7 +146,7 @@
       </div>
 
       <div class="bg-blue-50 p-4 rounded-lg">
-        <p class="text-sm font-semibold mb-2">💡 料金例（基本¥{{ formatPrice(settings.basePrice) }}の場合）:</p>
+        <p class="text-sm font-semibold mb-2">💡 料金例（基本¥{{ formatPrice(settings.basePrice ?? 0) }}の場合）:</p>
         <div class="grid grid-cols-2 gap-2 text-sm">
           <div>・2人: ¥{{ formatPrice(calculateTotalGuestPrice(2)) }}</div>
           <div>・3人: ¥{{ formatPrice(calculateTotalGuestPrice(3)) }}</div>
@@ -245,7 +245,7 @@
       </div>
 
       <div class="bg-blue-50 p-4 rounded-lg">
-        <p class="text-sm font-semibold mb-2">💡 料金例（1泊¥{{ formatPrice(settings.basePrice) }}の場合）:</p>
+        <p class="text-sm font-semibold mb-2">💡 料金例（1泊¥{{ formatPrice(settings.basePrice ?? 0) }}の場合）:</p>
         <div class="grid grid-cols-2 gap-2 text-sm">
           <div>・1泊: ¥{{ formatPrice(calculateMultiNightPrice(1)) }}</div>
           <div>・2泊: ¥{{ formatPrice(calculateMultiNightPrice(2)) }}</div>
@@ -338,7 +338,7 @@
                 min="0"
                 class="w-24 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
               />
-              <span class="text-sm text-gray-600">× （基本料金の{{ Math.round(period.multiplier * 100) }}%）</span>
+              <span class="text-sm text-gray-600">× （基本料金の{{ Math.round((period.multiplier ?? 1) * 100) }}%）</span>
             </div>
           </div>
         </div>
@@ -372,10 +372,10 @@
       </div>
 
       <div class="bg-blue-50 p-4 rounded-lg">
-        <p class="text-sm font-semibold mb-2">💡 料金例（基本¥{{ formatPrice(settings.basePrice) }}の場合）:</p>
+        <p class="text-sm font-semibold mb-2">💡 料金例（基本¥{{ formatPrice(settings.basePrice ?? 0) }}の場合）:</p>
         <div class="text-sm space-y-1">
-          <div>・平日: ¥{{ formatPrice(settings.basePrice) }}</div>
-          <div>・休日前日: ¥{{ formatPrice(Math.floor(settings.basePrice * weekendSurchargePercent / 100)) }}（{{ weekendSurchargePercent }}%）</div>
+          <div>・平日: ¥{{ formatPrice(settings.basePrice ?? 0) }}</div>
+          <div>・休日前日: ¥{{ formatPrice(Math.floor((settings.basePrice ?? 0) * weekendSurchargePercent / 100)) }}（{{ weekendSurchargePercent }}%）</div>
         </div>
       </div>
 
@@ -479,7 +479,7 @@
           <div class="flex items-start justify-between mb-3">
             <h4 class="font-semibold">ルール{{ index + 1 }}</h4>
             <button
-              v-if="settings.childPricingRules.length > 1"
+              v-if="settings.childPricingRules && settings.childPricingRules.length > 1"
               @click="removeChildRule(index)"
               class="text-red-600 hover:text-red-800 text-sm"
             >
@@ -521,7 +521,7 @@
                 max="1"
                 class="w-24 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
               />
-              <span class="text-sm text-gray-600">（{{ Math.round(rule.priceRate * 100) }}%）</span>
+              <span class="text-sm text-gray-600">（{{ Math.round((rule.priceRate ?? 0) * 100) }}%）</span>
             </div>
           </div>
         </div>
@@ -548,7 +548,7 @@
       <div class="bg-gray-50 p-6 rounded-lg space-y-4">
         <div>
           <h4 class="font-semibold mb-2">基本料金</h4>
-          <p>¥{{ formatPrice(settings.basePrice) }} / 泊（大人1〜2人）</p>
+          <p>¥{{ formatPrice(settings.basePrice ?? 0) }} / 泊（大人1〜2人）</p>
         </div>
 
         <div>
@@ -587,7 +587,7 @@
 
         <div>
           <h4 class="font-semibold mb-2">子供料金ルール</h4>
-          <p class="text-sm">{{ settings.childPricingRules.length }}件のルールが設定されています</p>
+          <p class="text-sm">{{ settings.childPricingRules?.length ?? 0 }}件のルールが設定されています</p>
         </div>
       </div>
 
@@ -703,13 +703,18 @@ const night6PlusRatePercent = computed({
 
 // 休日前日料金率（パーセント表示）
 const weekendSurchargePercent = computed({
-  get: () => Math.round((settings.dayTypePricing.weekendMultiplier || 1.3) * 100),
-  set: (val) => { settings.dayTypePricing.weekendMultiplier = val / 100 }
+  get: () => Math.round((settings.dayTypePricing?.weekendMultiplier ?? 1.3) * 100),
+  set: (val) => {
+    if (settings.dayTypePricing) {
+      settings.dayTypePricing.weekendMultiplier = val / 100
+    }
+  }
 })
 
 // 料金計算ヘルパー
 function calculateAdditionalGuestPrice(guestNumber: number): number {
-  const thirdGuestPrice = Math.floor(settings.basePrice * settings.guestCountPricing.thirdGuestRate)
+  const basePrice = settings.basePrice ?? 0
+  const thirdGuestPrice = Math.floor(basePrice * settings.guestCountPricing.thirdGuestRate)
 
   switch (guestNumber) {
     case 4:
@@ -724,10 +729,11 @@ function calculateAdditionalGuestPrice(guestNumber: number): number {
 }
 
 function calculateTotalGuestPrice(totalGuests: number): number {
-  let total = settings.basePrice
+  const basePrice = settings.basePrice ?? 0
+  let total = basePrice
 
   if (totalGuests >= 3) {
-    total += Math.floor(settings.basePrice * settings.guestCountPricing.thirdGuestRate)
+    total += Math.floor(basePrice * settings.guestCountPricing.thirdGuestRate)
   }
   if (totalGuests >= 4) {
     total += calculateAdditionalGuestPrice(4)
@@ -743,6 +749,7 @@ function calculateTotalGuestPrice(totalGuests: number): number {
 }
 
 function calculateMultiNightPrice(nights: number): number {
+  const basePrice = settings.basePrice ?? 0
   let total = 0
 
   for (let i = 1; i <= nights; i++) {
@@ -755,7 +762,7 @@ function calculateMultiNightPrice(nights: number): number {
       case 5: rate = settings.multiNightPricing.rates.night5; break
       default: rate = settings.multiNightPricing.rates.night6Plus
     }
-    total += Math.floor(settings.basePrice * rate)
+    total += Math.floor(basePrice * rate)
   }
 
   return total
@@ -782,6 +789,9 @@ function removeSeasonPeriod(index: number) {
 
 // 子供料金ルール管理
 function addChildRule() {
+  if (!settings.childPricingRules) {
+    settings.childPricingRules = []
+  }
   settings.childPricingRules.push({
     minAge: 0,
     maxAge: 0,
@@ -790,7 +800,7 @@ function addChildRule() {
 }
 
 function removeChildRule(index: number) {
-  if (settings.childPricingRules.length > 1) {
+  if (settings.childPricingRules && settings.childPricingRules.length > 1) {
     settings.childPricingRules.splice(index, 1)
   }
 }

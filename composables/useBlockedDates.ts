@@ -8,9 +8,15 @@ export interface BlockedDate {
   createdAt?: Date
 }
 
+export interface BookedDateRange {
+  startDate: string
+  endDate: string
+}
+
 export function useBlockedDates() {
   const { $db } = useNuxtApp()
   const blockedDates = ref<BlockedDate[]>([])
+  const bookedDates = ref<BookedDateRange[]>([])
   const loading = ref(false)
   const error = ref<string | null>(null)
 
@@ -147,15 +153,63 @@ export function useBlockedDates() {
     return blocked ? blocked.reason : null
   }
 
+  /**
+   * 予約済み日付を読み込み（pending_review, confirmedステータス）
+   */
+  const loadBookedDates = async () => {
+    try {
+      const response = await $fetch<{ success: boolean; bookedDates: BookedDateRange[] }>('/api/public/booked-dates')
+      if (response.success) {
+        bookedDates.value = response.bookedDates
+        console.log('✅ Loaded booked dates:', bookedDates.value.length)
+      }
+    } catch (e: any) {
+      console.error('❌ Error loading booked dates:', e)
+    }
+  }
+
+  /**
+   * 特定の日付が予約済みかチェック（pending_review, confirmedステータス）
+   */
+  const isDateBooked = (date: Date): boolean => {
+    const dateString = formatDateString(date)
+    return bookedDates.value.some(booked => {
+      // チェックイン日は予約可能（前の予約のチェックアウト日と重なるため）
+      // endDateは含まない（チェックアウト日は次の予約のチェックイン可能）
+      return dateString >= booked.startDate && dateString < booked.endDate
+    })
+  }
+
+  /**
+   * 特定の日付が利用不可かチェック（ブロックまたは予約済み）
+   */
+  const isDateUnavailable = (date: Date): boolean => {
+    return isDateBlocked(date) || isDateBooked(date)
+  }
+
+  /**
+   * 日付文字列をフォーマット
+   */
+  const formatDateString = (date: Date): string => {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+
   return {
     blockedDates,
+    bookedDates,
     loading,
     error,
     addBlockedDate,
     deleteBlockedDate,
     loadBlockedDates,
+    loadBookedDates,
     isDateRangeBlocked,
     isDateBlocked,
+    isDateBooked,
+    isDateUnavailable,
     getBlockedReason
   }
 }
