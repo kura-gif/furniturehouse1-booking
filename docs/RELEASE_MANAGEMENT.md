@@ -601,6 +601,67 @@ P1（推奨）:
 
 ---
 
+### Phase 2.5 追加対応（コンサルティングレポートより）
+
+総合コンサルティングレポート（`docs/CONSULTING_REPORT.md`）で特定されたCritical課題への対応。
+
+| # | タスク | リスク | 状態 | 完了日 | 備考 |
+|---|--------|--------|------|--------|------|
+| 2.5-10 | **expire-authorizations cron追加** | 与信期限切れで決済失敗 | ✅ | 1/18 | vercel.jsonに追加（毎日3時実行） |
+| 2.5-11 | **予約Race Condition対策** | 同時予約でダブルブッキング | ✅ | 1/18 | 楽観的ロック実装 |
+| 2.5-12 | **メール送信リトライ機能** | 一時障害でメール不達 | ✅ | 1/18 | 指数バックオフ（最大3回） |
+
+#### 2.5-10 expire-authorizations cron追加
+
+**問題**: 管理者が5日以上審査を放置すると、Stripeの与信（7日間有効）が期限切れになり決済失敗
+
+**対応**:
+
+- `vercel.json`にcron追加（毎日3:00 UTC実行）
+- 72時間経過で管理者に警告メール
+- 168時間（7日）経過で自動キャンセル
+
+```json
+{
+  "path": "/api/cron/expire-authorizations",
+  "schedule": "0 3 * * *"
+}
+```
+
+#### 2.5-11 予約Race Condition対策
+
+**問題**: 2人のユーザーが同時に同じ日程を予約すると、両方が成功してダブルブッキング発生
+
+**対応**:
+
+- `bookingLocks`コレクションによる楽観的ロック
+- ロック取得→予約作成→ロック解放の流れ
+- TTL 30秒で自動解放（障害時の保険）
+- 最大3回リトライ
+
+**対象ファイル**: `server/api/bookings/create-secure.post.ts`
+
+#### 2.5-12 メール送信リトライ機能
+
+**問題**: SMTPサーバーの一時障害でメールが送信されない
+
+**対応**:
+
+- `server/utils/email-retry.ts`を新規作成
+- 指数バックオフ + ジッター付きリトライ
+- リトライ対象: 408, 429, 500, 502, 503, 504
+- 予約作成・承認時のメール送信に適用
+
+```typescript
+await sendEmailWithRetry('/api/emails/send-booking-approved', {
+  method: 'POST',
+  headers: { 'x-internal-secret': config.internalApiSecret },
+  body: { ... }
+})
+```
+
+---
+
 ## Phase 3: 本番準備・公開（2/3〜2/6）
 
 ### 3.1 Stripe本番設定
