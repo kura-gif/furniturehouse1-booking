@@ -12,6 +12,7 @@
 import Stripe from 'stripe'
 import { FieldValue } from 'firebase-admin/firestore'
 import { requireAdmin } from '~/server/utils/auth'
+import { sendEmailWithRetry } from '~/server/utils/email-retry'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -99,7 +100,7 @@ export default defineEventHandler(async (event) => {
       createdAt: FieldValue.serverTimestamp(),
     })
 
-    // 6. 承認通知メールを送信
+    // 6. 承認通知メールを送信（リトライ付き）
     try {
       const baseUrl = config.public.siteUrl || 'http://localhost:3000'
 
@@ -108,7 +109,7 @@ export default defineEventHandler(async (event) => {
       const checkOutDate = booking.checkOutDate?.toDate?.() || new Date(booking.checkOutDate)
       const formatDate = (date: Date) => `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`
 
-      await $fetch(`${baseUrl}/api/emails/send-booking-approved`, {
+      await sendEmailWithRetry(`${baseUrl}/api/emails/send-booking-approved`, {
         method: 'POST',
         headers: {
           'x-internal-secret': config.internalApiSecret,
@@ -125,15 +126,15 @@ export default defineEventHandler(async (event) => {
         },
       })
       console.log('✅ Approval email sent to:', booking.guestEmail)
-    } catch (emailError: any) {
-      console.error('⚠️ Failed to send approval email:', emailError.message)
+    } catch (emailError) {
+      console.error('⚠️ Failed to send approval email (after retries):', emailError)
       // メール送信失敗は承認処理自体には影響させない
     }
 
-    // 7. 管理者にも通知
+    // 7. 管理者にも通知（リトライ付き）
     try {
       const baseUrl = config.public.siteUrl || 'http://localhost:3000'
-      await $fetch(`${baseUrl}/api/emails/send-admin-notification`, {
+      await sendEmailWithRetry(`${baseUrl}/api/emails/send-admin-notification`, {
         method: 'POST',
         headers: {
           'x-internal-secret': config.internalApiSecret,
@@ -147,8 +148,8 @@ export default defineEventHandler(async (event) => {
           totalAmount: booking.totalAmount,
         },
       })
-    } catch (emailError: any) {
-      console.error('⚠️ Failed to send admin notification:', emailError.message)
+    } catch (emailError) {
+      console.error('⚠️ Failed to send admin notification (after retries):', emailError)
     }
 
     return {
