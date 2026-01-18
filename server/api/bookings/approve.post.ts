@@ -158,20 +158,15 @@ export default defineEventHandler(async (event) => {
       paymentStatus: 'paid',
       message: '予約を承認し、決済を確定しました',
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('❌ Approval error:', error)
 
-    // Stripeエラーの詳細処理
-    if (error.type === 'StripeInvalidRequestError') {
-      throw createError({
-        statusCode: 400,
-        message: `決済エラー: ${error.message}`,
-      })
-    }
-
+    const statusCode = error instanceof Error && 'statusCode' in error
+      ? (error as { statusCode: number }).statusCode
+      : 500
     throw createError({
-      statusCode: error.statusCode || 500,
-      message: error.message || '予約の承認に失敗しました',
+      statusCode,
+      message: '予約の承認に失敗しました。しばらく待ってから再度お試しください。',
     })
   }
 })

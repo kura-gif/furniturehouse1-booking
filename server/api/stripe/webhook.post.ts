@@ -116,25 +116,29 @@ export default defineEventHandler(async (event) => {
     })
 
     return { received: true }
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('Webhook processing error:', error)
 
     // エラーログを記録
     try {
       const db = getFirestoreAdmin()
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
       await db.collection('webhookLogs').add({
         eventType: 'error',
-        error: error.message,
+        error: errorMessage,
         processed: false,
         timestamp: FieldValue.serverTimestamp(),
       })
-    } catch (logError) {
-      logger.error('Failed to log webhook error:', logError)
+    } catch (_logError) {
+      logger.error('Failed to log webhook error')
     }
 
+    const statusCode = error instanceof Error && 'statusCode' in error
+      ? (error as { statusCode: number }).statusCode
+      : 500
     throw createError({
-      statusCode: error.statusCode || 500,
-      message: error.message || 'Webhook processing failed',
+      statusCode,
+      message: 'Webhook processing failed',
     })
   }
 })

@@ -29,8 +29,9 @@ W3(17-19)   W4(20-26)        W5(27-2)         W1(3-6)
 
 | フェーズ | 状態 | 開始予定 | 完了予定 | 実際の完了日 |
 |---------|------|----------|----------|--------------|
-| Phase 1: 緊急修正 | ⬜ 未着手 | **1/20(月)** | **1/26(日)** | - |
-| Phase 2: テスト環境構築 | ⬜ 未着手 | **1/27(月)** | **2/2(日)** | - |
+| Phase 1: 緊急修正 | ✅ 完了 | **1/20(月)** | **1/26(日)** | 1/17 |
+| Phase 2: テスト環境構築 | ✅ 完了 | **1/27(月)** | **2/2(日)** | 1/18 |
+| **Phase 2.5: 公開前リスク対策** | ✅ 完了 | **1/18(土)** | **1/19(日)** | 1/18 |
 | Phase 3: 本番準備・公開 | ⬜ 未着手 | **2/3(月)** | **2/6(木)** | - |
 
 **状態の凡例**: ⬜ 未着手 / 🔄 進行中 / ✅ 完了 / ⚠️ 問題あり
@@ -358,6 +359,243 @@ Vercel → Settings → Environment Variables で以下を設定:
 ```
 
 **Phase 2 完了承認**:
+承認者: ________________  日付: 2026/01/18
+
+---
+
+## Phase 2.5: 公開前リスク対策（1/18〜1/19）
+
+### 概要
+
+公開後は変更が困難、または変更時に大きな影響を及ぼす項目を事前に対策します。
+
+---
+
+### 🔴 P0: 公開前必須（データ構造・セキュリティ）
+
+| # | タスク | リスク | 影響度 | 状態 | 完了日 |
+|---|--------|--------|--------|------|--------|
+| 2.5-1 | **Stripe idempotencyKey追加** | リトライで二重課金 | 💰 金銭的損害 | ✅ | 1/18 |
+| 2.5-2 | **console.log機密情報削除** | PII漏洩・ログ肥大化 | 🔒 セキュリティ | ✅ | 1/18 |
+| 2.5-3 | **エラー詳細マスク** | スタックトレース露出 | 🔒 セキュリティ | ✅ | 1/18 |
+| 2.5-4 | **環境変数バリデーション** | 未設定でサイレント失敗 | 🚨 本番クラッシュ | ✅ | 1/18 |
+| 2.5-5 | **Firestore Rules修正** | sentEmailsが`allow create: if true` | 🔒 セキュリティ | ✅ | 1/18 |
+
+#### 2.5-1 Stripe idempotencyKey追加
+
+**問題**: 決済作成時にidempotencyKeyがない → ネットワーク障害でリトライ時に二重課金
+
+**対象ファイル**:
+- `server/api/stripe/create-payment-intent-secure.post.ts`
+
+**修正内容**:
+```typescript
+// 修正前
+const paymentIntent = await stripe.paymentIntents.create({
+  amount: calculatedAmount,
+  currency: 'jpy',
+  ...
+})
+
+// 修正後
+const paymentIntent = await stripe.paymentIntents.create({
+  amount: calculatedAmount,
+  currency: 'jpy',
+  ...
+}, {
+  idempotencyKey: `payment-${bookingId}-${Date.now()}`
+})
+```
+
+**確認項目**:
+- [ ] 決済作成が正常に動作
+- [ ] 同一リクエストでエラーにならない
+
+---
+
+#### 2.5-2 console.log機密情報削除
+
+**問題**: 155箇所のconsole.log/errorがVercelログに出力 → PII漏洩リスク
+
+**対応方針**:
+1. サーバーサイドのconsole.logをlogger関数に置き換え
+2. 機密情報（email, paymentIntent等）のログ出力を削除
+3. 本番ビルドでconsole削除を確認
+
+**優先削除対象**:
+- `server/api/stripe/` - 決済関連
+- `server/api/bookings/` - 予約データ
+- `server/api/emails/` - メールアドレス
+
+---
+
+#### 2.5-3 エラー詳細マスク
+
+**問題**: エラーレスポンスにスタックトレースや内部詳細が含まれる
+
+**対象箇所**:
+```typescript
+// ❌ 修正前
+throw createError({
+  statusCode: 400,
+  message: `決済エラー: ${error.message}`  // Stripe内部エラー詳細
+})
+
+// ✅ 修正後
+console.error('決済エラー:', error)  // ログにのみ記録
+throw createError({
+  statusCode: 400,
+  message: '決済処理中にエラーが発生しました。しばらく待ってから再度お試しください。'
+})
+```
+
+---
+
+#### 2.5-4 環境変数バリデーション
+
+**問題**: 必須環境変数が未設定でも起動し、実行時にサイレント失敗
+
+**対応**: `server/plugins/` または `nuxt.config.ts` でバリデーション
+
+```typescript
+// 必須環境変数リスト
+const REQUIRED_ENV_VARS = [
+  'STRIPE_SECRET_KEY',
+  'STRIPE_WEBHOOK_SECRET',
+  'FIREBASE_ADMIN_KEY',
+  'INTERNAL_API_SECRET',
+  'EMAIL_PASSWORD',
+  'SITE_URL'
+]
+
+// 起動時チェック
+for (const key of REQUIRED_ENV_VARS) {
+  if (!process.env[key]) {
+    throw new Error(`必須環境変数 ${key} が設定されていません`)
+  }
+}
+```
+
+---
+
+#### 2.5-5 Firestore Rules修正
+
+**問題**: `firestore.rules` line 246 - `sentEmails`が`allow create: if true`
+
+**修正内容**:
+```javascript
+// 修正前
+match /sentEmails/{emailId} {
+  allow create: if true;
+}
+
+// 修正後
+match /sentEmails/{emailId} {
+  allow create: if false;  // サーバーサイド（Admin SDK）からのみ作成
+  allow read: if isAdmin();
+}
+```
+
+---
+
+### 🟠 P1: 公開前推奨（運用性）
+
+| # | タスク | リスク | 状態 | 完了日 | 備考 |
+|---|--------|--------|------|--------|------|
+| 2.5-6 | **型定義の`any`修正** | 価格計算でランタイムエラー | ⚠️ | 1/18 | TODO追加（P2で対応） |
+| 2.5-7 | **npm脆弱性再確認** | 13個のHigh脆弱性 | ✅ | 1/18 | dev依存のみ残存 |
+| 2.5-8 | **Firestoreバックアップ設定** | データ消失時に復旧不可 | ✅ | 1/18 | ドキュメント化完了 |
+| 2.5-9 | **localhostフォールバック削除** | メールリンク壊れる | ✅ | 1/18 | 環境変数バリデーションで保護 |
+
+#### 2.5-6 型定義の`any`修正
+
+**対象**: `types/index.ts` line 631-635
+
+```typescript
+// 修正前
+guestCountPricing?: GuestCountPricing | GuestCountPricing[] | any
+createdAt: Timestamp | null | any
+
+// 修正後
+guestCountPricing?: GuestCountPricing | GuestCountPricing[]
+createdAt: Timestamp | null
+```
+
+---
+
+#### 2.5-8 Firestoreバックアップ設定
+
+**GCPコンソールで設定**:
+1. Cloud Scheduler でCronジョブ作成
+2. 毎日深夜に `gcloud firestore export` 実行
+3. Cloud Storageにバックアップ保存
+
+または
+
+**Firebase Console**:
+1. Firestore → Import/Export
+2. 手動エクスポートを定期実行（最低週1回）
+
+---
+
+### 🟡 P2: 公開後でもOK（コード品質）
+
+| # | タスク | 詳細 | 状態 |
+|---|--------|------|------|
+| 2.5-10 | composable肥大化 | useCleaningTasks.ts 815行 | ⬜ |
+| 2.5-11 | 価格計算ロジック重複 | 4箇所に分散 | ⬜ |
+| 2.5-12 | 型定義ファイル巨大化 | 990行、8ドメイン混在 | ⬜ |
+
+※ これらは公開後のリファクタリングで対応可能
+
+---
+
+### Phase 2.5 アクションプラン
+
+```
+優先順位と所要時間（目安）
+
+Day 1 (1/18): P0対応
+├── 2.5-1 idempotencyKey追加        [30分]
+├── 2.5-2 console.log削除（主要箇所）[2時間]
+├── 2.5-3 エラー詳細マスク          [1時間]
+├── 2.5-4 環境変数バリデーション     [30分]
+└── 2.5-5 Firestore Rules修正       [30分]
+
+Day 2 (1/19): P1対応 + テスト
+├── 2.5-6 型定義any修正             [30分]
+├── 2.5-7 npm audit fix             [30分]
+├── 2.5-8 バックアップ設定          [1時間]
+├── 2.5-9 localhost削除             [30分]
+└── 統合テスト                      [2時間]
+```
+
+---
+
+### Phase 2.5 完了チェックリスト
+
+```
+P0（必須）:
+□ Stripe決済にidempotencyKey追加
+□ console.logから機密情報削除
+□ エラーレスポンスが汎用メッセージのみ
+□ 環境変数バリデーション追加
+□ Firestore Rules更新・デプロイ
+
+P1（推奨）:
+□ 型定義のany削除
+□ npm audit脆弱性0件
+□ Firestoreバックアップ設定
+□ localhostフォールバック削除
+
+テスト:
+□ ステージング環境で決済フロー再テスト
+□ エラーケースで詳細漏れないことを確認
+□ 環境変数未設定時に起動エラーになることを確認
+```
+
+**Phase 2.5 完了承認**:
+>>>>>>> main
 承認者: ________________  日付: ____/____/____
 
 ---
@@ -461,6 +699,14 @@ Vercel → Settings → Environment Variables で以下を設定:
 **本番公開承認**:
 承認者: ________________  日付: ____/____/____
 公開日時: ____年____月____日 ____:____
+
+---
+
+### 3.4 公開後タスク
+
+| # | タスク | 状態 | 備考 |
+|---|--------|------|------|
+| 3-16 | Dify AIチャットボット再導入 | ⬜ | 窓口対応用 |
 
 ---
 

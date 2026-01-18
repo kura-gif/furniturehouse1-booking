@@ -628,6 +628,7 @@ export interface EnhancedPricingSetting {
   type: BookingType
   isActive?: boolean
   seasonPeriods: SeasonPeriod[]
+  // TODO: P2で型を厳格化（現在は既存コードとの互換性のためany許容）
   guestCountPricing?: GuestCountPricing | GuestCountPricing[] | any
   multiNightPricing?: MultiNightPricing | MultiNightPricing[] | any
   weekendMultiplier?: number

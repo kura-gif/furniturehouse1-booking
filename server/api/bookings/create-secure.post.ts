@@ -201,27 +201,29 @@ export default defineEventHandler(async (event) => {
       bookingReference: result.bookingReference,
       amount: result.amount,
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('❌ 予約作成エラー:', error)
 
     // エラーログをFirestoreに記録（オプション）
     try {
       const db = getFirestoreAdmin()
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
       await db.collection('errorLogs').add({
         type: 'booking_creation_failed',
-        error: error.message,
-        stack: error.stack,
+        error: errorMessage,
         timestamp: FieldValue.serverTimestamp(),
-        requestBody: rawBody,
       })
-    } catch (logError) {
-      console.error('エラーログ記録失敗:', logError)
+    } catch (_logError) {
+      console.error('エラーログ記録失敗')
     }
 
     // クライアントへのエラーレスポンス
+    const statusCode = error instanceof Error && 'statusCode' in error
+      ? (error as { statusCode: number }).statusCode
+      : 500
     throw createError({
-      statusCode: error.statusCode || 500,
-      message: error.message || '予約の作成に失敗しました',
+      statusCode,
+      message: '予約の作成に失敗しました',
     })
   }
 })
