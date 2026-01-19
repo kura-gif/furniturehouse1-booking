@@ -601,7 +601,7 @@ const confirmCancelBooking = async () => {
     const response = await $fetch('/api/bookings/guest-cancel', {
       method: 'POST',
       headers: {
-        'csrf-token': csrf.value || ''
+        'csrf-token': csrf || ''
       },
       body: {
         bookingId: cancelTargetBooking.value.id,
