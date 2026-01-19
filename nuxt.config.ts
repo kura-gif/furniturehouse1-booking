@@ -7,7 +7,7 @@ export default defineNuxtConfig({
     '@nuxtjs/tailwindcss',
     'nuxt-csurf',
     '@nuxtjs/i18n',
-    '@sentry/nuxt/module'
+    // '@sentry/nuxt/module' // 一時的に無効化（ビルドエラー対応）
   ],
 
   // Sentry設定（詳細は sentry.client.config.ts と sentry.server.config.ts）
