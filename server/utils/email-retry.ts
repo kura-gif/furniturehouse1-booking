@@ -93,18 +93,19 @@ function isRetryableError(error: unknown, retryableStatusCodes: number[]): boole
  * })
  * ```
  */
-export async function sendEmailWithRetry<T = unknown>(
+export async function sendEmailWithRetry(
   url: string,
   options: FetchOptions,
   retryOptions: EmailRetryOptions = {}
-): Promise<T> {
+): Promise<unknown> {
   const opts: Required<EmailRetryOptions> = { ...DEFAULT_OPTIONS, ...retryOptions }
   let lastError: unknown
 
   for (let attempt = 0; attempt <= opts.maxRetries; attempt++) {
     try {
-      const result = await $fetch<T>(url, {
-        method: options.method as 'POST' | 'GET' | 'PUT' | 'DELETE',
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await ($fetch as any)(url, {
+        method: options.method,
         headers: options.headers,
         body: options.body,
       })
@@ -143,12 +144,12 @@ export async function sendEmailWithRetry<T = unknown>(
  *
  * @returns 成功・失敗の結果配列
  */
-export async function sendEmailsBatch<T = unknown>(
+export async function sendEmailsBatch(
   requests: Array<{ url: string; options: FetchOptions }>,
   retryOptions: EmailRetryOptions = {}
-): Promise<Array<{ success: boolean; result?: T; error?: unknown }>> {
+): Promise<Array<{ success: boolean; result?: unknown; error?: unknown }>> {
   const results = await Promise.allSettled(
-    requests.map((req) => sendEmailWithRetry<T>(req.url, req.options, retryOptions))
+    requests.map((req) => sendEmailWithRetry(req.url, req.options, retryOptions))
   )
 
   return results.map((result) => {

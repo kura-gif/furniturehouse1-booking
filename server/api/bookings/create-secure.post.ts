@@ -83,10 +83,10 @@ async function releaseBookingLock(
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
-  let rawBody: any = null
+  let rawBody: unknown = null
   let lockKey: string | null = null
   const requestId = `req_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`
-  let db: FirebaseFirestore.Firestore | null = null
+  let firestoreDb: FirebaseFirestore.Firestore | null = null
 
   try {
     // 1. リクエストボディを取得
@@ -96,7 +96,14 @@ export default defineEventHandler(async (event) => {
     const validatedData = validateInput(createBookingSchema, rawBody)
 
     // 3. Firebase Admin初期化
-    db = getFirestoreAdmin()
+    const db = getFirestoreAdmin()
+    if (!db) {
+      throw createError({
+        statusCode: 500,
+        message: 'Firebase Admin SDK is not initialized'
+      })
+    }
+    firestoreDb = db
 
     // 4. Race Condition対策: 予約期間のロックを取得
     lockKey = generateLockKey(validatedData.checkInDate, validatedData.checkOutDate)
@@ -291,8 +298,8 @@ export default defineEventHandler(async (event) => {
     }
 
     // 11. ロックを解放
-    if (lockKey && db) {
-      await releaseBookingLock(db, lockKey, requestId)
+    if (lockKey && firestoreDb) {
+      await releaseBookingLock(firestoreDb, lockKey, requestId)
     }
 
     // 12. 成功レスポンス
@@ -306,8 +313,8 @@ export default defineEventHandler(async (event) => {
     }
   } catch (error: unknown) {
     // エラー時もロックを解放
-    if (lockKey && db) {
-      await releaseBookingLock(db, lockKey, requestId)
+    if (lockKey && firestoreDb) {
+      await releaseBookingLock(firestoreDb, lockKey, requestId)
     }
 
     console.error('❌ 予約作成エラー:', error)
