@@ -261,6 +261,40 @@
       </div>
     </div>
 
+    <!-- キャンセル成功モーダル -->
+    <div
+      v-if="showCancelSuccessModal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      @click="showCancelSuccessModal = false"
+    >
+      <div
+        class="bg-white rounded-xl p-8 max-w-md w-full text-center"
+        @click.stop
+      >
+        <!-- 成功アイコン -->
+        <div class="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
+          <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+
+        <h3 class="text-xl font-semibold text-gray-900 mb-2">{{ cancelSuccessMessage }}</h3>
+
+        <div v-if="cancelSuccessRefundAmount > 0" class="bg-green-50 rounded-lg p-4 mb-6">
+          <p class="text-sm text-gray-600 mb-1">返金予定額</p>
+          <p class="text-2xl font-bold text-green-600">¥{{ cancelSuccessRefundAmount.toLocaleString() }}</p>
+          <p class="text-xs text-gray-500 mt-2">返金処理には数日かかる場合があります</p>
+        </div>
+
+        <button
+          @click="showCancelSuccessModal = false"
+          class="w-full px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-custom font-medium"
+        >
+          OK
+        </button>
+      </div>
+    </div>
+
     <!-- レビューモーダル -->
     <div
       v-if="showReviewModal && selectedBooking"
@@ -417,6 +451,11 @@ const refundCalculation = ref<{
   nonRefundableAmount: number
   daysBeforeCheckIn: number
 } | null>(null)
+
+// キャンセル成功モーダル
+const showCancelSuccessModal = ref(false)
+const cancelSuccessMessage = ref('')
+const cancelSuccessRefundAmount = ref(0)
 
 const ratingLabels: Record<number, string> = {
   1: '期待外れでした',
@@ -607,12 +646,10 @@ const confirmCancelBooking = async () => {
 
     if (response.success) {
       const refundInfo = response.refund
-      let message = '予約をキャンセルしました。'
-      if (refundInfo && refundInfo.processed && refundInfo.amount > 0) {
-        message += `\n¥${refundInfo.amount.toLocaleString()}の返金処理を開始しました。`
-      }
-      alert(message)
+      cancelSuccessMessage.value = '予約をキャンセルしました'
+      cancelSuccessRefundAmount.value = refundInfo?.processed && refundInfo?.amount > 0 ? refundInfo.amount : 0
       closeCancelModal()
+      showCancelSuccessModal.value = true
       await loadBookings()
     }
   } catch (error: any) {
