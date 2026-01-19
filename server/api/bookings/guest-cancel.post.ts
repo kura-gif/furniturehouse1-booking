@@ -8,6 +8,7 @@
 
 import Stripe from 'stripe'
 import { FieldValue } from 'firebase-admin/firestore'
+import { getErrorMessage, getErrorStatusCode } from '~/server/utils/error-handling'
 
 // キャンセルポリシールール
 interface CancellationPolicyRule {
@@ -63,7 +64,8 @@ export default defineEventHandler(async (event) => {
     const booking = bookingDoc.data()!
 
     // 2. ユーザー権限チェック（ゲスト本人か確認）
-    if (userId && booking.userId !== userId) {
+    // 予約にuserIdがある場合のみチェック（ゲスト予約はuserIdなしで作成される場合がある）
+    if (booking.userId && userId && booking.userId !== userId) {
       throw createError({
         statusCode: 403,
         message: 'この予約をキャンセルする権限がありません',
@@ -173,6 +175,8 @@ export default defineEventHandler(async (event) => {
                 cancelType: 'guest_self_cancel',
                 daysBeforeCheckIn: String(daysBeforeCheckIn),
               },
+            }, {
+              idempotencyKey: `refund-guest-cancel-${bookingId}-${refundAmount}`,
             })
 
             refundResult = {
@@ -184,15 +188,15 @@ export default defineEventHandler(async (event) => {
             console.log('✅ Stripe refund created:', refundResult)
           }
         }
-      } catch (stripeError: any) {
-        console.error('⚠️ Stripe refund error:', stripeError.message)
+      } catch (stripeError: unknown) {
+        console.error('⚠️ Stripe refund error:', getErrorMessage(stripeError))
         // 返金失敗してもキャンセル自体は続行
       }
     }
 
     // 9. 予約ステータスを更新
     const isFullRefund = refundAmount === totalAmount
-    const updateData: any = {
+    const updateData: Record<string, unknown> = {
       status: 'cancelled',
       cancelledAt: FieldValue.serverTimestamp(),
       cancelledBy: 'guest',
@@ -254,8 +258,8 @@ export default defineEventHandler(async (event) => {
         },
       })
       console.log('✅ Guest cancellation email sent')
-    } catch (emailError: any) {
-      console.error('⚠️ Guest email send error:', emailError.message)
+    } catch (emailError: unknown) {
+      console.error('⚠️ Guest email send error:', getErrorMessage(emailError))
     }
 
     // 12. 管理者にキャンセル通知メールを送信
@@ -282,8 +286,8 @@ export default defineEventHandler(async (event) => {
         },
       })
       console.log('✅ Admin cancellation notification sent')
-    } catch (emailError: any) {
-      console.error('⚠️ Admin email send error:', emailError.message)
+    } catch (emailError: unknown) {
+      console.error('⚠️ Admin email send error:', getErrorMessage(emailError))
     }
 
     return {
@@ -304,12 +308,12 @@ export default defineEventHandler(async (event) => {
         appliedRule,
       },
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('❌ Guest cancel error:', error)
 
     throw createError({
-      statusCode: error.statusCode || 500,
-      message: error.message || 'キャンセル処理に失敗しました',
+      statusCode: getErrorStatusCode(error),
+      message: getErrorMessage(error) || 'キャンセル処理に失敗しました',
     })
   }
 })
