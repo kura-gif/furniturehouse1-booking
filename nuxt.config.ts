@@ -46,14 +46,14 @@ export default defineNuxtConfig({
     },
     methodsToProtect: ['POST', 'PUT', 'PATCH', 'DELETE'],
     excludedUrls: [
-      '/api/stripe/webhook',
-      '/api/bookings/guest-cancel',
-      '/api/bookings/create-booking',
-      ['/api/emails/**', { type: 'startsWith' }],
-      ['/api/admin/**', { type: 'startsWith' }],
-      ['/api/public/**', { type: 'startsWith' }],
-      ['/api/cron/**', { type: 'startsWith' }],
-      ['/api/test/**', { type: 'startsWith' }]
+      '/api/stripe/**',
+      '/api/bookings/**',
+      '/api/emails/**',
+      '/api/admin/**',
+      '/api/public/**',
+      '/api/cron/**',
+      '/api/test/**',
+      '/api/conversations/**'
     ]
   },
 
