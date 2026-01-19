@@ -10,14 +10,14 @@ export default defineNuxtConfig({
     // '@sentry/nuxt/module' // 一時的に無効化（ビルドエラー対応）
   ],
 
-  // Sentry設定（詳細は sentry.client.config.ts と sentry.server.config.ts）
-  sentry: {
-    sourceMapsUploadOptions: {
-      org: process.env.SENTRY_ORG || '',
-      project: process.env.SENTRY_PROJECT || '',
-      authToken: process.env.SENTRY_AUTH_TOKEN || '',
-    },
-  },
+  // Sentry設定（一時的に無効化）
+  // sentry: {
+  //   sourceMapsUploadOptions: {
+  //     org: process.env.SENTRY_ORG || '',
+  //     project: process.env.SENTRY_PROJECT || '',
+  //     authToken: process.env.SENTRY_AUTH_TOKEN || '',
+  //   },
+  // },
 
   // 多言語対応設定
   i18n: {
