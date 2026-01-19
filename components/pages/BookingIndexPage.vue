@@ -878,6 +878,7 @@ onMounted(() => {
   loadPhotos()
   loadReviews()
   loadBlockedDates()
+  loadBookedDates() // 予約済み日付も読み込み
   loadFacilitySettings()
 })
 
@@ -957,8 +958,8 @@ const infants = ref(0)
 const showGuestPicker = ref(false)
 const showCalendar = ref(false)
 
-// ブロック期間管理
-const { blockedDates, loadBlockedDates, isDateBlocked, isDateRangeBlocked } = useBlockedDates()
+// ブロック期間・予約済み管理
+const { blockedDates, bookedDates, loadBlockedDates, loadBookedDates, isDateUnavailable, isDateRangeUnavailable } = useBlockedDates()
 
 // カレンダー表示用の月
 const currentMonth = ref(new Date())
@@ -1047,10 +1048,10 @@ const nextMonthDates = computed(() => {
 const selectDate = (dateObj: any) => {
   if (dateObj.disabled || dateObj.isEmpty) return
 
-  // ブロックされた日付かチェック
+  // ブロックまたは予約済みの日付かチェック
   const selectedDate = new Date(dateObj.date)
-  if (isDateBlocked(selectedDate)) {
-    alert('この日付は予約できません（ブロック期間）')
+  if (isDateUnavailable(selectedDate)) {
+    alert('この日付は予約できません')
     return
   }
 
@@ -1066,7 +1067,7 @@ const selectDate = (dateObj: any) => {
       // チェックイン〜チェックアウトの期間がブロックされていないかチェック
       const checkIn = new Date(checkInDate.value)
       const checkOut = new Date(dateObj.date)
-      if (isDateRangeBlocked(checkIn, checkOut)) {
+      if (isDateRangeUnavailable(checkIn, checkOut)) {
         alert('選択された期間には予約できない日が含まれています')
         checkOutDate.value = ''
         return
@@ -1079,7 +1080,7 @@ const selectDate = (dateObj: any) => {
       // チェックイン〜チェックアウトの期間がブロックされていないかチェック
       const checkIn = new Date(dateObj.date)
       const checkOut = new Date(checkOutDate.value)
-      if (isDateRangeBlocked(checkIn, checkOut)) {
+      if (isDateRangeUnavailable(checkIn, checkOut)) {
         alert('選択された期間には予約できない日が含まれています')
         checkInDate.value = ''
         checkOutDate.value = ''
@@ -1157,7 +1158,7 @@ const handleReservation = () => {
   // ブロック期間の最終チェック
   const checkIn = new Date(checkInDate.value)
   const checkOut = new Date(checkOutDate.value)
-  if (isDateRangeBlocked(checkIn, checkOut)) {
+  if (isDateRangeUnavailable(checkIn, checkOut)) {
     alert('選択された期間には予約できない日が含まれています。別の日程をお選びください。')
     return
   }

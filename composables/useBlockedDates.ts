@@ -42,10 +42,10 @@ export function useBlockedDates() {
       console.log('✅ Blocked date added:', docRef.id)
       await loadBlockedDates()
       return docRef.id
-    } catch (e: any) {
-      error.value = e.message
-      console.error('❌ Error adding blocked date:', e)
-      throw e
+    } catch (err: unknown) {
+      error.value = err instanceof Error ? err.message : 'Unknown error'
+      console.error('❌ Error adding blocked date:', err)
+      throw err
     } finally {
       loading.value = false
     }
@@ -66,10 +66,10 @@ export function useBlockedDates() {
       await deleteDoc(doc($db, 'blockedDates', id))
       console.log('✅ Blocked date deleted:', id)
       await loadBlockedDates()
-    } catch (e: any) {
-      error.value = e.message
-      console.error('❌ Error deleting blocked date:', e)
-      throw e
+    } catch (err: unknown) {
+      error.value = err instanceof Error ? err.message : 'Unknown error'
+      console.error('❌ Error deleting blocked date:', err)
+      throw err
     } finally {
       loading.value = false
     }
@@ -106,9 +106,9 @@ export function useBlockedDates() {
       })
 
       console.log('✅ Loaded blocked dates:', blockedDates.value.length)
-    } catch (e: any) {
-      error.value = e.message
-      console.error('❌ Error loading blocked dates:', e)
+    } catch (err: unknown) {
+      error.value = err instanceof Error ? err.message : 'Unknown error'
+      console.error('❌ Error loading blocked dates:', err)
     } finally {
       loading.value = false
     }
@@ -126,6 +126,31 @@ export function useBlockedDates() {
         (checkIn <= blocked.startDate && checkOut >= blocked.endDate)
       )
     })
+  }
+
+  /**
+   * 指定された期間が予約済みかチェック
+   */
+  const isDateRangeBooked = (checkIn: Date, checkOut: Date): boolean => {
+    const checkInStr = formatDateString(checkIn)
+    const checkOutStr = formatDateString(checkOut)
+
+    return bookedDates.value.some(booked => {
+      // 予約期間と重複しているかチェック
+      // チェックアウト日は次の予約のチェックイン日として利用可能なので、< を使用
+      return (
+        (checkInStr >= booked.startDate && checkInStr < booked.endDate) ||
+        (checkOutStr > booked.startDate && checkOutStr <= booked.endDate) ||
+        (checkInStr <= booked.startDate && checkOutStr >= booked.endDate)
+      )
+    })
+  }
+
+  /**
+   * 指定された期間が利用不可かチェック（ブロックまたは予約済み）
+   */
+  const isDateRangeUnavailable = (checkIn: Date, checkOut: Date): boolean => {
+    return isDateRangeBlocked(checkIn, checkOut) || isDateRangeBooked(checkIn, checkOut)
   }
 
   /**
@@ -163,8 +188,8 @@ export function useBlockedDates() {
         bookedDates.value = response.bookedDates
         console.log('✅ Loaded booked dates:', bookedDates.value.length)
       }
-    } catch (e: any) {
-      console.error('❌ Error loading booked dates:', e)
+    } catch (error: unknown) {
+      console.error('❌ Error loading booked dates:', error)
     }
   }
 
@@ -207,6 +232,7 @@ export function useBlockedDates() {
     loadBlockedDates,
     loadBookedDates,
     isDateRangeBlocked,
+    isDateRangeUnavailable,
     isDateBlocked,
     isDateBooked,
     isDateUnavailable,
