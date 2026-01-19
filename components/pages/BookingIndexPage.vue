@@ -376,7 +376,8 @@
                             date.disabled ? 'text-gray-300 cursor-not-allowed' : 'hover:border-2 hover:border-gray-900',
                             date.isSelected ? 'bg-gray-900 text-white' : '',
                             date.isInRange ? 'bg-gray-100' : '',
-                            date.isEmpty ? 'invisible' : ''
+                            date.isEmpty ? 'invisible' : '',
+                            date.isUnavailable ? 'bg-gray-200 text-gray-400 line-through' : ''
                           ]"
                           type="button"
                         >
@@ -403,7 +404,8 @@
                             date.disabled ? 'text-gray-300 cursor-not-allowed' : 'hover:border-2 hover:border-gray-900',
                             date.isSelected ? 'bg-gray-900 text-white' : '',
                             date.isInRange ? 'bg-gray-100' : '',
-                            date.isEmpty ? 'invisible' : ''
+                            date.isEmpty ? 'invisible' : '',
+                            date.isUnavailable ? 'bg-gray-200 text-gray-400 line-through' : ''
                           ]"
                           type="button"
                         >
@@ -999,7 +1001,7 @@ const generateMonthDates = (year: number, month: number) => {
 
   // 空白セルを追加
   for (let i = 0; i < startDayOfWeek; i++) {
-    dates.push({ day: '', disabled: true, isEmpty: true, key: `empty-${i}` })
+    dates.push({ day: '', disabled: true, isEmpty: true, isUnavailable: false, key: `empty-${i}` })
   }
 
   // 日付セルを追加
@@ -1008,6 +1010,7 @@ const generateMonthDates = (year: number, month: number) => {
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
 
     const isPast = date < today
+    const isBooked = isDateUnavailable(date)
     const isSelected = dateStr === checkInDate.value || dateStr === checkOutDate.value
 
     // 範囲内判定
@@ -1021,10 +1024,11 @@ const generateMonthDates = (year: number, month: number) => {
     dates.push({
       day,
       date: dateStr,
-      disabled: isPast,
+      disabled: isPast || isBooked,
       isSelected,
       isInRange,
       isEmpty: false,
+      isUnavailable: isBooked,
       key: dateStr
     })
   }
