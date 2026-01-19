@@ -137,7 +137,7 @@ export interface AppRuntimeConfig {
 }
 
 /**
- * エラーをSentryに送信
+ * エラーをSentryに送信（一時的に無効化）
  * 本番環境でのみ送信される
  *
  * @param error - キャプチャするエラー
@@ -147,24 +147,12 @@ export function captureException(
   error: unknown,
   context?: Record<string, unknown>
 ): void {
-  // 動的インポートでSentryを読み込み（サーバーサイドでも動作）
-  import('@sentry/nuxt').then((Sentry) => {
-    if (context) {
-      Sentry.withScope((scope) => {
-        scope.setExtras(context)
-        Sentry.captureException(error)
-      })
-    } else {
-      Sentry.captureException(error)
-    }
-  }).catch(() => {
-    // Sentryが利用できない場合は無視
-    console.error('[Sentry unavailable] Error:', error)
-  })
+  // Sentry一時的に無効化
+  console.error('[Error captured]', error, context)
 }
 
 /**
- * カスタムメッセージをSentryに送信
+ * カスタムメッセージをSentryに送信（一時的に無効化）
  *
  * @param message - 送信するメッセージ
  * @param level - ログレベル
@@ -173,9 +161,6 @@ export function captureMessage(
   message: string,
   level: 'info' | 'warning' | 'error' = 'info'
 ): void {
-  import('@sentry/nuxt').then((Sentry) => {
-    Sentry.captureMessage(message, level)
-  }).catch(() => {
-    console.log(`[Sentry unavailable] ${level}: ${message}`)
-  })
+  // Sentry一時的に無効化
+  console.log(`[${level}] ${message}`)
 }
