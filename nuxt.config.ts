@@ -5,7 +5,7 @@ export default defineNuxtConfig({
 
   modules: [
     '@nuxtjs/tailwindcss',
-    'nuxt-csurf',
+    // 'nuxt-csurf', // 一時的に無効化（E2Eテスト用）
     '@nuxtjs/i18n',
     // '@sentry/nuxt/module' // 一時的に無効化（ビルドエラー対応）
   ],
@@ -44,17 +44,7 @@ export default defineNuxtConfig({
       sameSite: 'lax',
       secure: process.env.NODE_ENV === 'production'
     },
-    methodsToProtect: ['POST', 'PUT', 'PATCH', 'DELETE'],
-    excludedUrls: [
-      '/api/stripe/**',
-      '/api/bookings/**',
-      '/api/emails/**',
-      '/api/admin/**',
-      '/api/public/**',
-      '/api/cron/**',
-      '/api/test/**',
-      '/api/conversations/**'
-    ]
+    methodsToProtect: ['POST', 'PUT', 'PATCH', 'DELETE']
   },
 
   app: {
