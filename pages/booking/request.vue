@@ -1080,25 +1080,37 @@ const proceedToPayment = async () => {
     })
 
     const paymentIntentId = clientSecret.value.split('_secret_')[0]
-    const bookingData = {
-      type: 'stay' as const,
-      checkInDate: new Date(checkInDate.value),
-      checkOutDate: new Date(checkOutDate.value),
-      guestCount: adults.value + children.value,
-      guestName: guestName.value,
-      guestEmail: guestEmail.value,
-      guestPhone: guestPhone.value,
-      totalAmount: finalTotalAmount.value,
-      baseAmount: subtotal.value,
-      discountAmount: couponDiscountAmount.value,
-      couponCode: appliedCoupon.value?.code ?? undefined,
-      notes: `決済ID: ${paymentIntentId}`,
-      selectedOptions: selectedOptions.value,
-      optionsTotalPrice: optionsTotalPrice.value,
-      stripePaymentIntentId: paymentIntentId
+
+    // サーバーサイドAPIで予約を作成（Firebase Admin SDK使用）
+    const bookingResult = await $fetch<{ success: boolean; bookingId?: string; message?: string }>('/api/bookings/create-booking', {
+      method: 'POST',
+      headers: {
+        'csrf-token': csrf || ''
+      },
+      body: {
+        checkInDate: checkInDate.value,
+        checkOutDate: checkOutDate.value,
+        guestCount: adults.value + children.value,
+        guestName: guestName.value,
+        guestEmail: guestEmail.value,
+        guestPhone: guestPhone.value,
+        totalAmount: finalTotalAmount.value,
+        baseAmount: subtotal.value,
+        cleaningFee: cleaningFee.value,
+        couponDiscount: couponDiscountAmount.value,
+        couponCode: appliedCoupon.value?.code || '',
+        notes: '',
+        selectedOptions: selectedOptions.value,
+        optionsTotalPrice: optionsTotalPrice.value,
+        stripePaymentIntentId: paymentIntentId
+      }
+    })
+
+    if (!bookingResult.success) {
+      throw new Error(bookingResult.message || '予約の作成に失敗しました')
     }
 
-    const bookingId = await createBooking(bookingData)
+    const bookingId = bookingResult.bookingId
     console.log('✅ 予約作成成功:', bookingId)
 
     // クーポン使用回数を更新
