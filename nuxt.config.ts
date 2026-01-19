@@ -35,17 +35,17 @@ export default defineNuxtConfig({
     }
   },
 
-  // CSRF保護設定
-  csurf: {
-    https: process.env.NODE_ENV === 'production',
-    cookie: {
-      path: '/',
-      httpOnly: true,
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production'
-    },
-    methodsToProtect: ['POST', 'PUT', 'PATCH', 'DELETE']
-  },
+  // CSRF保護設定（一時的に無効化）
+  // csurf: {
+  //   https: process.env.NODE_ENV === 'production',
+  //   cookie: {
+  //     path: '/',
+  //     httpOnly: true,
+  //     sameSite: 'lax',
+  //     secure: process.env.NODE_ENV === 'production'
+  //   },
+  //   methodsToProtect: ['POST', 'PUT', 'PATCH', 'DELETE']
+  // },
 
   app: {
     head: {
@@ -78,26 +78,7 @@ export default defineNuxtConfig({
       },
       // 静的アセットのキャッシュ（1年）
       '/_nuxt/**': { headers: { 'Cache-Control': 'public, max-age=31536000, immutable' } },
-      '/images/**': { headers: { 'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800' } },
-      // CSRF除外ルート
-      '/api/stripe/webhook': { csurf: false },
-      '/api/stripe/create-payment-intent': { csurf: false },
-      '/api/stripe/create-payment-intent-secure': { csurf: false },
-      '/api/stripe/update-payment-intent': { csurf: false },
-      '/api/stripe/create-refund': { csurf: false },
-      '/api/bookings/create': { csurf: false },
-      '/api/bookings/calculate-refund': { csurf: false },
-      '/api/bookings/guest-cancel': { csurf: false },
-      '/api/bookings/approve': { csurf: false },
-      '/api/bookings/reject': { csurf: false },
-      '/api/emails/**': { csurf: false },
-      '/api/emails/send-booking-confirmation': { csurf: false },
-      '/api/admin/**': { csurf: false },
-      '/api/test/**': { csurf: false },
-      '/api/public/**': { csurf: false },
-      '/api/chladni/**': { csurf: false },
-      '/api/conversations/**': { csurf: false },
-      '/api/cron/**': { csurf: false }
+      '/images/**': { headers: { 'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800' } }
     }
   },
 

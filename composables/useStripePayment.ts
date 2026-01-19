@@ -16,13 +16,8 @@ export const useStripePayment = () => {
     couponCode?: string
   ) => {
     try {
-      const { csrf } = useCsrf()
-
       const data = await $fetch('/api/stripe/create-payment-intent-secure', {
         method: 'POST',
-        headers: {
-          'csrf-token': csrf || ''
-        },
         body: {
           checkInDate,
           checkOutDate,
@@ -32,9 +27,17 @@ export const useStripePayment = () => {
       })
 
       return data
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Payment Intent作成エラー:', error)
-      throw new Error(error.message || '決済の準備に失敗しました')
+      // APIからのエラーメッセージは安全（サーバー側でサニタイズ済み）
+      // FetchErrorの場合はdata.messageを取得
+      if (error && typeof error === 'object' && 'data' in error) {
+        const fetchError = error as { data?: { message?: string } }
+        if (fetchError.data?.message) {
+          throw new Error(fetchError.data.message)
+        }
+      }
+      throw new Error('決済の準備に失敗しました')
     }
   }
 
@@ -88,7 +91,7 @@ export const useStripePayment = () => {
   /**
    * 支払いを確定（Card Element用）
    */
-  const confirmCardPayment = async (clientSecret: string, cardElement: any) => {
+  const confirmCardPayment = async (clientSecret: string, cardElement: StripeCardElement) => {
     if (!$stripe) {
       throw new Error('Stripeが初期化されていません')
     }

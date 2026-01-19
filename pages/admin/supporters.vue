@@ -288,7 +288,6 @@ definePageMeta({
 
 const { $db } = useNuxtApp()
 const { loading: authLoading, user } = useAuth()
-const { csrf } = useCsrf()
 
 const supporters = ref<User[]>([])
 const loading = ref(false)
@@ -395,9 +394,6 @@ const submitSupporter = async () => {
       // 新規追加 - サーバー側APIを使用（現在の管理者セッションに影響しない）
       const response = await $fetch('/api/admin/create-supporter', {
         method: 'POST',
-        headers: {
-          'csrf-token': csrf
-        },
         body: {
           email: supporterForm.value.email,
           password: supporterForm.value.password,

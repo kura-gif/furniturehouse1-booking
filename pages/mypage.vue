@@ -381,7 +381,6 @@ definePageMeta({
 const { user, appUser } = useAuth()
 const { getUserBookings, cancelBooking } = useBookings()
 const { createReview, getReviewByBookingId } = useReviews()
-const { csrf } = useCsrf()
 const router = useRouter()
 
 const bookings = ref<Booking[]>([])
@@ -600,9 +599,6 @@ const confirmCancelBooking = async () => {
   try {
     const response = await $fetch('/api/bookings/guest-cancel', {
       method: 'POST',
-      headers: {
-        'csrf-token': csrf || ''
-      },
       body: {
         bookingId: cancelTargetBooking.value.id,
         userId: user.value.uid
