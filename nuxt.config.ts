@@ -6,8 +6,18 @@ export default defineNuxtConfig({
   modules: [
     '@nuxtjs/tailwindcss',
     'nuxt-csurf',
-    '@nuxtjs/i18n'
+    '@nuxtjs/i18n',
+    '@sentry/nuxt/module'
   ],
+
+  // Sentry設定（詳細は sentry.client.config.ts と sentry.server.config.ts）
+  sentry: {
+    sourceMapsUploadOptions: {
+      org: process.env.SENTRY_ORG || '',
+      project: process.env.SENTRY_PROJECT || '',
+      authToken: process.env.SENTRY_AUTH_TOKEN || '',
+    },
+  },
 
   // 多言語対応設定
   i18n: {
@@ -34,7 +44,17 @@ export default defineNuxtConfig({
       sameSite: 'lax',
       secure: process.env.NODE_ENV === 'production'
     },
-    methodsToProtect: ['POST', 'PUT', 'PATCH', 'DELETE']
+    methodsToProtect: ['POST', 'PUT', 'PATCH', 'DELETE'],
+    excludedUrls: [
+      '/api/stripe/webhook',
+      '/api/bookings/guest-cancel',
+      '/api/bookings/create-booking',
+      ['/api/emails/**', { type: 'startsWith' }],
+      ['/api/admin/**', { type: 'startsWith' }],
+      ['/api/public/**', { type: 'startsWith' }],
+      ['/api/cron/**', { type: 'startsWith' }],
+      ['/api/test/**', { type: 'startsWith' }]
+    ]
   },
 
   app: {
@@ -118,6 +138,13 @@ export default defineNuxtConfig({
 
     // Cron認証
     cronSecret: process.env.CRON_SECRET || '',
+
+    // Sentry（サーバーサイド）
+    sentryDsn: process.env.SENTRY_DSN || '',
+
+    // Upstash Redis（レート制限）
+    upstashRedisRestUrl: process.env.UPSTASH_REDIS_REST_URL || '',
+    upstashRedisRestToken: process.env.UPSTASH_REDIS_REST_TOKEN || '',
 
     // クライアント・サーバー両方で使用（公開情報）
     public: {
