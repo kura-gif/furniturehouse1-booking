@@ -1,5 +1,5 @@
 <template>
-  <nav class="guide-bottom-nav fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 safe-area-bottom">
+  <nav class="guide-bottom-nav fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 safe-area-bottom" style="border-radius: 0 !important;">
     <div class="h-16 grid grid-cols-5">
       <NuxtLink
         v-for="item in navItems"

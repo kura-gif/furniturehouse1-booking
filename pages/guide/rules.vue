@@ -1,66 +1,83 @@
 <template>
-  <div>
-    <!-- ヘッダー -->
-    <section class="bg-amber-600 text-white py-8 px-4">
-      <div class="container-responsive">
-        <div class="flex items-center gap-3 mb-2">
-          <span class="text-3xl">📋</span>
-          <h1 class="text-2xl font-bold">{{ $t('guestGuide.rules.title') }}</h1>
-        </div>
-        <p class="text-sm opacity-90">{{ $t('guestGuide.rules.subtitle') }}</p>
-      </div>
-    </section>
+  <div class="guide-page guide-organic-bg">
+    <!-- タイトル -->
+    <header class="text-center pt-6 pb-4 px-4">
+      <h1 class="guide-title text-xl sm:text-2xl">
+        建築を守るためのお願い
+      </h1>
+    </header>
 
-    <div class="container-responsive py-6">
-      <!-- 導入文 -->
-      <p class="text-sm text-gray-700 mb-6">{{ $t('guestGuide.rules.intro') }}</p>
-
-      <!-- ルールリスト -->
-      <div class="space-y-4">
-        <div v-for="rule in rules" :key="rule.id" class="guide-card p-4">
-          <div class="flex items-start gap-3">
-            <span class="text-2xl">{{ rule.icon }}</span>
-            <div>
-              <h3 class="text-sm font-bold text-gray-900 mb-1">{{ $t(rule.titleKey) }}</h3>
-              <p class="text-sm text-gray-600">{{ $t(rule.descKey) }}</p>
-            </div>
+    <div class="px-4 sm:px-6 pb-8">
+      <div class="max-w-md mx-auto">
+        <!-- ルールリスト -->
+        <section class="mb-6">
+          <div v-for="(rule, index) in rules" :key="index">
+            <div class="divider-line"></div>
+            <p class="py-4 text-sm text-organic-text leading-relaxed">{{ rule }}</p>
           </div>
-        </div>
-      </div>
+          <div class="divider-line"></div>
+        </section>
 
-      <!-- 同意チェック (認証済みかつ未同意の場合のみ表示) -->
-      <section v-if="showAgreement" class="mt-8">
-        <div class="bg-gray-50 border border-gray-200 p-4">
-          <label class="flex items-start gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              v-model="agreed"
-              class="mt-1 w-5 h-5 text-primary-600 border-gray-300 focus:ring-primary-500"
-            />
-            <span class="text-sm text-gray-700">{{ $t('guestGuide.rules.agree') }}</span>
-          </label>
-          <button
-            v-if="agreed"
-            @click="submitAgreement"
-            :disabled="submitting"
-            class="mt-4 w-full py-3 bg-primary-600 text-white font-medium hover:bg-primary-700 disabled:opacity-50 transition-colors"
-          >
-            {{ submitting ? $t('guestGuide.rules.submitting') : $t('guestGuide.rules.submit') }}
-          </button>
-        </div>
-      </section>
+        <!-- 同意チェック（認証済みかつ未同意の場合のみ） -->
+        <section v-if="showAgreement" class="mb-6">
+          <div class="bg-white p-4 shadow-sm">
+            <label class="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                v-model="agreed"
+                class="mt-0.5 w-5 h-5 text-organic-accent border-organic-border focus:ring-organic-accent"
+              />
+              <span class="text-sm text-organic-text">上記のルールを読み、同意します</span>
+            </label>
+            <button
+              v-if="agreed"
+              @click="submitAgreement"
+              :disabled="submitting"
+              class="mt-4 w-full py-3 text-white text-sm font-medium disabled:opacity-50 transition-colors"
+              style="background-color: #5C5347;"
+            >
+              {{ submitting ? '送信中...' : '同意を送信' }}
+            </button>
+          </div>
+        </section>
 
-      <!-- 同意完了メッセージ -->
-      <section v-if="agreementSuccess || alreadyAgreed" class="mt-8">
-        <div class="bg-green-50 border border-green-200 p-4 text-center">
-          <span class="text-2xl">✅</span>
-          <p class="text-sm text-green-800 mt-2">{{ $t('guestGuide.rules.success') }}</p>
-        </div>
-      </section>
+        <!-- 同意完了メッセージ -->
+        <section v-if="agreementSuccess || alreadyAgreed" class="mb-6">
+          <div class="bg-white p-4 text-center border-l-4 border-green-500 shadow-sm">
+            <p class="text-sm text-organic-text">同意を記録しました</p>
+          </div>
+        </section>
 
-      <!-- 最後のメッセージ -->
-      <div class="mt-8 text-center">
-        <p class="text-sm text-gray-600">{{ $t('guestGuide.rules.enjoy') }}</p>
+        <!-- 最後のメッセージ -->
+        <p class="text-center text-sm text-organic-text-light mb-10">
+          ルールを守って、素敵な滞在をお楽しみください
+        </p>
+
+        <!-- 線画イラスト（建築物） -->
+        <div class="text-center opacity-60">
+          <svg class="w-52 h-28 mx-auto" viewBox="0 0 210 80" fill="none" stroke="#8B7355" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round">
+            <!-- 基礎ライン -->
+            <line x1="15" y1="70" x2="195" y2="70" />
+            <!-- 建物本体 -->
+            <rect x="30" y="30" width="150" height="40" />
+            <!-- 屋根 -->
+            <line x1="22" y1="30" x2="188" y2="30" />
+            <line x1="22" y1="28" x2="188" y2="28" />
+            <!-- 柱 -->
+            <line x1="48" y1="30" x2="48" y2="70" />
+            <line x1="65" y1="30" x2="65" y2="70" />
+            <line x1="145" y1="30" x2="145" y2="70" />
+            <line x1="162" y1="30" x2="162" y2="70" />
+            <!-- 中央開口 -->
+            <rect x="70" y="35" width="70" height="32" />
+            <line x1="93" y1="35" x2="93" y2="67" />
+            <line x1="117" y1="35" x2="117" y2="67" />
+            <!-- デッキ -->
+            <line x1="30" y1="70" x2="30" y2="75" />
+            <line x1="180" y1="70" x2="180" y2="75" />
+            <rect x="25" y="75" width="160" height="2" />
+          </svg>
+        </div>
       </div>
     </div>
   </div>
@@ -77,29 +94,21 @@ definePageMeta({
 const { t } = useI18n()
 const { recordRulesAgreement } = useGuestGuide()
 
-// ゲスト認証状態
 const guideState = useGuideState()
 const isAuthenticated = computed(() => guideState.value?.isAuthenticated ?? false)
 const alreadyAgreed = computed(() => guideState.value?.rulesAgreed ?? false)
 
-// 認証済みかつ未同意の場合のみ同意フォームを表示
 const showAgreement = computed(() => isAuthenticated.value && !alreadyAgreed.value && !agreementSuccess.value)
 const agreed = ref(false)
 const submitting = ref(false)
 const agreementSuccess = ref(false)
 
+// シンプルなルールテキスト
 const rules = [
-  { id: 1, icon: '🔧', titleKey: 'guestGuide.rules.rule1.title', descKey: 'guestGuide.rules.rule1.desc' },
-  { id: 2, icon: '🔥', titleKey: 'guestGuide.rules.rule2.title', descKey: 'guestGuide.rules.rule2.desc' },
-  { id: 3, icon: '🏠', titleKey: 'guestGuide.rules.rule3.title', descKey: 'guestGuide.rules.rule3.desc' },
-  { id: 4, icon: '🐕', titleKey: 'guestGuide.rules.rule4.title', descKey: 'guestGuide.rules.rule4.desc' },
-  { id: 5, icon: '🚪', titleKey: 'guestGuide.rules.rule5.title', descKey: 'guestGuide.rules.rule5.desc' },
-  { id: 6, icon: '🚭', titleKey: 'guestGuide.rules.rule6.title', descKey: 'guestGuide.rules.rule6.desc' },
-  { id: 7, icon: '🌙', titleKey: 'guestGuide.rules.rule7.title', descKey: 'guestGuide.rules.rule7.desc' },
-  { id: 8, icon: '🎉', titleKey: 'guestGuide.rules.rule8.title', descKey: 'guestGuide.rules.rule8.desc' },
-  { id: 9, icon: '👥', titleKey: 'guestGuide.rules.rule9.title', descKey: 'guestGuide.rules.rule9.desc' },
-  { id: 10, icon: '🗑️', titleKey: 'guestGuide.rules.rule10.title', descKey: 'guestGuide.rules.rule10.desc' },
-  { id: 11, icon: '⏰', titleKey: 'guestGuide.rules.rule11.title', descKey: 'guestGuide.rules.rule11.desc' },
+  '館内は禁煙です。火気の使用はお控えください。',
+  '館内では靴をお脱ぎください。',
+  '展示物や家具にお手を触れないようお願いいたします。',
+  'お静かにお過ごしいただきますよう、お願い申し上げます。'
 ]
 
 const submitAgreement = async () => {
@@ -116,7 +125,6 @@ const submitAgreement = async () => {
       tokenData.guestEmail
     )
     agreementSuccess.value = true
-    // stateも更新
     if (guideState.value) {
       guideState.value.rulesAgreed = true
     }
@@ -127,18 +135,16 @@ const submitAgreement = async () => {
   }
 }
 
-useHead({
-  title: t('guestGuide.rules.meta.title'),
-})
+useHead({ title: '建築を守るためのお願い | ガイドブック' })
 </script>
 
 <style scoped>
-.guide-card {
-  @apply bg-white border border-gray-100 shadow-sm;
-  transition: all 0.2s ease;
+.guide-page {
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
-.guide-card:hover {
-  @apply shadow-md border-gray-200;
+.divider-line {
+  border-top: 1px solid #E8E2D9;
 }
 </style>
