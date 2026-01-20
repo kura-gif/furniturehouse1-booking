@@ -1,16 +1,92 @@
 /**
  * セキュアな予約作成API
- * - トランザクションによる同時予約防止
+ * - 楽観的ロックによる同時予約防止（Race Condition対策）
+ * - トランザクションによる整合性保証
  * - サーバーサイド金額検証
  * - 入力値の厳格なバリデーション
  */
 
 import { Timestamp, FieldValue } from 'firebase-admin/firestore'
 import type { CreateBookingInput } from '~/server/utils/validation'
+import { sendEmailWithRetry } from '~/server/utils/email-retry'
+
+/**
+ * 予約期間のロックキーを生成
+ * 日付範囲をソートして一意のキーを作成
+ */
+function generateLockKey(checkIn: string, checkOut: string): string {
+  return `${checkIn}_${checkOut}`
+}
+
+/**
+ * ロックを取得（楽観的ロック）
+ * @returns lockId if acquired, null if failed
+ */
+async function acquireBookingLock(
+  db: FirebaseFirestore.Firestore,
+  lockKey: string,
+  requestId: string,
+  ttlMs: number = 30000
+): Promise<boolean> {
+  const lockRef = db.collection('bookingLocks').doc(lockKey)
+  const now = Date.now()
+
+  try {
+    await db.runTransaction(async (transaction) => {
+      const lockDoc = await transaction.get(lockRef)
+
+      if (lockDoc.exists) {
+        const lockData = lockDoc.data()
+        // ロックが期限切れでなければ取得失敗
+        if (lockData && lockData.expiresAt > now) {
+          throw new Error('LOCK_HELD')
+        }
+      }
+
+      // ロックを取得
+      transaction.set(lockRef, {
+        requestId,
+        acquiredAt: now,
+        expiresAt: now + ttlMs,
+      })
+    })
+    return true
+  } catch (error) {
+    if (error instanceof Error && error.message === 'LOCK_HELD') {
+      return false
+    }
+    throw error
+  }
+}
+
+/**
+ * ロックを解放
+ */
+async function releaseBookingLock(
+  db: FirebaseFirestore.Firestore,
+  lockKey: string,
+  requestId: string
+): Promise<void> {
+  const lockRef = db.collection('bookingLocks').doc(lockKey)
+  try {
+    await db.runTransaction(async (transaction) => {
+      const lockDoc = await transaction.get(lockRef)
+      if (lockDoc.exists && lockDoc.data()?.requestId === requestId) {
+        transaction.delete(lockRef)
+      }
+    })
+  } catch (error) {
+    // ロック解放失敗はログのみ（TTLで自動解放される）
+    console.warn('Failed to release lock:', lockKey, error)
+  }
+}
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
-  let rawBody: any = null
+  let rawBody: unknown = null
+  let lockKey: string | null = null
+  const requestId = `req_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`
+  let firestoreDb: FirebaseFirestore.Firestore | null = null
 
   try {
     // 1. リクエストボディを取得
@@ -21,14 +97,44 @@ export default defineEventHandler(async (event) => {
 
     // 3. Firebase Admin初期化
     const db = getFirestoreAdmin()
+    if (!db) {
+      throw createError({
+        statusCode: 500,
+        message: 'Firebase Admin SDK is not initialized'
+      })
+    }
+    firestoreDb = db
 
-    // 4. 料金設定を取得
+    // 4. Race Condition対策: 予約期間のロックを取得
+    lockKey = generateLockKey(validatedData.checkInDate, validatedData.checkOutDate)
+
+    const maxRetries = 3
+    let lockAcquired = false
+
+    for (let i = 0; i < maxRetries; i++) {
+      lockAcquired = await acquireBookingLock(db, lockKey, requestId)
+      if (lockAcquired) break
+
+      // ロック取得失敗時は少し待ってリトライ
+      if (i < maxRetries - 1) {
+        await new Promise((resolve) => setTimeout(resolve, 1000 * (i + 1)))
+      }
+    }
+
+    if (!lockAcquired) {
+      throw createError({
+        statusCode: 409,
+        message: 'この日程は現在他の予約処理中です。しばらくしてから再度お試しください。',
+      })
+    }
+
+    // 5. 料金設定を取得
     const pricingDoc = await db.collection('pricing').doc('default').get()
     const pricingRule = pricingDoc.exists
       ? (pricingDoc.data() as PricingRule)
       : DEFAULT_PRICING
 
-    // 5. クーポン割引を計算
+    // 6. クーポン割引を計算
     let couponDiscount = 0
     let couponId = ''
     if (validatedData.couponCode) {
@@ -68,7 +174,7 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    // 6. サーバーサイドで金額を再計算
+    // 7. サーバーサイドで金額を再計算
     const calculatedAmount = calculateBookingAmount(
       new Date(validatedData.checkInDate),
       new Date(validatedData.checkOutDate),
@@ -77,7 +183,7 @@ export default defineEventHandler(async (event) => {
       couponDiscount
     )
 
-    // 7. クライアントから送信された金額と検証（改ざん防止）
+    // 8. クライアントから送信された金額と検証（改ざん防止）
     if (validatedData.amount && !validateAmount(calculatedAmount, validatedData.amount)) {
       console.error('金額の不一致:', {
         calculated: calculatedAmount,
@@ -89,12 +195,12 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // 8. トランザクションで予約を作成（同時予約防止）
+    // 9. トランザクションで予約を作成（同時予約防止）
     const result = await db.runTransaction(async (transaction) => {
       const checkInDate = Timestamp.fromDate(new Date(validatedData.checkInDate))
       const checkOutDate = Timestamp.fromDate(new Date(validatedData.checkOutDate))
 
-      // 8-1. 同じ期間の予約を検索
+      // 9-1. 同じ期間の予約を検索
       const conflictingBookingsRef = db
         .collection('bookings')
         .where('status', 'in', ['pending', 'confirmed'])
@@ -103,12 +209,12 @@ export default defineEventHandler(async (event) => {
 
       const conflictingBookings = await transaction.get(conflictingBookingsRef)
 
-      // 8-2. 重複があればエラー
+      // 9-2. 重複があればエラー
       if (!conflictingBookings.empty) {
         throw new Error('この期間は既に予約されています。別の日程をお選びください。')
       }
 
-      // 8-3. 予約データを作成
+      // 9-3. 予約データを作成
       const bookingRef = db.collection('bookings').doc()
       const bookingData = {
         checkInDate,
@@ -162,12 +268,12 @@ export default defineEventHandler(async (event) => {
       }
     })
 
-    // 9. 管理者に新規予約通知メールを送信
+    // 10. 管理者に新規予約通知メールを送信
     try {
       const checkIn = new Date(validatedData.checkInDate)
       const checkOut = new Date(validatedData.checkOutDate)
 
-      await $fetch('/api/emails/send-admin-notification', {
+      await sendEmailWithRetry('/api/emails/send-admin-notification', {
         method: 'POST',
         headers: {
           'x-internal-secret': config.internalApiSecret,
@@ -186,13 +292,17 @@ export default defineEventHandler(async (event) => {
           notes: validatedData.notes || '',
         },
       })
-      console.log('✅ 管理者通知メール送信成功')
     } catch (emailError) {
-      // メール送信失敗は予約作成の成功に影響させない
-      console.error('⚠️ 管理者通知メール送信失敗:', emailError)
+      // メール送信失敗は予約作成の成功に影響させない（リトライ済み）
+      console.error('⚠️ 管理者通知メール送信失敗（リトライ後）:', emailError)
     }
 
-    // 10. 成功レスポンス
+    // 11. ロックを解放
+    if (lockKey && firestoreDb) {
+      await releaseBookingLock(firestoreDb, lockKey, requestId)
+    }
+
+    // 12. 成功レスポンス
     console.log('✅ 予約作成成功:', result)
 
     return {
@@ -201,27 +311,34 @@ export default defineEventHandler(async (event) => {
       bookingReference: result.bookingReference,
       amount: result.amount,
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
+    // エラー時もロックを解放
+    if (lockKey && firestoreDb) {
+      await releaseBookingLock(firestoreDb, lockKey, requestId)
+    }
+
     console.error('❌ 予約作成エラー:', error)
 
     // エラーログをFirestoreに記録（オプション）
     try {
-      const db = getFirestoreAdmin()
-      await db.collection('errorLogs').add({
+      const errorDb = getFirestoreAdmin()
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      await errorDb.collection('errorLogs').add({
         type: 'booking_creation_failed',
-        error: error.message,
-        stack: error.stack,
+        error: errorMessage,
         timestamp: FieldValue.serverTimestamp(),
-        requestBody: rawBody,
       })
-    } catch (logError) {
-      console.error('エラーログ記録失敗:', logError)
+    } catch (_logError) {
+      console.error('エラーログ記録失敗')
     }
 
     // クライアントへのエラーレスポンス
+    const statusCode = error instanceof Error && 'statusCode' in error
+      ? (error as { statusCode: number }).statusCode
+      : 500
     throw createError({
-      statusCode: error.statusCode || 500,
-      message: error.message || '予約の作成に失敗しました',
+      statusCode,
+      message: '予約の作成に失敗しました',
     })
   }
 })

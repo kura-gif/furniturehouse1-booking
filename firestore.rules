@@ -242,8 +242,8 @@ service cloud.firestore {
                      exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
 
-      // Cloud Functionsからの作成を許可（実際の運用ではサービスアカウントで実行）
-      allow create: if true;
+      // クライアントからの作成は禁止（Admin SDKからのみ作成可能）
+      allow create: if false;
     }
 
     // 写真コレクション（公開用）

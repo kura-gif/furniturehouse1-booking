@@ -39,11 +39,15 @@ export const useBookings = () => {
       const bookingReference = generateBookingReference()
       const bookingToken = generateBookingToken()
 
-      if (!bookingData.startDate || !bookingData.endDate) {
+      // checkInDate/checkOutDateとstartDate/endDateの両方をサポート（後方互換性）
+      const startDate = bookingData.startDate || bookingData.checkInDate
+      const endDate = bookingData.endDate || bookingData.checkOutDate
+
+      if (!startDate || !endDate) {
         throw new Error('開始日と終了日は必須です')
       }
-      const startDateTimestamp = Timestamp.fromDate(bookingData.startDate)
-      const endDateTimestamp = Timestamp.fromDate(bookingData.endDate)
+      const startDateTimestamp = Timestamp.fromDate(startDate)
+      const endDateTimestamp = Timestamp.fromDate(endDate)
 
       const booking: Omit<Booking, 'id'> = {
         // userIdはログインユーザーの場合のみ設定

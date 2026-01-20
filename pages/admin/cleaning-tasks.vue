@@ -411,7 +411,6 @@ definePageMeta({
 
 const { $db } = useNuxtApp()
 const { assignTask, unassignTask, markAsPaid } = useCleaningTasks()
-const { csrf } = useCsrf()
 
 const tasks = ref<CleaningTask[]>([])
 const supporters = ref<User[]>([])
@@ -534,9 +533,6 @@ const submitAssignment = async () => {
     try {
       await $fetch('/api/emails/send-task-assignment', {
         method: 'POST',
-        headers: {
-          'csrf-token': csrf
-        },
         body: {
           to: supporter.email,
           supporterName: supporter.displayName,

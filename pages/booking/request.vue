@@ -435,6 +435,114 @@
                 />
                 <p class="mt-1 text-xs text-gray-500">緊急連絡先として使用します</p>
               </div>
+
+              <!-- 郵便番号・住所 -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    郵便番号 <span class="text-red-500">*</span>
+                  </label>
+                  <div class="flex gap-2">
+                    <input
+                      v-model="guestPostalCode"
+                      type="text"
+                      placeholder="123-4567"
+                      maxlength="8"
+                      required
+                      class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      @input="onPostalCodeInput"
+                    />
+                    <button
+                      type="button"
+                      @click="searchAddress"
+                      :disabled="isSearchingAddress"
+                      class="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm whitespace-nowrap disabled:opacity-50"
+                    >
+                      {{ isSearchingAddress ? '...' : '検索' }}
+                    </button>
+                  </div>
+                </div>
+                <div class="sm:col-span-2">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    住所 <span class="text-red-500">*</span>
+                  </label>
+                  <input
+                    v-model="guestAddress"
+                    type="text"
+                    placeholder="東京都渋谷区..."
+                    required
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              <!-- 職業 -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  ご職業 <span class="text-red-500">*</span>
+                </label>
+                <select
+                  v-model="guestOccupation"
+                  required
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                >
+                  <option value="">選択してください</option>
+                  <option value="会社員">会社員</option>
+                  <option value="公務員">公務員</option>
+                  <option value="自営業">自営業</option>
+                  <option value="会社役員">会社役員</option>
+                  <option value="パート・アルバイト">パート・アルバイト</option>
+                  <option value="学生">学生</option>
+                  <option value="主婦・主夫">主婦・主夫</option>
+                  <option value="無職">無職</option>
+                  <option value="その他">その他</option>
+                </select>
+              </div>
+
+              <!-- 外国籍チェック -->
+              <div class="border-t border-gray-200 pt-4">
+                <label class="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    v-model="isForeignNational"
+                    class="w-5 h-5 text-purple-600 focus:ring-purple-500 rounded"
+                  />
+                  <span class="text-sm text-gray-700">外国籍の方</span>
+                </label>
+              </div>
+
+              <!-- 外国籍の場合の追加フィールド -->
+              <div v-if="isForeignNational" class="space-y-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p class="text-sm text-blue-700 mb-2">
+                  旅館業法により、外国籍の方は国籍とパスポート番号の記載が必要です
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                      国籍 <span class="text-red-500">*</span>
+                    </label>
+                    <input
+                      v-model="guestNationality"
+                      type="text"
+                      placeholder="例: United States"
+                      required
+                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                      パスポート番号 <span class="text-red-500">*</span>
+                    </label>
+                    <input
+                      v-model="guestPassportNumber"
+                      type="text"
+                      placeholder="AB1234567"
+                      required
+                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
 
             <h3 class="text-lg font-semibold mb-4" style="color: #231815;">
@@ -910,6 +1018,49 @@ const pricePerNight = computed(() => {
 const guestName = computed(() => appUser.value?.displayName || '')
 const guestEmail = computed(() => appUser.value?.email || '')
 const guestPhone = ref('')  // 電話番号はアカウントに無い可能性があるため入力式
+const guestPostalCode = ref('')
+const guestAddress = ref('')
+const guestOccupation = ref('')
+const isForeignNational = ref(false)
+const guestNationality = ref('')
+const guestPassportNumber = ref('')
+const isSearchingAddress = ref(false)
+
+// 郵便番号入力時の自動フォーマット
+const onPostalCodeInput = (event: Event) => {
+  const input = event.target as HTMLInputElement
+  let value = input.value.replace(/[^0-9]/g, '')
+  if (value.length > 3) {
+    value = value.slice(0, 3) + '-' + value.slice(3, 7)
+  }
+  guestPostalCode.value = value
+
+  // 7桁入力されたら自動検索
+  if (value.replace('-', '').length === 7) {
+    searchAddress()
+  }
+}
+
+// 郵便番号から住所を検索
+const searchAddress = async () => {
+  const postalCode = guestPostalCode.value.replace('-', '')
+  if (postalCode.length !== 7) return
+
+  isSearchingAddress.value = true
+  try {
+    const response = await fetch(`https://zipcloud.ibsnet.co.jp/api/search?zipcode=${postalCode}`)
+    const data = await response.json()
+
+    if (data.results && data.results.length > 0) {
+      const result = data.results[0]
+      guestAddress.value = result.address1 + result.address2 + result.address3
+    }
+  } catch (error) {
+    console.error('住所検索エラー:', error)
+  } finally {
+    isSearchingAddress.value = false
+  }
+}
 
 // 支払い関連（Stripe）
 const paymentReady = ref(false)
@@ -1024,6 +1175,24 @@ const isFormValid = computed(() => {
     return false
   }
 
+  // 住所関連のチェック
+  if (!guestPostalCode.value.trim() || guestPostalCode.value.replace('-', '').length !== 7) {
+    return false
+  }
+  if (!guestAddress.value.trim()) {
+    return false
+  }
+  if (!guestOccupation.value) {
+    return false
+  }
+
+  // 外国籍の場合の追加チェック
+  if (isForeignNational.value) {
+    if (!guestNationality.value.trim() || !guestPassportNumber.value.trim()) {
+      return false
+    }
+  }
+
   // 決済フォームの準備完了チェック
   if (!paymentReady.value) {
     return false
@@ -1055,13 +1224,9 @@ const proceedToPayment = async () => {
   try {
     // Payment Intentのmetadataを更新（最新のゲスト情報を含める）
     const config = useRuntimeConfig()
-    const { csrf } = useCsrf()
 
     await $fetch('/api/stripe/update-payment-intent', {
       method: 'POST',
-      headers: {
-        'csrf-token': csrf || ''
-      },
       body: {
         paymentIntentId: clientSecret.value.split('_secret_')[0],
         metadata: {
@@ -1080,25 +1245,40 @@ const proceedToPayment = async () => {
     })
 
     const paymentIntentId = clientSecret.value.split('_secret_')[0]
-    const bookingData = {
-      type: 'stay' as const,
-      checkInDate: new Date(checkInDate.value),
-      checkOutDate: new Date(checkOutDate.value),
-      guestCount: adults.value + children.value,
-      guestName: guestName.value,
-      guestEmail: guestEmail.value,
-      guestPhone: guestPhone.value,
-      totalAmount: finalTotalAmount.value,
-      baseAmount: subtotal.value,
-      discountAmount: couponDiscountAmount.value,
-      couponCode: appliedCoupon.value?.code ?? undefined,
-      notes: `決済ID: ${paymentIntentId}`,
-      selectedOptions: selectedOptions.value,
-      optionsTotalPrice: optionsTotalPrice.value,
-      stripePaymentIntentId: paymentIntentId
+
+    // サーバーサイドAPIで予約を作成（Firebase Admin SDK使用）
+    const bookingResult = await $fetch<{ success: boolean; bookingId?: string; message?: string }>('/api/bookings/create-booking', {
+      method: 'POST',
+      body: {
+        checkInDate: checkInDate.value,
+        checkOutDate: checkOutDate.value,
+        guestCount: adults.value + children.value,
+        guestName: guestName.value,
+        guestEmail: guestEmail.value,
+        guestPhone: guestPhone.value,
+        guestPostalCode: guestPostalCode.value,
+        guestAddress: guestAddress.value,
+        guestOccupation: guestOccupation.value,
+        isForeignNational: isForeignNational.value,
+        guestNationality: isForeignNational.value ? guestNationality.value : undefined,
+        guestPassportNumber: isForeignNational.value ? guestPassportNumber.value : undefined,
+        totalAmount: finalTotalAmount.value,
+        baseAmount: subtotal.value,
+        cleaningFee: cleaningFee.value,
+        couponDiscount: couponDiscountAmount.value,
+        couponCode: appliedCoupon.value?.code || '',
+        notes: '',
+        selectedOptions: selectedOptions.value,
+        optionsTotalPrice: optionsTotalPrice.value,
+        stripePaymentIntentId: paymentIntentId
+      }
+    })
+
+    if (!bookingResult.success) {
+      throw new Error(bookingResult.message || '予約の作成に失敗しました')
     }
 
-    const bookingId = await createBooking(bookingData)
+    const bookingId = bookingResult.bookingId
     console.log('✅ 予約作成成功:', bookingId)
 
     // クーポン使用回数を更新
