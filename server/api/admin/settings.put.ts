@@ -53,14 +53,15 @@ export default defineEventHandler(async (event) => {
       success: true,
       message: '設定を保存しました'
     }
-  } catch (error: any) {
-    console.error('[API /admin/settings] Error:', error.message)
-    if (error.statusCode) {
+  } catch (error: unknown) {
+    console.error('[API /admin/settings] Error:', error instanceof Error ? error.message : 'Unknown error')
+    if (error && typeof error === 'object' && 'statusCode' in error) {
       throw error
     }
+    // 内部エラーは詳細を漏洩させない
     throw createError({
       statusCode: 500,
-      message: `Failed to save settings: ${error.message}`
+      message: '設定の保存に失敗しました'
     })
   }
 })

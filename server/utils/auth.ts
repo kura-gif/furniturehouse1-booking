@@ -25,7 +25,7 @@ export async function verifyAuth(event: H3Event) {
       uid: decodedToken.uid,
       email: decodedToken.email || ''
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('認証エラー:', error)
     throw createError({
       statusCode: 401,

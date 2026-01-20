@@ -198,12 +198,12 @@ export default defineEventHandler(async (event) => {
       success: true,
       messageId: info.messageId
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('❌ Thank you email error:', error)
     throw createError({
       statusCode: 500,
       statusMessage: 'お礼メールの送信に失敗しました',
-      message: error.message
+      message: error instanceof Error ? error.message : 'Unknown error'
     })
   }
 })

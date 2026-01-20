@@ -192,7 +192,7 @@ export default defineEventHandler(async (event) => {
     })
 
     console.log('✅ 招待メール送信成功:', email)
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('❌ 招待メール送信エラー:', error)
     // メール送信失敗でも招待データは保存されているため、手動で再送信可能
   }

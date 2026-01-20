@@ -249,12 +249,12 @@ export default defineEventHandler(async (event) => {
       messageId: info.messageId,
       type
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(`❌ Message notification email error (${type}):`, error)
     throw createError({
       statusCode: 500,
       statusMessage: 'メッセージ通知メールの送信に失敗しました',
-      message: error.message
+      message: error instanceof Error ? error.message : 'Unknown error'
     })
   }
 })

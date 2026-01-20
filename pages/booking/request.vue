@@ -781,10 +781,11 @@ const { createPaymentIntent, initializeElements, confirmCardPayment } = useStrip
 const { calculatePrice, pricingSetting, loadFromFirestore } = useEnhancedPricing()
 const { getActivePolicy, generatePolicyDescription } = useCancellationPolicy()
 const { validateCoupon, incrementCouponUsage } = useCoupon()
+const toast = useToast()
 
 // 施設設定
 const facilitySettings = ref({
-  checkInTime: '15:00',
+  checkInTime: '14:00',
   checkOutTime: '11:00'
 })
 
@@ -918,7 +919,7 @@ const loadFacilitySettings = async () => {
       const data = await response.json()
       if (data.success && data.settings) {
         facilitySettings.value = {
-          checkInTime: data.settings.checkInTime || '15:00',
+          checkInTime: data.settings.checkInTime || '14:00',
           checkOutTime: data.settings.checkOutTime || '11:00'
         }
       }
@@ -1159,7 +1160,7 @@ onMounted(async () => {
     console.log('✅ Card Elementマウント完了')
   } catch (error: any) {
     console.error('Stripe初期化エラー:', error)
-    alert('決済フォームの準備に失敗しました。ページを再読み込みしてください。')
+    toast.error('決済フォームの準備に失敗しました。ページを再読み込みしてください。')
   }
 })
 
@@ -1207,7 +1208,7 @@ const isFormValid = computed(() => {
 // 送信処理（確認モーダルを表示）
 const handleSubmit = async () => {
   if (!isFormValid.value) {
-    alert('すべての項目を正しく入力してください')
+    toast.warning('すべての項目を正しく入力してください')
     return
   }
 
@@ -1323,7 +1324,7 @@ const proceedToPayment = async () => {
     }
   } catch (error: any) {
     console.error('予約・決済エラー:', error)
-    alert(error.message || '予約・決済の処理に失敗しました')
+    toast.error(error.message || '予約・決済の処理に失敗しました')
     isProcessing.value = false
     isSubmitting.value = false
   }

@@ -3,6 +3,14 @@
  * XSS、クリックジャッキング、その他の攻撃から保護
  */
 
+import type { H3Event } from 'h3'
+
+interface SecurityRuntimeConfig {
+  public: {
+    siteUrl: string
+  }
+}
+
 export default defineEventHandler((event) => {
   const config = useRuntimeConfig()
 
@@ -54,7 +62,7 @@ export default defineEventHandler((event) => {
 /**
  * CORSヘッダーを設定
  */
-function setCORSHeaders(event: any, config: any) {
+function setCORSHeaders(event: H3Event, config: SecurityRuntimeConfig) {
   const allowedOrigins = [
     config.public.siteUrl,
     'https://furniturehouse1.com',

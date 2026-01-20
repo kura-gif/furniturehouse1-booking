@@ -1,0 +1,20 @@
+# robots.txt for 家具の家 No.1 予約システム
+# https://booking.furniturehouse1.com/
+
+User-agent: *
+Allow: /
+
+# 管理画面はクロール禁止
+Disallow: /admin/
+Disallow: /admin
+
+# API エンドポイントはクロール禁止
+Disallow: /api/
+
+# 認証関連ページ
+Disallow: /login
+Disallow: /register
+Disallow: /mypage
+
+# サイトマップ
+Sitemap: https://booking.furniturehouse1.com/sitemap.xml

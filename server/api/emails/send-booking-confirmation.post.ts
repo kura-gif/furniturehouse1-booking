@@ -256,12 +256,13 @@ export default defineEventHandler(async (event) => {
       success: true,
       messageId: info.messageId
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
+    // ログには詳細を記録（SMTPエラー等の診断用）
     console.error('メール送信エラー:', error)
+    // クライアントには詳細を漏洩させない
     throw createError({
       statusCode: 500,
-      statusMessage: 'メール送信に失敗しました',
-      message: error.message
+      statusMessage: 'メール送信に失敗しました'
     })
   }
 })

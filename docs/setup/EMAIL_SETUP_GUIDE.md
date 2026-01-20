@@ -1,58 +1,18 @@
-# メール設定ガイド - グループメール対応
+# メール設定ガイド
 
 ## 概要
 
-`furniturehouse1@chladni.co.jp` がGoogle グループ（グループメール）の場合の設定方法を説明します。
-
----
-
-## グループメールの制限事項
-
-### ❌ できないこと
-
-- **グループメールアドレスでGmail認証**: アプリパスワードを生成できません
-- **グループメールから直接送信**: SMTP認証に個人アカウントが必要
-
-### ✅ できること
-
-- **グループメールで受信**: メンバー全員にメールが転送されます
-- **Reply-Toでグループメール指定**: ゲストの返信をグループ全員が受け取れます
-
----
-
-## 推奨設定
-
-### 送信の仕組み
-
-```
-実際の送信元（認証用）: kura@chladni.co.jp（個人アカウント）
-  ↓
-表示される差出人: 家具の家 No.1 <kura@chladni.co.jp>
-  ↓
-返信先: furniturehouse1@chladni.co.jp（グループメール）
-```
-
-### ゲストから見た表示
-
-メールクライアントでの表示:
-```
-差出人: 家具の家 No.1 <kura@chladni.co.jp>
-返信先: furniturehouse1@chladni.co.jp
-```
-
-**ゲストが返信すると**:
-- → `furniturehouse1@chladni.co.jp` に送信されます
-- → グループメンバー全員が受信します
+`furniturehouse1@chladni.co.jp` をメール送信元として設定する方法を説明します。
 
 ---
 
 ## 設定手順
 
-### 1. 個人アカウントでGmailアプリパスワードを生成
+### 1. Gmailアプリパスワードを生成
 
-1. **個人アカウント**（`kura@chladni.co.jp`）でGoogleアカウント設定を開く
+1. **furniturehouse1@chladni.co.jp** でGoogleアカウント設定を開く
    - https://myaccount.google.com/apppasswords
-   
+
 2. **2段階認証が有効**になっていることを確認
    - 有効でない場合は先に有効化
 
@@ -70,11 +30,14 @@
 #### 開発環境（.env）
 
 ```bash
-# 送信元（個人アカウント、認証用）
-EMAIL_USER=kura@chladni.co.jp
+# SMTP認証用アカウント
+EMAIL_USER=furniturehouse1@chladni.co.jp
 EMAIL_PASSWORD=abcdefghijklmnop
 
-# 返信先（グループメール）
+# 差出人として表示されるアドレス
+EMAIL_FROM=furniturehouse1@chladni.co.jp
+
+# 返信先
 EMAIL_REPLY_TO=furniturehouse1@chladni.co.jp
 ```
 
@@ -83,12 +46,23 @@ EMAIL_REPLY_TO=furniturehouse1@chladni.co.jp
 Vercel Dashboard → Settings → Environment Variables
 
 ```
-EMAIL_USER=kura@chladni.co.jp
+EMAIL_USER=furniturehouse1@chladni.co.jp
 EMAIL_PASSWORD=abcdefghijklmnop
+EMAIL_FROM=furniturehouse1@chladni.co.jp
 EMAIL_REPLY_TO=furniturehouse1@chladni.co.jp
 ```
 
 **環境**: Production
+
+---
+
+## ゲストから見た表示
+
+メールクライアントでの表示:
+```
+差出人: 家具の家 No.1 <furniturehouse1@chladni.co.jp>
+返信先: furniturehouse1@chladni.co.jp
+```
 
 ---
 
@@ -108,15 +82,15 @@ npm run dev
 
 受信したメール（ゲスト視点）を確認:
 
-✅ **差出人**: 
-- 表示名が「家具の家 No.1」になっている
-- メールアドレスが `kura@chladni.co.jp`
+- **差出人**:
+  - 表示名が「家具の家 No.1」になっている
+  - メールアドレスが `furniturehouse1@chladni.co.jp`
 
-✅ **返信テスト**:
-- メールに返信する
-- `furniturehouse1@chladni.co.jp` のメンバー全員が受信できる
+- **返信テスト**:
+  - メールに返信する
+  - `furniturehouse1@chladni.co.jp` で受信できる
 
-✅ **メールフッター**:
+- **メールフッター**:
 ```
 このメールに関するお問い合わせは、このメールに返信してください。
 お問い合わせ先: furniturehouse1@chladni.co.jp
@@ -133,92 +107,41 @@ npm run dev
 **原因**:
 - アプリパスワードが間違っている
 - 2段階認証が有効でない
-- グループメールアドレスで認証しようとしている
 
 **解決方法**:
-1. `EMAIL_USER` が**個人アカウント**になっているか確認
-2. アプリパスワードを再生成
-3. 2段階認証を有効化
+1. アプリパスワードを再生成
+2. 2段階認証を有効化
+3. 環境変数が正しく設定されているか確認
 
-### 問題: 返信が個人アカウントに届く
+### 問題: 差出人が正しくない
 
-**原因**: `EMAIL_REPLY_TO` が設定されていない
+**原因**: `EMAIL_FROM` が設定されていない
 
 **解決方法**:
 ```bash
 # 環境変数を追加
-EMAIL_REPLY_TO=furniturehouse1@chladni.co.jp
+EMAIL_FROM=furniturehouse1@chladni.co.jp
 
 # Vercelの場合は再デプロイ
 vercel --prod
 ```
 
-### 問題: グループメンバーが受信できない
-
-**原因**: Google グループの設定が正しくない
-
-**解決方法**:
-1. Google グループの管理画面を開く
-   - https://groups.google.com/
-2. `furniturehouse1@chladni.co.jp` の設定を確認
-3. メンバーが正しく追加されているか確認
-4. 外部からのメール受信が許可されているか確認
-
----
-
-## 代替案: Gmail「別のアドレスからメールを送信」
-
-より完璧な設定を求める場合、Gmailの「別のアドレスからメールを送信」機能を使用できます。
-
-### メリット
-
-- ✅ 差出人が完全に `furniturehouse1@chladni.co.jp` になる
-- ✅ 返信も自動的にグループメールに届く
-
-### デメリット
-
-- ⚠️ 設定が少し複雑
-- ⚠️ Gmail側で「代理送信」の確認が必要
-
-### 設定手順
-
-1. **個人Gmail**（`kura@chladni.co.jp`）にログイン
-
-2. **設定** → **アカウントとインポート** → **他のメールアドレスを追加**
-
-3. **情報を入力**:
-   - 名前: 家具の家 No.1
-   - メールアドレス: furniturehouse1@chladni.co.jp
-   - エイリアスとして扱う: チェック
-
-4. **確認メール**がグループに送信される
-   - グループメンバーが確認コードを確認
-   - 確認コードを入力
-
-5. **デフォルトに設定**（オプション）
-
-この設定後、`EMAIL_USER` を `furniturehouse1@chladni.co.jp` に変更できます。
-
 ---
 
 ## まとめ
 
-### 推奨設定（シンプル）
+### 推奨設定
 
 ```bash
-EMAIL_USER=kura@chladni.co.jp          # 個人アカウントで認証
-EMAIL_REPLY_TO=furniturehouse1@chladni.co.jp  # 返信先はグループ
+EMAIL_USER=furniturehouse1@chladni.co.jp    # SMTP認証用
+EMAIL_FROM=furniturehouse1@chladni.co.jp    # 差出人
+EMAIL_REPLY_TO=furniturehouse1@chladni.co.jp # 返信先
 ```
 
-**メリット**:
-- ✅ 設定が簡単
-- ✅ すぐに使える
-- ✅ グループ全員が問い合わせを受け取れる
-
 **表示**:
-- 差出人: 家具の家 No.1 <kura@chladni.co.jp>
+- 差出人: 家具の家 No.1 <furniturehouse1@chladni.co.jp>
 - 返信先: furniturehouse1@chladni.co.jp
 
 ---
 
-**最終更新**: 2025-12-31
+**最終更新**: 2026年1月20日

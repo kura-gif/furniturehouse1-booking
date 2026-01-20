@@ -1,0 +1,4 @@
+email,displayName,role,password
+admin@example.com,管理者太郎,admin,Password123!
+supporter1@example.com,サポーター花子,supporter,Password123!
+user1@example.com,ユーザー一郎,user,Password123!

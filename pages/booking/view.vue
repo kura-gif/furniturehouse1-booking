@@ -214,7 +214,7 @@ const isLoggedIn = computed(() => !!user.value)
 
 // 施設設定
 const facilitySettings = ref({
-  checkInTime: '15:00',
+  checkInTime: '14:00',
   checkOutTime: '11:00'
 })
 
@@ -226,7 +226,7 @@ const loadFacilitySettings = async () => {
       const data = await response.json()
       if (data.success && data.settings) {
         facilitySettings.value = {
-          checkInTime: data.settings.checkInTime || '15:00',
+          checkInTime: data.settings.checkInTime || '14:00',
           checkOutTime: data.settings.checkOutTime || '11:00'
         }
       }

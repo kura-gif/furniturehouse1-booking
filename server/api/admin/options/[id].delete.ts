@@ -32,11 +32,14 @@ export default defineEventHandler(async (event) => {
       success: true,
       message: 'オプションを削除しました'
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('オプション削除エラー:', error)
+    const statusCode = error && typeof error === 'object' && 'statusCode' in error
+      ? (error as { statusCode: number }).statusCode
+      : 500
     throw createError({
-      statusCode: error.statusCode || 500,
-      message: error.message || 'オプションの削除に失敗しました'
+      statusCode,
+      message: error instanceof Error ? error.message : 'オプションの削除に失敗しました'
     })
   }
 })

@@ -32,7 +32,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // 更新データを構築
-    const updateData: Record<string, any> = {
+    const updateData: Record<string, unknown> = {
       updatedAt: FieldValue.serverTimestamp()
     }
 
@@ -88,11 +88,14 @@ export default defineEventHandler(async (event) => {
       success: true,
       message: 'オプションを更新しました'
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('オプション更新エラー:', error)
+    const statusCode = error && typeof error === 'object' && 'statusCode' in error
+      ? (error as { statusCode: number }).statusCode
+      : 500
     throw createError({
-      statusCode: error.statusCode || 500,
-      message: error.message || 'オプションの更新に失敗しました'
+      statusCode,
+      message: error instanceof Error ? error.message : 'オプションの更新に失敗しました'
     })
   }
 })

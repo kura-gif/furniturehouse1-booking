@@ -3,12 +3,21 @@
  * サーバーサイドでFirestoreにアクセスするための設定
  */
 
-import { cert, getApps, initializeApp, type ServiceAccount } from 'firebase-admin/app'
+import { cert, getApps, initializeApp, type ServiceAccount, type App } from 'firebase-admin/app'
 import { getFirestore } from 'firebase-admin/firestore'
 import { getAuth } from 'firebase-admin/auth'
 import { getStorage } from 'firebase-admin/storage'
+import { randomBytes } from 'crypto'
+import { readFileSync } from 'fs'
 
-let adminApp: any = null
+interface FirebaseRuntimeConfig {
+  public: {
+    firebaseProjectId: string
+    firebaseStorageBucket?: string
+  }
+}
+
+let adminApp: App | null = null
 
 /**
  * Firebase Admin SDKを初期化
@@ -53,7 +62,7 @@ export const initializeFirebaseAdmin = () => {
 /**
  * 環境変数からサービスアカウント情報を取得
  */
-const getServiceAccountFromEnv = (config: any): any => {
+const getServiceAccountFromEnv = (config: FirebaseRuntimeConfig): ServiceAccount | null => {
   // 方法1: FIREBASE_ADMIN_KEYからBase64デコード（本番環境推奨）
   if (process.env.FIREBASE_ADMIN_KEY) {
     try {
@@ -76,8 +85,8 @@ const getServiceAccountFromEnv = (config: any): any => {
   // 方法3: ローカル開発用（JSONファイルパス）
   if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      return require(process.env.GOOGLE_APPLICATION_CREDENTIALS)
+      const fileContent = readFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS, 'utf-8')
+      return JSON.parse(fileContent)
     } catch (error) {
       console.error('Failed to load service account from file:', error)
     }
@@ -155,6 +164,5 @@ export const generateBookingReference = (): string => {
  * セキュアなトークンを生成
  */
 export const generateSecureToken = (): string => {
-  const crypto = require('crypto')
-  return crypto.randomBytes(32).toString('hex')
+  return randomBytes(32).toString('hex')
 }

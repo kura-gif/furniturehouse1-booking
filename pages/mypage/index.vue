@@ -131,6 +131,7 @@ definePageMeta({
 
 const { user, appUser } = useAuth()
 const { getUserBookings } = useBookings()
+const { confirm: showConfirmDialog } = useConfirmDialog()
 
 const bookings = ref<Booking[]>([])
 const isLoading = ref(true)
@@ -203,7 +204,15 @@ const canCancel = (booking: Booking): boolean => {
 
 // キャンセル処理
 const handleCancel = async (booking: Booking) => {
-  if (!confirm('この予約をキャンセルしますか？\nキャンセルポリシーに基づき返金処理が行われます。')) {
+  const confirmed = await showConfirmDialog({
+    title: '予約のキャンセル',
+    message: 'この予約をキャンセルしますか？\nキャンセルポリシーに基づき返金処理が行われます。',
+    confirmText: 'キャンセルする',
+    cancelText: '戻る',
+    type: 'warning'
+  })
+
+  if (!confirmed) {
     return
   }
   // キャンセルページへ遷移

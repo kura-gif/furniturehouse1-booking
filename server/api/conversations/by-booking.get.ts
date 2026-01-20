@@ -111,16 +111,16 @@ export default defineEventHandler(async (event) => {
         ...bookingData
       }
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('会話取得エラー:', error)
 
-    if (error.statusCode) {
+    if (error && typeof error === 'object' && 'statusCode' in error) {
       throw error
     }
 
     throw createError({
       statusCode: 500,
-      statusMessage: error.message || '会話の取得に失敗しました'
+      statusMessage: error instanceof Error ? error.message : '会話の取得に失敗しました'
     })
   }
 })

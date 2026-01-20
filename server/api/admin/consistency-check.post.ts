@@ -11,6 +11,7 @@
 import Stripe from 'stripe'
 import { requireAdmin } from '~/server/utils/auth'
 import { FieldValue } from 'firebase-admin/firestore'
+import { getErrorMessage, getErrorStatusCode, getStripeErrorCode } from '~/server/utils/error-handling'
 
 interface InconsistencyReport {
   bookingId: string
@@ -79,7 +80,7 @@ export default defineEventHandler(async (event) => {
         )
 
         // 2. ステータスの整合性チェック
-        const statusMismatch = checkStatusMismatch(booking, paymentIntent)
+        const statusMismatch = checkStatusMismatch(booking as BookingData, paymentIntent)
         if (statusMismatch) {
           inconsistencies.push({
             bookingId,
@@ -148,9 +149,9 @@ export default defineEventHandler(async (event) => {
           }
         }
 
-      } catch (stripeError: any) {
+      } catch (stripeError: unknown) {
         // Payment Intentが見つからない場合
-        if (stripeError.code === 'resource_missing') {
+        if (getStripeErrorCode(stripeError) === 'resource_missing') {
           inconsistencies.push({
             bookingId,
             bookingReference: booking.bookingReference,
@@ -161,7 +162,7 @@ export default defineEventHandler(async (event) => {
             autoFixable: false
           })
         } else {
-          console.error(`Error checking booking ${bookingId}:`, stripeError.message)
+          console.error(`Error checking booking ${bookingId}:`, getErrorMessage(stripeError))
         }
       }
     }
@@ -195,11 +196,11 @@ export default defineEventHandler(async (event) => {
       },
       inconsistencies
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('❌ Consistency check error:', error)
     throw createError({
-      statusCode: error.statusCode || 500,
-      message: error.message || '整合性チェックに失敗しました'
+      statusCode: getErrorStatusCode(error),
+      message: getErrorMessage(error) || '整合性チェックに失敗しました'
     })
   }
 })
@@ -207,10 +208,15 @@ export default defineEventHandler(async (event) => {
 /**
  * ステータスの整合性をチェック
  */
+interface BookingData {
+  status: string
+  paymentStatus?: string
+}
+
 function checkStatusMismatch(
-  booking: any,
+  booking: BookingData,
   paymentIntent: Stripe.PaymentIntent
-): { description: string; action: string; autoFixable: boolean; fixData?: any } | null {
+): { description: string; action: string; autoFixable: boolean; fixData?: Record<string, unknown> } | null {
   const firestoreStatus = booking.status
   const stripeStatus = paymentIntent.status
 

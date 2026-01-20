@@ -56,7 +56,7 @@ export default defineEventHandler(async (event) => {
       location: '山中湖',
       updatedAt: new Date().toISOString()
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('OpenWeather API error:', error)
     throw createError({
       statusCode: 500,

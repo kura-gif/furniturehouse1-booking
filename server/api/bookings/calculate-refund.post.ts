@@ -133,12 +133,16 @@ export default defineEventHandler(async (event) => {
         isCancellable: daysBeforeCheckIn >= 0,
       }
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('❌ Refund calculation error:', error)
-
+    // 4xxエラー（createErrorで意図的に作成）はそのまま再スロー
+    if (error && typeof error === 'object' && 'statusCode' in error) {
+      throw error
+    }
+    // 内部エラーは詳細を漏洩させない
     throw createError({
-      statusCode: error.statusCode || 500,
-      message: error.message || '返金計算に失敗しました',
+      statusCode: 500,
+      message: '返金計算に失敗しました',
     })
   }
 })

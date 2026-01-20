@@ -3,6 +3,9 @@
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
+    <!-- グローバルUI -->
+    <UiToastContainer />
+    <UiConfirmDialog />
   </div>
 </template>
 

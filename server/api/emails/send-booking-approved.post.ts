@@ -171,11 +171,11 @@ export default defineEventHandler(async (event) => {
     console.log('✅ Booking approved email sent to:', to)
 
     return { success: true }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('❌ Failed to send booking approved email:', error)
     throw createError({
       statusCode: 500,
-      message: error.message || 'メール送信に失敗しました',
+      message: error instanceof Error ? error.message : 'メール送信に失敗しました',
     })
   }
 })

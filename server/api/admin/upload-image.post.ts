@@ -64,21 +64,23 @@ export default defineEventHandler(async (event) => {
       url: signedUrl,
       fileName
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
+    // ログには詳細を記録
     console.error('画像アップロードエラー:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const errorCode = error && typeof error === 'object' && 'code' in error ? (error as { code: string }).code : undefined
     console.error('エラー詳細:', JSON.stringify({
-      message: error.message,
-      code: error.code,
-      stack: error.stack
+      message: errorMessage,
+      code: errorCode
     }, null, 2))
 
-    if (error.statusCode) {
+    if (error && typeof error === 'object' && 'statusCode' in error) {
       throw error
     }
-
+    // クライアントには詳細を漏洩させない
     throw createError({
       statusCode: 500,
-      statusMessage: `画像のアップロードに失敗しました: ${error.message || 'Unknown error'}`
+      statusMessage: '画像のアップロードに失敗しました'
     })
   }
 })

@@ -296,12 +296,12 @@ export default defineEventHandler(async (event) => {
       success: true,
       messageId: info.messageId
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('❌ Booking modified email error:', error)
     throw createError({
       statusCode: 500,
       statusMessage: '予約変更通知メールの送信に失敗しました',
-      message: error.message
+      message: error instanceof Error ? error.message : 'Unknown error'
     })
   }
 })

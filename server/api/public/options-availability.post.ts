@@ -33,10 +33,13 @@ export default defineEventHandler(async (event) => {
 
     const options = optionsSnapshot.docs
       .filter(doc => !optionIds || optionIds.includes(doc.id))
-      .map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }))
+      .map(doc => {
+        const data = doc.data()
+        return {
+          id: doc.id,
+          dailyLimit: data.dailyLimit as number
+        }
+      })
 
     // 日付の開始と終了
     const startOfDay = new Date(checkDate)
@@ -60,7 +63,7 @@ export default defineEventHandler(async (event) => {
       const checkInDate = booking.checkInDate?.toDate?.() || new Date(booking.checkInDate)
       if (checkInDate >= startOfDay && checkInDate <= endOfDay) {
         const selectedOptions = booking.selectedOptions || []
-        selectedOptions.forEach((opt: any) => {
+        selectedOptions.forEach((opt: { optionId: string }) => {
           if (!optionBookingCounts[opt.optionId]) {
             optionBookingCounts[opt.optionId] = 0
           }
@@ -76,7 +79,7 @@ export default defineEventHandler(async (event) => {
       dailyLimit: number
     }> = {}
 
-    options.forEach((option: any) => {
+    options.forEach((option: { id: string; dailyLimit: number }) => {
       const bookedCount = optionBookingCounts[option.id] || 0
       const remaining = option.dailyLimit - bookedCount
 
@@ -92,11 +95,16 @@ export default defineEventHandler(async (event) => {
       date: checkDate.toISOString().split('T')[0],
       availability
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('オプション可用性チェックエラー:', error)
+    // 4xxエラー（createErrorで意図的に作成）はそのまま再スロー
+    if (error && typeof error === 'object' && 'statusCode' in error) {
+      throw error
+    }
+    // 内部エラーは詳細を漏洩させない
     throw createError({
-      statusCode: error.statusCode || 500,
-      message: error.message || 'オプション可用性の確認に失敗しました'
+      statusCode: 500,
+      message: 'オプション可用性の確認に失敗しました'
     })
   }
 })

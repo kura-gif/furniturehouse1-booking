@@ -47,6 +47,12 @@ export interface Booking {
   guestName: string
   guestEmail: string
   guestPhone: string
+  guestPostalCode?: string      // 郵便番号
+  guestAddress?: string         // 住所
+  guestOccupation?: string      // 職業
+  isForeignNational?: boolean   // 外国籍かどうか
+  guestNationality?: string     // 国籍（外国籍の場合）
+  guestPassportNumber?: string  // パスポート番号（外国籍の場合）
   status: BookingStatus
   paymentStatus: PaymentStatus
   totalAmount: number
@@ -256,6 +262,12 @@ export interface CreateBookingRequest {
   guestName: string
   guestEmail: string
   guestPhone: string
+  guestPostalCode?: string      // 郵便番号
+  guestAddress?: string         // 住所
+  guestOccupation?: string      // 職業
+  isForeignNational?: boolean   // 外国籍かどうか
+  guestNationality?: string     // 国籍（外国籍の場合）
+  guestPassportNumber?: string  // パスポート番号（外国籍の場合）
   totalAmount: number
   baseAmount: number
   discountAmount: number

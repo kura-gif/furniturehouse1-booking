@@ -197,7 +197,7 @@ definePageMeta({
 
 // 設定データ
 const settings = ref({
-  checkInTime: '15:00',
+  checkInTime: '14:00',
   checkOutTime: '11:00',
   maxGuests: 6,
   houseRules: '',

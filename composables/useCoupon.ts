@@ -56,10 +56,10 @@ export const useCoupon = () => {
       const now = new Date()
       const validFrom = coupon.validFrom instanceof Timestamp
         ? coupon.validFrom.toDate()
-        : new Date(coupon.validFrom as any)
+        : new Date(coupon.validFrom as string | number | Date)
       const validUntil = coupon.validUntil instanceof Timestamp
         ? coupon.validUntil.toDate()
-        : new Date(coupon.validUntil as any)
+        : new Date(coupon.validUntil as string | number | Date)
 
       if (now < validFrom) {
         return { isValid: false, error: 'このクーポンはまだ利用できません' }
@@ -107,8 +107,8 @@ export const useCoupon = () => {
         discountRate,
         discountAmount
       }
-    } catch (e: any) {
-      console.error('クーポン検証エラー:', e)
+    } catch (err: unknown) {
+      console.error('クーポン検証エラー:', err)
       error.value = 'クーポンの検証に失敗しました'
       return { isValid: false, error: 'クーポンの検証に失敗しました' }
     } finally {

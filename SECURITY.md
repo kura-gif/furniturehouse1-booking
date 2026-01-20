@@ -115,6 +115,8 @@ const limits = {
 - `X-RateLimit-Remaining`: 残り回数
 - `X-RateLimit-Reset`: リセット時刻
 
+**今後の改善予定**: Upstash Redis移行（サーバーレス環境での分散対応）
+
 ---
 
 ### 5. Stripe決済のセキュリティ ✅
@@ -155,6 +157,35 @@ await db.runTransaction(async (transaction) => {
   // 3. 予約作成
 })
 ```
+
+#### 並行処理競合対策（Race Condition）✅
+
+**実装**: 楽観的ロック（Phase 2.5追加）
+
+```typescript
+// server/api/bookings/create-secure.post.ts
+// 1. bookingLocksコレクションでロック取得
+// 2. 30秒TTLで自動解放
+// 3. 最大3回リトライ
+const lockRef = db.collection('bookingLocks').doc(lockKey)
+```
+
+**効果**: 同時予約によるダブルブッキングを防止
+
+#### Idempotency Key ✅
+
+**実装**: 決済作成時の冪等性確保（Phase 2.5追加）
+
+```typescript
+const paymentIntent = await stripe.paymentIntents.create({
+  amount: calculatedAmount,
+  currency: 'jpy',
+}, {
+  idempotencyKey: `payment-${bookingId}-${timestamp}`
+})
+```
+
+**効果**: ネットワーク障害時のリトライで二重課金を防止
 
 ---
 
@@ -258,6 +289,37 @@ if (path.startsWith('/api/test/') && process.env.NODE_ENV === 'production') {
   })
 }
 ```
+
+---
+
+### 10. メール送信リトライ機能 ✅
+
+**実装**: `server/utils/email-retry.ts`（Phase 2.5追加）
+
+- 指数バックオフ + ジッター付きリトライ
+- 最大3回リトライ
+- リトライ対象: 408, 429, 500, 502, 503, 504エラー
+
+**効果**: SMTPサーバーの一時障害でもメール不達を防止
+
+---
+
+### 11. ログ基盤統一・PIIマスキング ✅
+
+**実装**: `server/utils/logger.ts`（Phase 2.5追加）
+
+- 構造化ログ出力
+- 機密情報（メールアドレス、決済情報）の自動マスキング
+- 本番環境でのconsole.log出力制御
+
+---
+
+### 12. 環境変数バリデーション ✅
+
+**実装**: `server/plugins/init.ts`（Phase 2.5追加）
+
+- 起動時に必須環境変数をチェック
+- 未設定の場合は起動失敗（サイレント失敗を防止）
 
 ---
 
@@ -372,5 +434,5 @@ fields: {
 
 ---
 
-**最終更新**: 2025-12-31  
+**最終更新**: 2026-01-19
 **セキュリティレベル**: A+ (最高)

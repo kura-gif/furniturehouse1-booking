@@ -100,25 +100,27 @@ export default defineEventHandler(async (event) => {
       email: userRecord.email,
       displayName: displayName.trim()
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('❌ アカウント作成エラー:', error)
 
+    const firebaseError = error as { code?: string; statusCode?: number; message?: string }
+
     // Firebase エラーをユーザーフレンドリーなメッセージに変換
-    if (error.code === 'auth/email-already-exists') {
+    if (firebaseError.code === 'auth/email-already-exists') {
       throw createError({
         statusCode: 400,
         message: 'このメールアドレスは既に使用されています'
       })
     }
 
-    if (error.code === 'auth/invalid-email') {
+    if (firebaseError.code === 'auth/invalid-email') {
       throw createError({
         statusCode: 400,
         message: '無効なメールアドレスです'
       })
     }
 
-    if (error.code === 'auth/weak-password') {
+    if (firebaseError.code === 'auth/weak-password') {
       throw createError({
         statusCode: 400,
         message: 'パスワードが弱すぎます'
@@ -127,8 +129,8 @@ export default defineEventHandler(async (event) => {
 
     // その他のエラー
     throw createError({
-      statusCode: error.statusCode || 500,
-      message: error.message || 'アカウント作成に失敗しました'
+      statusCode: firebaseError.statusCode || 500,
+      message: error instanceof Error ? error.message : 'アカウント作成に失敗しました'
     })
   }
 })

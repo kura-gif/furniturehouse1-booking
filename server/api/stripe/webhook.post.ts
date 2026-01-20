@@ -13,6 +13,7 @@
 import Stripe from 'stripe'
 import { FieldValue } from 'firebase-admin/firestore'
 import { stripeLogger as logger } from '~/server/utils/logger'
+import { getErrorMessage } from '~/server/utils/error-handling'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -39,11 +40,12 @@ export default defineEventHandler(async (event) => {
         sig,
         config.stripeWebhookSecret
       )
-    } catch (err: any) {
-      logger.error('Webhook signature verification failed:', err.message)
+    } catch (err: unknown) {
+      logger.error('Webhook signature verification failed:', getErrorMessage(err))
+      // Stripeには詳細を返さない（セキュリティ上の理由）
       throw createError({
         statusCode: 400,
-        message: `Webhook Error: ${err.message}`,
+        message: 'Webhook signature verification failed',
       })
     }
 
@@ -227,12 +229,12 @@ async function handleAuthorizationSuccess(
       }
     })
     logger.debug('Admin notification sent for review')
-  } catch (emailError: any) {
-    logger.error('Email sending failed:', emailError.message)
+  } catch (emailError: unknown) {
+    logger.error('Email sending failed:', getErrorMessage(emailError))
     await db.collection('emailLogs').add({
       type: 'booking_request_email_failed',
       bookingId: bookingDoc.id,
-      error: emailError.message,
+      error: getErrorMessage(emailError),
       timestamp: FieldValue.serverTimestamp(),
     })
   }
@@ -364,12 +366,12 @@ async function handlePaymentFailed(
       }
     })
     logger.debug('Admin notification sent for payment failure')
-  } catch (emailError: any) {
-    logger.error('Payment failed email sending failed:', emailError.message)
+  } catch (emailError: unknown) {
+    logger.error('Payment failed email sending failed:', getErrorMessage(emailError))
     await db.collection('emailLogs').add({
       type: 'payment_failed_email_error',
       bookingId: bookingDoc.id,
-      error: emailError.message,
+      error: getErrorMessage(emailError),
       timestamp: FieldValue.serverTimestamp(),
     })
   }
@@ -477,8 +479,8 @@ async function handleRefund(
       }
     })
     logger.debug('Admin refund notification sent')
-  } catch (emailError: any) {
-    logger.error('Refund email sending failed:', emailError.message)
+  } catch (emailError: unknown) {
+    logger.error('Refund email sending failed:', getErrorMessage(emailError))
   }
 }
 

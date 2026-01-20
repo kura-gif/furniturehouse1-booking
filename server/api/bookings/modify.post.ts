@@ -19,6 +19,7 @@ import Stripe from 'stripe'
 import { FieldValue } from 'firebase-admin/firestore'
 import { requireAdmin } from '~/server/utils/auth'
 import { calculateBookingAmount, DEFAULT_PRICING } from '~/server/utils/pricing'
+import { getErrorMessage, getErrorStatusCode } from '~/server/utils/error-handling'
 
 interface ModifyRequest {
   bookingId: string
@@ -172,13 +173,15 @@ export default defineEventHandler(async (event) => {
               type: 'modification_refund',
               modifiedBy: admin.uid
             }
+          }, {
+            idempotencyKey: `refund-modify-${bookingId}-${refundAmount}`,
           })
           console.log('✅ Partial refund created:', refund.id)
-        } catch (stripeError: any) {
+        } catch (stripeError: unknown) {
           console.error('❌ Stripe refund error:', stripeError)
           throw createError({
             statusCode: 500,
-            message: '返金処理に失敗しました: ' + stripeError.message
+            message: '返金処理に失敗しました: ' + getErrorMessage(stripeError)
           })
         }
       }
@@ -190,7 +193,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Firestoreを更新
-    const updateData: any = {
+    const updateData: Record<string, unknown> = {
       updatedAt: FieldValue.serverTimestamp(),
       totalAmount: newAmount
     }
@@ -255,8 +258,8 @@ export default defineEventHandler(async (event) => {
         },
       })
       console.log('✅ Guest modification notification sent')
-    } catch (emailError: any) {
-      console.error('⚠️ Guest email send error:', emailError.message)
+    } catch (emailError: unknown) {
+      console.error('⚠️ Guest email send error:', getErrorMessage(emailError))
     }
 
     // 管理者に変更完了通知を送信
@@ -276,8 +279,8 @@ export default defineEventHandler(async (event) => {
         },
       })
       console.log('✅ Admin modification notification sent')
-    } catch (emailError: any) {
-      console.error('⚠️ Admin email send error:', emailError.message)
+    } catch (emailError: unknown) {
+      console.error('⚠️ Admin email send error:', getErrorMessage(emailError))
     }
 
     return {
@@ -311,11 +314,11 @@ export default defineEventHandler(async (event) => {
           ? `予約を変更しました。¥${refundAmount.toLocaleString()} を返金しました。`
           : '予約を変更しました。'
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('❌ Booking modification error:', error)
     throw createError({
-      statusCode: error.statusCode || 500,
-      message: error.message || '予約変更に失敗しました'
+      statusCode: getErrorStatusCode(error),
+      message: getErrorMessage(error) || '予約変更に失敗しました'
     })
   }
 })
