@@ -14,8 +14,9 @@ export default defineNitroPlugin((nitroApp) => {
   try {
     initializeFirebaseAdmin()
     console.log('✅ Firebase Admin SDK initialized successfully')
-  } catch (error: any) {
-    console.error('❌ Firebase Admin SDK initialization failed:', error.message)
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    console.error('❌ Firebase Admin SDK initialization failed:', errorMessage)
     // 開発環境では警告のみ、本番環境ではエラー
     if (process.env.NODE_ENV === 'production') {
       throw error

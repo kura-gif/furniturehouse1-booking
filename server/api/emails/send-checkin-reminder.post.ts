@@ -178,7 +178,7 @@ export default defineEventHandler(async (event) => {
             </div>
             <div class="info-row">
               <span class="label">チェックイン</span>
-              <span class="value"><strong>${checkInDate}</strong> ${facilitySettings.checkInTime || '15:00'}以降</span>
+              <span class="value"><strong>${checkInDate}</strong> ${facilitySettings.checkInTime || '14:00'}以降</span>
             </div>
             <div class="info-row">
               <span class="label">チェックアウト</span>
@@ -233,12 +233,12 @@ export default defineEventHandler(async (event) => {
       success: true,
       messageId: info.messageId
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('❌ Check-in reminder email error:', error)
     throw createError({
       statusCode: 500,
       statusMessage: 'リマインダーメールの送信に失敗しました',
-      message: error.message
+      message: error instanceof Error ? error.message : 'Unknown error'
     })
   }
 })

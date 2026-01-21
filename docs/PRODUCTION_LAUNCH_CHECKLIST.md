@@ -1,7 +1,7 @@
 # 本番環境リリース完全ガイド
 ## 宿泊施設予約システム運営開始チェックリスト
 
-最終更新: 2025-12-30
+最終更新: 2026年1月19日
 
 ---
 
@@ -966,14 +966,55 @@ try {
 #### 推奨サービス
 ```bash
 1. UptimeRobot（無料プラン）
-   - URL: https://booking.furniturehouse1.com
+   - URL: https://booking.furniturehouse1.com/api/health
    - チェック間隔: 5分
    - アラート先: 管理者メール
+   - レスポンス確認: status=healthy
 
 2. Better Uptime（有料、より詳細）
    - ステータスページ作成可能
    - インシデント管理
    - SLA追跡
+```
+
+#### ヘルスチェックエンドポイント
+
+アプリケーションには `/api/health` エンドポイントが実装されています：
+
+```bash
+GET /api/health
+
+レスポンス例:
+{
+  "status": "healthy" | "degraded" | "unhealthy",
+  "services": {
+    "firestore": { "status": "healthy", "latency": 45 },
+    "stripe": { "status": "healthy", "latency": 120 }
+  },
+  "uptime": 3600,
+  "environment": "production"
+}
+
+HTTPステータス:
+- 200: 正常（healthy）
+- 503: サービス異常（unhealthy/degraded）
+```
+
+### 📊 運用ログの確認
+
+Firestoreの `operationLogs` コレクションに自動で運用ログが記録されます：
+
+```bash
+ログカテゴリ:
+- booking: 予約作成、承認、キャンセルなど
+- payment: 決済確定、返金など
+- email: メール送信結果
+- cron: 定期ジョブ実行結果
+- admin: 管理者操作
+- system: システムイベント
+- error: エラー
+
+Firebase Console → Firestore → operationLogs で確認可能
 ```
 
 ---
@@ -1327,6 +1368,11 @@ curl https://booking.furniturehouse1.com
 - [ ] バックアップ設定
 - [ ] 監視ツール導入
 - [ ] 運用マニュアル作成
+- [ ] 環境変数検証スクリプト実行（`npm run validate-env:prod`）
+- [ ] ヘルスチェックエンドポイント動作確認（`/api/health`）
+- [ ] 外部監視サービスへのヘルスチェック登録（UptimeRobotなど）
+- [ ] Cron定期実行の動作確認（Vercel Dashboard → Logsで確認）
+- [ ] operationLogsへの運用ログ記録確認
 
 #### Phase 5: 最適化（オプション）
 - [ ] パフォーマンス改善

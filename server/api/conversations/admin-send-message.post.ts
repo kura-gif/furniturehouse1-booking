@@ -135,16 +135,16 @@ export default defineEventHandler(async (event) => {
         ...newMessage
       }
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('管理者メッセージ送信エラー:', error)
 
-    if (error.statusCode) {
+    if (error && typeof error === 'object' && 'statusCode' in error) {
       throw error
     }
 
     throw createError({
       statusCode: 500,
-      statusMessage: error.message || 'メッセージの送信に失敗しました'
+      statusMessage: error instanceof Error ? error.message : 'メッセージの送信に失敗しました'
     })
   }
 })

@@ -139,10 +139,23 @@ onMounted(() => {
 })
 
 // SEO設定
-useHead({
+const { setBasicMeta, setReviewSchema, siteUrl } = useSeo()
+
+setBasicMeta({
   title: 'ゲストレビュー | 家具の家 No.1',
-  meta: [
-    { name: 'description', content: '家具の家 No.1 に宿泊されたゲストの皆様からのレビューをご覧いただけます。' }
-  ]
+  description: '家具の家 No.1 に宿泊されたゲストの皆様からのレビューをご覧いただけます。実際に宿泊された方々の声をぜひご参考ください。',
+  url: `${siteUrl}/reviews`
+})
+
+// レビュー構造化データを設定（レビュー読み込み後）
+watch(reviews, (newReviews) => {
+  if (newReviews.length > 0) {
+    setReviewSchema(newReviews.map(r => ({
+      author: r.userName,
+      rating: r.rating,
+      reviewBody: r.comment,
+      datePublished: r.createdAt?.toDate ? r.createdAt.toDate().toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
+    })))
+  }
 })
 </script>

@@ -54,7 +54,7 @@ export default defineEventHandler(async (event) => {
       battery: response.body.battery,
       updatedAt: new Date().toISOString()
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('SwitchBot API error:', error)
     throw createError({
       statusCode: 500,

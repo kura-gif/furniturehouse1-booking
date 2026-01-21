@@ -1,54 +1,70 @@
 <template>
-  <div class="booking-calendar">
+  <div class="booking-calendar" role="region" aria-label="予約カレンダー">
     <div class="calendar-header mb-6 flex items-center justify-between">
       <button
         @click="previousMonth"
-        class="p-2 rounded-lg hover:bg-gray-100 transition-custom"
+        class="p-2 rounded-lg hover:bg-gray-100 transition-custom focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+        aria-label="前月を表示"
+        type="button"
       >
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
         </svg>
       </button>
 
-      <h3 class="text-2xl font-semibold">
+      <h3 class="text-2xl font-semibold" aria-live="polite" aria-atomic="true">
         {{ currentMonthYear }}
       </h3>
 
       <button
         @click="nextMonth"
-        class="p-2 rounded-lg hover:bg-gray-100 transition-custom"
+        class="p-2 rounded-lg hover:bg-gray-100 transition-custom focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+        aria-label="次月を表示"
+        type="button"
       >
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
         </svg>
       </button>
     </div>
 
     <!-- 曜日ヘッダー -->
-    <div class="grid grid-cols-7 gap-2 mb-2">
+    <div class="grid grid-cols-7 gap-2 mb-2" role="row">
       <div
         v-for="day in weekDays"
         :key="day"
         class="text-center text-sm font-medium text-gray-600 py-2"
+        role="columnheader"
+        :abbr="day"
       >
         {{ day }}
       </div>
     </div>
 
     <!-- カレンダーグリッド -->
-    <div class="grid grid-cols-7 gap-2">
-      <div
+    <div class="grid grid-cols-7 gap-2" role="grid" aria-label="日付を選択">
+      <button
         v-for="date in calendarDays"
         :key="date.dateString"
         @click="selectDate(date)"
+        @keydown.enter="selectDate(date)"
+        @keydown.space.prevent="selectDate(date)"
+        :disabled="!date.isAvailable"
+        :aria-disabled="!date.isAvailable"
+        :aria-selected="date.isSelected"
+        :aria-label="getDateAriaLabel(date)"
+        :tabindex="date.isCurrentMonth && date.isAvailable ? 0 : -1"
+        role="gridcell"
+        type="button"
         :class="[
-          'aspect-square p-2 rounded-lg cursor-pointer transition-custom',
+          'aspect-square p-2 rounded-lg transition-custom',
           'flex items-center justify-center relative',
+          'focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2',
           {
             'text-gray-300': !date.isCurrentMonth,
             'bg-gray-100': date.isToday && !date.isSelected,
             'gradient-primary text-white': date.isSelected,
-            'hover:bg-gray-50': date.isAvailable && !date.isSelected,
+            'hover:bg-gray-50 cursor-pointer': date.isAvailable && !date.isSelected,
             'cursor-not-allowed opacity-50': !date.isAvailable,
             'border-2 border-purple-500': date.isInRange && !date.isSelected
           }
@@ -60,31 +76,32 @@
         <span
           v-if="date.isBooked"
           class="absolute bottom-1 w-1.5 h-1.5 rounded-full bg-red-500"
+          aria-hidden="true"
         ></span>
-      </div>
+      </button>
     </div>
 
     <!-- 選択された日付の表示 -->
-    <div v-if="selectedRange.start" class="mt-6 p-4 bg-gray-50 rounded-lg">
+    <div v-if="selectedRange.start" class="mt-6 p-4 bg-gray-50 rounded-lg" role="status" aria-live="polite" aria-label="選択された日程">
       <div class="flex items-center justify-between">
         <div>
-          <p class="text-sm text-gray-600">チェックイン</p>
-          <p class="font-semibold">{{ formatDate(selectedRange.start) }}</p>
+          <p class="text-sm text-gray-600" id="checkin-label">チェックイン</p>
+          <p class="font-semibold" aria-labelledby="checkin-label">{{ formatDate(selectedRange.start) }}</p>
         </div>
-        <div v-if="selectedRange.end">
+        <div v-if="selectedRange.end" aria-hidden="true">
           <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
           </svg>
         </div>
         <div v-if="selectedRange.end">
-          <p class="text-sm text-gray-600">チェックアウト</p>
-          <p class="font-semibold">{{ formatDate(selectedRange.end) }}</p>
+          <p class="text-sm text-gray-600" id="checkout-label">チェックアウト</p>
+          <p class="font-semibold" aria-labelledby="checkout-label">{{ formatDate(selectedRange.end) }}</p>
         </div>
       </div>
 
       <div v-if="selectedRange.start && selectedRange.end" class="mt-3 pt-3 border-t">
-        <p class="text-sm text-gray-600">宿泊日数</p>
-        <p class="font-semibold">{{ numberOfNights }}泊</p>
+        <p class="text-sm text-gray-600" id="nights-label">宿泊日数</p>
+        <p class="font-semibold" aria-labelledby="nights-label">{{ numberOfNights }}泊</p>
       </div>
     </div>
   </div>
@@ -258,6 +275,32 @@ function nextMonth() {
 
 function formatDate(date: Date) {
   return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`
+}
+
+/**
+ * 日付のアクセシビリティラベルを生成
+ */
+function getDateAriaLabel(calendarDate: CalendarDate): string {
+  const dateLabel = formatDate(calendarDate.date)
+  const parts = [dateLabel]
+
+  if (calendarDate.isToday) {
+    parts.push('今日')
+  }
+  if (calendarDate.isSelected) {
+    parts.push('選択中')
+  }
+  if (calendarDate.isInRange) {
+    parts.push('選択範囲内')
+  }
+  if (calendarDate.isBooked) {
+    parts.push('予約済み')
+  }
+  if (!calendarDate.isAvailable && !calendarDate.isBooked) {
+    parts.push('予約不可')
+  }
+
+  return parts.join('、')
 }
 </script>
 

@@ -60,14 +60,14 @@ export default defineEventHandler(async (event) => {
       success: true,
       settings: settingsDoc.data()
     }
-  } catch (error: any) {
-    console.error('[API /admin/settings] Error:', error.message)
-    if (error.statusCode) {
+  } catch (error: unknown) {
+    console.error('[API /admin/settings] Error:', error instanceof Error ? error.message : 'Unknown error')
+    if (error && typeof error === 'object' && 'statusCode' in error) {
       throw error
     }
     throw createError({
       statusCode: 500,
-      message: `Failed to get settings: ${error.message}`
+      message: `Failed to get settings: ${error instanceof Error ? error.message : 'Unknown error'}`
     })
   }
 })

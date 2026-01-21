@@ -116,6 +116,8 @@ export default defineEventHandler(async (event) => {
         bookingReference: booking.bookingReference || '',
         requestedAt: new Date().toISOString(),
       },
+    }, {
+      idempotencyKey: `refund-admin-${bookingId}-${refundAmount}`,
     })
 
     console.log('✅ Refund created:', {
@@ -168,8 +170,8 @@ export default defineEventHandler(async (event) => {
         },
       })
       console.log('✅ Refund confirmation email sent')
-    } catch (emailError: any) {
-      console.error('⚠️ Failed to send refund email:', emailError.message)
+    } catch (emailError: unknown) {
+      console.error('⚠️ Failed to send refund email:', emailError instanceof Error ? emailError.message : 'Unknown error')
       // メール送信失敗は返金処理自体には影響させない
     }
 

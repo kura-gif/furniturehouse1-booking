@@ -755,6 +755,7 @@ const { getAvailableAmenities: fetchAvailableAmenities } = useAmenities()
 const { getVisiblePhotos } = usePhotos()
 const { getApprovedReviews, getAverageRating } = useReviews()
 const { user } = useAuth()
+const toast = useToast()
 
 // レビュー管理
 const approvedReviews = ref<any[]>([])
@@ -762,7 +763,7 @@ const averageRating = ref(0)
 
 // 施設設定（知っておきたいこと用）
 const facilitySettings = ref({
-  checkInTime: '15:00',
+  checkInTime: '14:00',
   checkOutTime: '11:00',
   houseRules: '',
   maxGuests: 6
@@ -942,7 +943,7 @@ const sharePhoto = async () => {
     }
   } else {
     navigator.clipboard.writeText(window.location.href)
-    alert('URLをコピーしました')
+    toast.success('URLをコピーしました')
   }
 }
 
@@ -1055,7 +1056,7 @@ const selectDate = (dateObj: any) => {
   // ブロックまたは予約済みの日付かチェック
   const selectedDate = new Date(dateObj.date)
   if (isDateUnavailable(selectedDate)) {
-    alert('この日付は予約できません')
+    toast.warning('この日付は予約できません')
     return
   }
 
@@ -1072,7 +1073,7 @@ const selectDate = (dateObj: any) => {
       const checkIn = new Date(checkInDate.value)
       const checkOut = new Date(dateObj.date)
       if (isDateRangeUnavailable(checkIn, checkOut)) {
-        alert('選択された期間には予約できない日が含まれています')
+        toast.warning('選択された期間には予約できない日が含まれています')
         checkOutDate.value = ''
         return
       }
@@ -1085,7 +1086,7 @@ const selectDate = (dateObj: any) => {
       const checkIn = new Date(dateObj.date)
       const checkOut = new Date(checkOutDate.value)
       if (isDateRangeUnavailable(checkIn, checkOut)) {
-        alert('選択された期間には予約できない日が含まれています')
+        toast.warning('選択された期間には予約できない日が含まれています')
         checkInDate.value = ''
         checkOutDate.value = ''
         return
@@ -1140,22 +1141,22 @@ const totalPrice = computed(() => {
 // 予約処理
 const handleReservation = () => {
   if (!checkInDate.value || !checkOutDate.value) {
-    alert('チェックイン日とチェックアウト日を選択してください。')
+    toast.warning('チェックイン日とチェックアウト日を選択してください。')
     return
   }
 
   if (nights.value === 0) {
-    alert('有効な日付を選択してください。')
+    toast.warning('有効な日付を選択してください。')
     return
   }
 
   if (totalGuests.value === 0) {
-    alert('宿泊人数を選択してください。')
+    toast.warning('宿泊人数を選択してください。')
     return
   }
 
   if (totalGuests.value > 6) {
-    alert('最大6名までご利用いただけます。')
+    toast.warning('最大6名までご利用いただけます。')
     return
   }
 
@@ -1163,7 +1164,7 @@ const handleReservation = () => {
   const checkIn = new Date(checkInDate.value)
   const checkOut = new Date(checkOutDate.value)
   if (isDateRangeUnavailable(checkIn, checkOut)) {
-    alert('選択された期間には予約できない日が含まれています。別の日程をお選びください。')
+    toast.warning('選択された期間には予約できない日が含まれています。別の日程をお選びください。')
     return
   }
 

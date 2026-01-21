@@ -460,8 +460,8 @@ export function createDefaultEnhancedPricingSetting(): EnhancedPricingSetting {
       { minAge: 7, maxAge: 15, priceRate: 0.5 }
     ],
 
-    createdAt: null as any, // デモ用
-    updatedAt: null as any  // デモ用
+    createdAt: null as unknown, // デモ用
+    updatedAt: null as unknown  // デモ用
   }
 }
 
@@ -590,9 +590,9 @@ export const useEnhancedPricing = () => {
           holidayCalendar: settings.holidayCalendar
         })
       }
-    } catch (e: any) {
-      console.error('料金設定の読み込みエラー:', e)
-      error.value = e.message || '料金設定の読み込みに失敗しました'
+    } catch (err: unknown) {
+      console.error('料金設定の読み込みエラー:', err)
+      error.value = err instanceof Error ? err.message : '料金設定の読み込みに失敗しました'
     } finally {
       loading.value = false
     }
@@ -609,10 +609,10 @@ export const useEnhancedPricing = () => {
       // LocalStorageにもバックアップ
       saveEnhancedPricingSettingsToLocalStorage(pricingSetting.value)
       return docId
-    } catch (e: any) {
-      console.error('料金設定の保存エラー:', e)
-      error.value = e.message || '料金設定の保存に失敗しました'
-      throw e
+    } catch (err: unknown) {
+      console.error('料金設定の保存エラー:', err)
+      error.value = err instanceof Error ? err.message : '料金設定の保存に失敗しました'
+      throw err
     } finally {
       loading.value = false
     }
@@ -641,10 +641,10 @@ export const useEnhancedPricing = () => {
       const holidayCalendarData = pricingSetting.value.holidayCalendar || []
 
       // 祝日データの詳細をログ
-      const allHolidays = holidayCalendarData.flatMap((c: any) => c.holidays || [])
+      const allHolidays = holidayCalendarData.flatMap((c: { holidays?: string[] }) => c.holidays || [])
       console.log('🗓️ Holiday calendar data:', {
         hasData: holidayCalendarData.length > 0,
-        years: holidayCalendarData.map((c: any) => c.year),
+        years: holidayCalendarData.map((c: { year?: number }) => c.year),
         totalHolidays: allHolidays.length,
         holidays: allHolidays.slice(0, 10) // 最初の10件だけ表示
       })
@@ -656,7 +656,7 @@ export const useEnhancedPricing = () => {
       const isNextDayHoliday = allHolidays.includes(nextDayStr)
       console.log(`📅 ${checkInStr} の翌日 ${nextDayStr} は祝日: ${isNextDayHoliday}`)
 
-      const convertedSetting: any = {
+      const convertedSetting: EnhancedPricingSetting = {
         ...pricingSetting.value,
         basePriceAdult: pricingSetting.value.basePrice || 35000,
         seasonMultipliers: {

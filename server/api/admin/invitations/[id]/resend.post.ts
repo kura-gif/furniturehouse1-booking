@@ -156,7 +156,7 @@ export default defineEventHandler(async (event) => {
     })
 
     console.log('✅ 招待メール再送信成功:', invitation.email)
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('❌ 招待メール再送信エラー:', error)
     throw createError({
       statusCode: 500,

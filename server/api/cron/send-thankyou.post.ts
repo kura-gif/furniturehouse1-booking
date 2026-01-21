@@ -9,7 +9,13 @@
  * 外部Cronサービス（Vercel Cron、Cloud Scheduler等）から呼び出す
  */
 
+import { getErrorMessage } from '~/server/utils/error-handling'
+import { cronLogger, emailOperationLogger } from '~/server/utils/operation-logger'
+
+const JOB_NAME = 'send-thankyou'
+
 export default defineEventHandler(async (event) => {
+  const startTime = Date.now()
   const config = useRuntimeConfig()
 
   // Cron認証チェック（Vercel Cronまたはカスタムシークレット）
@@ -31,6 +37,9 @@ export default defineEventHandler(async (event) => {
     sent: 0,
     errors: [] as string[]
   }
+
+  // ジョブ開始ログ
+  await cronLogger.started(JOB_NAME)
 
   try {
     // 昨日の日付を取得（日本時間）
@@ -93,23 +102,30 @@ export default defineEventHandler(async (event) => {
         })
 
         results.sent++
-        console.log(`✅ Thank you email sent: ${booking.bookingReference}`)
-      } catch (error: any) {
-        results.errors.push(`${booking.bookingReference}: ${error.message}`)
-        console.error(`❌ Thank you email error: ${booking.bookingReference}`, error.message)
+        await emailOperationLogger.sent('checkout-thankyou', booking.guestEmail, booking.bookingReference)
+      } catch (error: unknown) {
+        const errorMsg = getErrorMessage(error)
+        results.errors.push(`${booking.bookingReference}: ${errorMsg}`)
+        await emailOperationLogger.failed('checkout-thankyou', booking.guestEmail, errorMsg, booking.bookingReference)
       }
     }
+
+    const duration = Date.now() - startTime
+    await cronLogger.completed(JOB_NAME, results, duration)
 
     return {
       success: true,
       message: `お礼メール処理完了: ${results.sent}件送信`,
       results
     }
-  } catch (error: any) {
-    console.error('❌ Thank you cron error:', error)
+  } catch (error: unknown) {
+    const duration = Date.now() - startTime
+    const errorMsg = getErrorMessage(error)
+    await cronLogger.failed(JOB_NAME, errorMsg, duration)
+
     throw createError({
       statusCode: 500,
-      message: error.message || 'お礼メール処理に失敗しました'
+      message: errorMsg || 'お礼メール処理に失敗しました'
     })
   }
 })

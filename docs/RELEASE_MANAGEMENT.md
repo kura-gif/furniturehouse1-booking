@@ -27,14 +27,59 @@ W3(17-19)   W4(20-26)        W5(27-2)         W1(3-6)
 
 ## 現在のステータス
 
+**最終更新**: 2026年1月20日（Phase 3.5確認完了）
+
 | フェーズ | 状態 | 開始予定 | 完了予定 | 実際の完了日 |
 |---------|------|----------|----------|--------------|
-| Phase 1: 緊急修正 | ✅ 完了 | **1/20(月)** | **1/26(日)** | 1/17 |
-| Phase 2: テスト環境構築 | ✅ 完了 | **1/27(月)** | **2/2(日)** | 1/18 |
-| **Phase 2.5: 公開前リスク対策** | ✅ 完了 | **1/18(土)** | **1/19(日)** | 1/18 |
-| Phase 3: 本番準備・公開 | ⬜ 未着手 | **2/3(月)** | **2/6(木)** | - |
+| Phase 1: 緊急修正 | ✅ 完了 | 1/20(月) | 1/26(日) | 1/17 |
+| Phase 2: テスト環境構築 | ✅ 完了 | 1/27(月) | 2/2(日) | 1/18 |
+| Phase 2.5: 公開前リスク対策 | ✅ 完了 | 1/18(土) | 1/19(日) | 1/18 |
+| **Phase 3: 本番準備・公開** | 🔄 進行中 | **1/20(月)** | **2/6(木)** | - |
 
 **状態の凡例**: ⬜ 未着手 / 🔄 進行中 / ✅ 完了 / ⚠️ 問題あり
+
+### 完了した重要タスク（Phase 3 - 1/20実施）
+
+- ✅ Stripe本番モード切り替え・APIキー取得
+- ✅ 本番Webhookエンドポイント作成
+- ✅ Vercel本番環境変数設定（Production環境）
+- ✅ Basic認証解除（BASIC_AUTH_ENABLED=false）
+- ✅ 本番環境ヘルスチェック確認（Firestore・Stripe接続OK）
+- ✅ SEO最適化（robots.txt, sitemap.xml, 構造化データ）
+- ✅ Cronジョブ追加（send-thankyou, consistency-check）
+
+### 追加対応タスク（Phase 3.5 - 1/20追加）
+
+コンサルティングレポートで指摘された追加課題:
+
+| # | タスク | 優先度 | 状態 | 備考 |
+|---|--------|--------|------|------|
+| 3.5-1 | **Firebaseプロジェクト分離** | 🔴 必須 | ✅ | 既に分離済み（Preview: furniture-house-1, Prod: furniture-house-1-prod） |
+| 3.5-2 | ネイティブダイアログ改善（ゲスト向け） | 🟠 推奨 | ⬜ | 100箇所+のalert/confirm（公開後対応） |
+| 3.5-3 | Toast通知システム導入 | 🟠 推奨 | ⬜ | 共通UIコンポーネント（公開後対応） |
+
+#### 3.5-1 Firebaseプロジェクト分離 ✅ 完了
+
+**確認日**: 2026年1月20日
+
+**現在の構成**:
+
+| 環境 | Firebaseプロジェクト |
+| ---- | -------------------- |
+| Preview (staging) | `furniture-house-1` |
+| Production | `furniture-house-1-prod` |
+
+Vercel環境変数で適切に分離設定済み。テストデータが本番に混入するリスクは解消。
+
+### 完了した重要タスク（Phase 2.5）
+
+- ✅ 予約並行処理競合対策（楽観的ロック）
+- ✅ 与信期限切れ処理のCron登録（毎日3時実行）
+- ✅ メール送信リトライ機能（指数バックオフ）
+- ✅ Stripe idempotencyKey追加
+- ✅ 環境変数バリデーション
+- ✅ エラー詳細マスク
+- ✅ ログ基盤統一（PIIマスキング）
 
 ---
 
@@ -668,10 +713,10 @@ await sendEmailWithRetry('/api/emails/send-booking-approved', {
 
 | # | タスク | 目標日 | 担当 | 状態 | 完了日 | 備考 |
 |---|--------|--------|------|------|--------|------|
-| 3-1 | Stripe本番モード切り替え | 2/3(月) | | ⬜ | | |
-| 3-2 | 本番APIキー取得 | 2/3(月) | | ⬜ | | pk_live_, sk_live_ |
-| 3-3 | 本番Webhookエンドポイント作成 | 2/3(月) | | ⬜ | | |
-| 3-4 | Vercel本番環境変数設定 | 2/4(火) | | ⬜ | | |
+| 3-1 | Stripe本番モード切り替え | 2/3(月) | | ✅ | 1/20 | 本番モードで設定完了 |
+| 3-2 | 本番APIキー取得 | 2/3(月) | | ✅ | 1/20 | pk_live_, sk_live_ 取得済み |
+| 3-3 | 本番Webhookエンドポイント作成 | 2/3(月) | | ✅ | 1/20 | booking.furniturehouse1.com/api/stripe/webhook |
+| 3-4 | Vercel本番環境変数設定 | 2/4(火) | | ✅ | 1/20 | Production環境に設定完了 |
 | 3-5 | 少額テスト決済 | 2/4(火) | | ⬜ | | 自分のカードで100円等 |
 
 #### 3-3 本番Webhookエンドポイント作成 手順
@@ -696,16 +741,21 @@ await sendEmailWithRetry('/api/emails/send-booking-approved', {
 
 | 変数名 | 値 | 確認 |
 |--------|-----|------|
-| STRIPE_PUBLIC_KEY | pk_live_... | ⬜ |
-| STRIPE_SECRET_KEY | sk_live_... | ⬜ |
-| STRIPE_WEBHOOK_SECRET | whsec_... (本番用) | ⬜ |
-| SITE_URL | https://booking.furniturehouse1.com | ⬜ |
-| INTERNAL_API_SECRET | (新規生成したもの) | ⬜ |
+| STRIPE_PUBLIC_KEY | pk_live_... | ✅ |
+| STRIPE_SECRET_KEY | sk_live_... | ✅ |
+| STRIPE_WEBHOOK_SECRET | whsec_... (本番用) | ✅ |
+| SITE_URL | https://booking.furniturehouse1.com | ✅ |
+| INTERNAL_API_SECRET | (新規生成したもの) | ✅ |
 | NUXT_PUBLIC_DIFY_TOKEN | (トークン) | ⬜ |
-| EMAIL_USER | (Gmail) | ⬜ |
-| EMAIL_PASSWORD | (アプリパスワード) | ⬜ |
-| FIREBASE_ADMIN_KEY | (Base64) | ⬜ |
-| その他Firebase設定 | - | ⬜ |
+| EMAIL_USER | (Gmail) | ✅ |
+| EMAIL_PASSWORD | (アプリパスワード) | ✅ |
+| FIREBASE_ADMIN_KEY | (Base64) | ✅ |
+| その他Firebase設定 | - | ✅ |
+| BASIC_AUTH_ENABLED | true（公開時にfalseへ変更） | ✅ |
+
+**設定完了日**: 2026/01/20
+**確認方法**: /api/health エンドポイントで Firestore, Stripe 接続確認済み
+**注意**: 本番公開日（2/6）まではBasic認証で保護中
 
 ---
 
@@ -713,12 +763,12 @@ await sendEmailWithRetry('/api/emails/send-booking-approved', {
 
 | # | 確認項目 | 目標日 | 担当 | 状態 | 確認日 |
 |---|----------|--------|------|------|--------|
-| 3-6 | トップページ表示 | 2/5(水) | | ⬜ | |
-| 3-7 | 予約カレンダー表示 | 2/5(水) | | ⬜ | |
-| 3-8 | Stripe Elements表示 | 2/5(水) | | ⬜ | |
-| 3-9 | 管理画面ログイン | 2/5(水) | | ⬜ | |
-| 3-10 | SSL証明書有効 | 2/5(水) | | ⬜ | |
-| 3-11 | レスポンシブ表示（モバイル） | 2/5(水) | | ⬜ | |
+| 3-6 | トップページ表示 | 2/5(水) | | ✅ | 1/20 |
+| 3-7 | 予約カレンダー表示 | 2/5(水) | | ✅ | 1/20 |
+| 3-8 | Stripe Elements表示 | 2/5(水) | | ✅ | 1/20 |
+| 3-9 | 管理画面ログイン | 2/5(水) | | ✅ | 1/20 |
+| 3-10 | SSL証明書有効 | 2/5(水) | | ✅ | 1/20 |
+| 3-11 | レスポンシブ表示（モバイル） | 2/5(水) | | ✅ | 1/20 |
 
 ---
 
@@ -738,12 +788,13 @@ await sendEmailWithRetry('/api/emails/send-booking-approved', {
 ```
 セキュリティ:
 □ npm audit 脆弱性 0件
-□ 環境変数すべて本番値
+✅ 環境変数すべて本番値（1/20設定完了）
 □ テストAPIがアクセス不可（404返却）
+□ 環境変数検証スクリプト実行 → npm run validate-env:prod
 
 決済:
-□ Stripe本番キー設定済み
-□ Webhook本番URL設定済み
+✅ Stripe本番キー設定済み（1/20）
+✅ Webhook本番URL設定済み（1/20）
 □ 少額テスト決済成功
 □ Webhookログに記録あり
 
@@ -753,10 +804,48 @@ await sendEmailWithRetry('/api/emails/send-booking-approved', {
 □ 管理画面動作確認
 
 インフラ:
-□ SSL証明書有効（鍵マーク表示）
-□ ドメイン設定完了
-□ Vercel正常稼働
+✅ SSL証明書有効（鍵マーク表示）
+✅ ドメイン設定完了
+✅ Vercel正常稼働（/api/health で確認 1/20）
+✅ Basic認証解除（BASIC_AUTH_ENABLED=false）
+
+保守運用:
+□ Sentry DSN設定済み（SENTRY_DSN環境変数）
+✅ 外部監視サービス設定（/api/health エンドポイント監視可能）
+✅ Cronジョブ設定済み（vercel.jsonに4つ登録）
+□ operationLogsコレクション用Firestoreインデックス確認
+□ 運用マニュアル（docs/OPERATIONS_MANUAL.md）の内容確認
 ```
+
+#### 保守運用設定の詳細
+
+**1. Sentry DSN設定**
+```
+Vercel環境変数:
+- SENTRY_DSN=https://xxx@xxx.ingest.sentry.io/xxx
+- SENTRY_AUTH_TOKEN=（ソースマップアップロード用）
+```
+
+**2. 外部監視サービス設定**
+UptimeRobot / Better Uptime等で以下を監視:
+```
+URL: https://booking.furniturehouse1.com/api/health
+期待レスポンス: 200
+チェック間隔: 5分
+```
+
+**3. Cronジョブ一覧（vercel.json）**
+| ジョブ | 実行時刻(UTC) | 処理内容 |
+|--------|--------------|----------|
+| send-reminders | 00:00 | チェックインリマインダー |
+| send-thankyou | 01:00 | チェックアウトお礼メール |
+| expire-authorizations | 03:00 | 与信期限切れ処理 |
+| consistency-check | 04:00 | データ整合性チェック |
+
+**4. Firestoreコレクション確認**
+公開後に自動作成される運用ログ用コレクション:
+- `operationLogs`: 運用ログ（category, action, timestamp）
+- `consistencyReports`: 整合性チェック結果
 
 **本番公開承認**:
 承認者: ________________  日付: ____/____/____
@@ -844,7 +933,7 @@ await sendEmailWithRetry('/api/emails/send-booking-approved', {
 | 日付 | 変更内容 | 変更者 |
 |------|----------|--------|
 | 2026/01/17 | 初版作成 | |
-| | | |
+| 2026/01/20 | Phase 3開始：Stripe本番設定完了、Vercel環境変数設定、Basic認証解除 | |
 | | | |
 
 ---

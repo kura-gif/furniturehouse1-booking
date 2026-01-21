@@ -119,10 +119,11 @@ export default defineEventHandler(async (event) => {
         }
       })
       console.log('✅ Admin notification email sent for new guest message')
-    } catch (emailError: any) {
+    } catch (emailError: unknown) {
       // メール送信失敗してもメッセージ送信自体は成功とする
-      console.error('⚠️ Failed to send admin notification email:', emailError?.message || emailError)
-      console.error('⚠️ Error details:', JSON.stringify(emailError?.data || emailError, null, 2))
+      const errorMessage = emailError instanceof Error ? emailError.message : String(emailError)
+      console.error('⚠️ Failed to send admin notification email:', errorMessage)
+      console.error('⚠️ Error details:', JSON.stringify(emailError, null, 2))
     }
 
     return {
@@ -133,16 +134,16 @@ export default defineEventHandler(async (event) => {
         ...newMessage
       }
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('メッセージ送信エラー:', error)
 
-    if (error.statusCode) {
+    if (error && typeof error === 'object' && 'statusCode' in error) {
       throw error
     }
-
+    // 内部エラーは詳細を漏洩させない
     throw createError({
       statusCode: 500,
-      statusMessage: error.message || 'メッセージの送信に失敗しました'
+      statusMessage: 'メッセージの送信に失敗しました'
     })
   }
 })

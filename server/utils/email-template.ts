@@ -1,3 +1,21 @@
+import { isFirestoreTimestamp, type FirestoreTimestamp } from './error-handling'
+
+/** Firestore Timestampまたは日付型 */
+type DateLike = Date | FirestoreTimestamp | string
+
+/** 予約データの型 */
+interface BookingData {
+  guestName?: string
+  bookingReference?: string
+  checkInDate?: DateLike
+  checkOutDate?: DateLike
+  totalAmount?: number
+  guestCount?: number
+  bookingToken?: string
+  guestEmail?: string
+  guestPhone?: string
+}
+
 /**
  * テンプレート内の変数を置換
  *
@@ -7,7 +25,7 @@
  */
 export function replaceTemplateVariables(
   template: string,
-  variables: Record<string, any>
+  variables: Record<string, string | number | undefined>
 ): string {
   return template.replace(/\{\{(\w+)\}\}/g, (match, key) => {
     return variables[key] !== undefined ? String(variables[key]) : match
@@ -20,7 +38,7 @@ export function replaceTemplateVariables(
  * @param booking 予約情報
  * @returns テンプレート変数のマップ
  */
-export function getTemplateVariables(booking: any): Record<string, string> {
+export function getTemplateVariables(booking: BookingData): Record<string, string> {
   const checkInDate = formatDate(booking.checkInDate)
   const checkOutDate = formatDate(booking.checkOutDate)
   const daysUntilCheckIn = calculateDaysUntil(booking.checkInDate)
@@ -45,11 +63,11 @@ export function getTemplateVariables(booking: any): Record<string, string> {
  * @param date Firestore Timestamp または Date オブジェクト
  * @returns 日本語形式の日付（例: 2025年1月15日（水））
  */
-export function formatDate(date: any): string {
+export function formatDate(date: DateLike | undefined): string {
   let jsDate: Date
 
   // Firestore Timestamp の場合
-  if (date && typeof date.toDate === 'function') {
+  if (isFirestoreTimestamp(date)) {
     jsDate = date.toDate()
   } else if (date instanceof Date) {
     jsDate = date
@@ -72,11 +90,11 @@ export function formatDate(date: any): string {
  * @param checkInDate チェックイン日
  * @returns チェックインまでの日数
  */
-export function calculateDaysUntil(checkInDate: any): number {
+export function calculateDaysUntil(checkInDate: DateLike | undefined): number {
   let jsDate: Date
 
   // Firestore Timestamp の場合
-  if (checkInDate && typeof checkInDate.toDate === 'function') {
+  if (isFirestoreTimestamp(checkInDate)) {
     jsDate = checkInDate.toDate()
   } else if (checkInDate instanceof Date) {
     jsDate = checkInDate

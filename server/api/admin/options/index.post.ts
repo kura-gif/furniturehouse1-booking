@@ -53,11 +53,14 @@ export default defineEventHandler(async (event) => {
       optionId: docRef.id,
       message: 'オプションを作成しました'
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('オプション作成エラー:', error)
+    const statusCode = error && typeof error === 'object' && 'statusCode' in error
+      ? (error as { statusCode: number }).statusCode
+      : 500
     throw createError({
-      statusCode: error.statusCode || 500,
-      message: error.message || 'オプションの作成に失敗しました'
+      statusCode,
+      message: error instanceof Error ? error.message : 'オプションの作成に失敗しました'
     })
   }
 })

@@ -3,7 +3,7 @@ import { getFirestoreAdmin } from '~/server/utils/firebase-admin'
 // デフォルト設定値
 const defaultSettings = {
   // 基本設定
-  checkInTime: '15:00',
+  checkInTime: '14:00',
   checkOutTime: '11:00',
   maxGuests: 6,
 
@@ -88,8 +88,8 @@ export default defineEventHandler(async () => {
         nearbyHospital: data?.nearbyHospital || defaultSettings.nearbyHospital
       }
     }
-  } catch (error: any) {
-    console.error('[API /public/settings] Error:', error.message)
+  } catch (error: unknown) {
+    console.error('[API /public/settings] Error:', error instanceof Error ? error.message : 'Unknown error')
     return {
       success: true,
       settings: defaultSettings

@@ -68,10 +68,13 @@ export default defineEventHandler(async (event) => {
         difference: clientAmount !== undefined ? Math.abs(calculatedAmount - clientAmount) : null,
       } : null,
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const statusCode = error && typeof error === 'object' && 'statusCode' in error
+      ? (error as { statusCode: number }).statusCode
+      : 500
     throw createError({
-      statusCode: error.statusCode || 500,
-      message: error.message || '料金計算に失敗しました',
+      statusCode,
+      message: error instanceof Error ? error.message : '料金計算に失敗しました',
     })
   }
 })

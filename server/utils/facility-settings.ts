@@ -2,7 +2,7 @@ import { getFirestoreAdmin } from '~/server/utils/firebase-admin'
 
 // デフォルト設定値
 export const defaultFacilitySettings = {
-  checkInTime: '15:00',
+  checkInTime: '14:00',
   checkOutTime: '11:00',
   maxGuests: 6
 }

@@ -1,7 +1,8 @@
 # 家具の家 No.1 予約システム - システム設計図書
 
-**ドキュメントバージョン**: 1.0
+**ドキュメントバージョン**: 1.1
 **作成日**: 2026年1月17日
+**最終更新**: 2026年1月20日
 **プロジェクト名**: furniturehouse1
 **本番URL**: https://booking.furniturehouse1.com/
 
@@ -468,6 +469,12 @@ interface Booking {
   guestName: string
   guestEmail: string
   guestPhone: string
+  guestPostalCode: string       // 郵便番号（法定必須）
+  guestAddress: string          // 住所（法定必須）
+  guestOccupation: string       // 職業（法定必須）
+  isForeignNational: boolean    // 外国籍フラグ
+  guestNationality?: string     // 国籍（外国籍の場合必須）
+  guestPassportNumber?: string  // パスポート番号（外国籍の場合必須）
 
   // ステータス
   status: 'pending' | 'pending_review' | 'confirmed' |
@@ -1624,4 +1631,4 @@ OPENWEATHER_API_KEY=
 ---
 
 **ドキュメント作成者**: Claude (AI Assistant)
-**最終更新日**: 2026年1月17日
+**最終更新日**: 2026年1月20日

@@ -153,12 +153,12 @@ export default defineEventHandler(async (event) => {
       success: true,
       messageId: info.messageId
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('返金確認メール送信エラー:', error)
     throw createError({
       statusCode: 500,
       statusMessage: '返金確認メールの送信に失敗しました',
-      message: error.message
+      message: error instanceof Error ? error.message : 'Unknown error'
     })
   }
 })

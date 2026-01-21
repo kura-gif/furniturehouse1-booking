@@ -12,6 +12,7 @@
 import Stripe from 'stripe'
 import { FieldValue } from 'firebase-admin/firestore'
 import { requireAdmin } from '~/server/utils/auth'
+import { getErrorMessage, getErrorStatusCode, getStripeErrorCode } from '~/server/utils/error-handling'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
@@ -70,9 +71,9 @@ export default defineEventHandler(async (event) => {
       try {
         await stripe.paymentIntents.cancel(booking.stripePaymentIntentId)
         console.log('✅ Payment intent canceled (authorization released)')
-      } catch (stripeError: any) {
+      } catch (stripeError: unknown) {
         // 既にキャンセル済みの場合はスキップ
-        if (stripeError.code !== 'payment_intent_unexpected_state') {
+        if (getStripeErrorCode(stripeError) !== 'payment_intent_unexpected_state') {
           throw stripeError
         }
         console.log('⚠️ Payment intent already canceled')
@@ -129,8 +130,8 @@ export default defineEventHandler(async (event) => {
         },
       })
       console.log('✅ Rejection email sent to:', booking.guestEmail)
-    } catch (emailError: any) {
-      console.error('⚠️ Failed to send rejection email:', emailError.message)
+    } catch (emailError: unknown) {
+      console.error('⚠️ Failed to send rejection email:', getErrorMessage(emailError))
       // メール送信失敗は却下処理自体には影響させない
     }
 
@@ -151,8 +152,8 @@ export default defineEventHandler(async (event) => {
           rejectionReason: reason,
         },
       })
-    } catch (emailError: any) {
-      console.error('⚠️ Failed to send admin notification:', emailError.message)
+    } catch (emailError: unknown) {
+      console.error('⚠️ Failed to send admin notification:', getErrorMessage(emailError))
     }
 
     return {
@@ -161,12 +162,12 @@ export default defineEventHandler(async (event) => {
       status: 'rejected',
       message: '予約を却下し、与信を解放しました',
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('❌ Rejection error:', error)
 
     throw createError({
-      statusCode: error.statusCode || 500,
-      message: error.message || '予約の却下に失敗しました',
+      statusCode: getErrorStatusCode(error),
+      message: getErrorMessage(error) || '予約の却下に失敗しました',
     })
   }
 })

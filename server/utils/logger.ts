@@ -152,8 +152,32 @@ export function createLogger(options: LoggerOptions = {}) {
 export const logger = createLogger()
 
 // 各モジュール用のロガー
+// 注意: bookingLogger, cronLogger, adminLogger は operation-logger.ts で定義（Firestore保存機能付き）
 export const stripeLogger = createLogger({ prefix: 'Stripe' })
 export const authLogger = createLogger({ prefix: 'Auth' })
-export const bookingLogger = createLogger({ prefix: 'Booking' })
 export const emailLogger = createLogger({ prefix: 'Email' })
-export const adminLogger = createLogger({ prefix: 'Admin' })
+export const apiLogger = createLogger({ prefix: 'API' })
+export const firestoreLogger = createLogger({ prefix: 'Firestore' })
+
+/**
+ * 使用方法:
+ *
+ * 1. 適切なロガーをインポート:
+ *    import { stripeLogger } from '~/server/utils/logger'
+ *    // Firestore保存が必要な場合は operation-logger.ts を使用:
+ *    import { bookingLogger } from '~/server/utils/operation-logger'
+ *
+ * 2. ログレベルに応じて使用:
+ *    stripeLogger.debug('詳細情報', { paymentId })  // 開発時のみ
+ *    stripeLogger.info('処理開始', { paymentId })   // 開発時のみ
+ *    stripeLogger.warn('警告', { message })         // 本番でも出力
+ *    stripeLogger.error('エラー', error)           // 本番でも出力
+ *    stripeLogger.event('PAYMENT_CREATED', data)   // ビジネスイベント
+ *
+ * 3. 機密情報は自動的にマスクされます:
+ *    - メールアドレス
+ *    - Payment Intent ID
+ *    - トークン・シークレット
+ *
+ * 4. 本番環境では warn 以上のみ出力されます
+ */

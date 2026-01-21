@@ -1,10 +1,17 @@
 # デプロイメントガイド - 家具の家 No.1
 
-このドキュメントでは、Studioを使わずに別サーバーにサイトをデプロイする方法を説明します。
+**最終更新**: 2026年1月20日
+
+このドキュメントでは、サイトをデプロイする方法を説明します。
 
 ## 概要
 
-このプロジェクトは、Nuxt 3で構築された完全に独立したWebアプリケーションです。Studioのデザインを完全に再現しており、以下の任意のホスティングサービスにデプロイできます。
+このプロジェクトは、Nuxt 3で構築された完全に独立したWebアプリケーションです。以下の任意のホスティングサービスにデプロイできます。
+
+## 前提条件
+
+- Node.js 20以上
+- GitHubリポジトリ: https://github.com/kura-gif/furniturehouse1-booking
 
 ## 技術スタック
 
@@ -13,7 +20,7 @@
 - **バックエンド**: Firebase (Firestore, Authentication)
 - **決済**: Stripe
 - **言語**: TypeScript
-- **Node.js**: v18以上推奨
+- **Node.js**: v20以上推奨
 
 ## デプロイオプション
 
@@ -21,49 +28,125 @@
 
 最も簡単で高速なデプロイ方法です。
 
-#### 手順
+#### 初回セットアップ
 
-1. **Vercelアカウント作成**
-   - [Vercel](https://vercel.com/)にアクセスしてサインアップ
-
-2. **プロジェクトをGitHubにプッシュ**
+1. **Vercel CLIをインストール**
    ```bash
-   git init
-   git add .
-   git commit -m "Initial commit"
-   git remote add origin <your-github-repo-url>
-   git push -u origin main
+   npm install --global vercel@latest
    ```
 
-3. **Vercelでインポート**
-   - Vercel Dashboard → "New Project"
-   - GitHubリポジトリを選択
-   - Framework Preset: "Nuxt.js"を自動検出
-   - 環境変数を設定（後述）
-   - "Deploy"をクリック
+2. **Vercelにログイン**
+   ```bash
+   vercel login
+   ```
 
-4. **カスタムドメイン設定**
-   - Project Settings → Domains
-   - カスタムドメインを追加
-   - DNSレコードを設定
+3. **プロジェクトをVercelにリンク**
+   ```bash
+   vercel link
+   ```
+   プロンプトに従って選択:
+   - **Scope**: 自分のアカウントを選択
+   - **Link to existing project?**: Yes
+   - **Project name**: furniturehouse1
 
-#### 環境変数
+4. **環境変数を設定**
+   `.env`ファイルを作成し、必要な環境変数を設定した後:
+   ```bash
+   ./scripts/setup-env.sh
+   ```
+   または手動で設定:
+   ```bash
+   vercel env add STRIPE_SECRET_KEY production
+   vercel env add FIREBASE_API_KEY production
+   # ... その他の環境変数
+   ```
+
+#### デプロイ前の環境変数検証
+
+本番環境へのデプロイ前に、環境変数が正しく設定されているか確認できます：
+
+```bash
+# 本番環境用の環境変数を検証
+npm run validate-env:prod
+```
+
+このスクリプトは以下を検証します：
+- 必須環境変数の存在
+- Firebase/Stripeキーの形式
+- メール設定
+- API秘密鍵の設定
+
+#### デプロイ方法
+
+**方法1: ローカルから手動デプロイ (推奨)**
+```bash
+./scripts/deploy.sh
+```
+このスクリプトは以下を実行します:
+1. ビルドキャッシュのクリア
+2. Vercelプロジェクト情報の取得
+3. プロジェクトのビルド
+4. 本番環境へのデプロイ
+
+**方法2: GitHub経由で自動デプロイ**
+```bash
+git add .
+git commit -m "your message"
+git push origin main
+```
+`main`ブランチにpushすると、GitHub Actionsが自動的にビルド・デプロイを実行します。
+
+**注意**: GitHub Actionsを使用する場合は、GitHubリポジトリのSecretsに`VERCEL_TOKEN`を設定する必要があります。
+
+**方法3: Vercel CLIで直接デプロイ**
+```bash
+vercel --prod
+```
+
+#### GitHub Actionsの設定
+
+GitHubリポジトリの Settings > Secrets and variables > Actions で以下を設定:
+
+1. **VERCEL_TOKEN**
+   - Vercelダッシュボード: Settings > Tokens
+   - "Create Token"をクリック
+   - Scopeは"Full Account"を選択
+   - 生成されたトークンをコピーしてGitHub Secretsに追加
+
+#### Vercel環境変数
 
 Vercel Dashboard → Project Settings → Environment Variablesで以下を設定:
 
-```
-FIREBASE_API_KEY=your_firebase_api_key
-FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-FIREBASE_PROJECT_ID=your_project_id
-FIREBASE_STORAGE_BUCKET=your_project.appspot.com
-FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-FIREBASE_APP_ID=your_app_id
+**Stripe**
+- `STRIPE_SECRET_KEY`
+- `STRIPE_PUBLIC_KEY`
+- `STRIPE_WEBHOOK_SECRET`
 
-STRIPE_PUBLIC_KEY=pk_live_xxx
-STRIPE_SECRET_KEY=sk_live_xxx
+**Firebase**
+- `FIREBASE_API_KEY`
+- `FIREBASE_AUTH_DOMAIN`
+- `FIREBASE_PROJECT_ID`
+- `FIREBASE_STORAGE_BUCKET`
+- `FIREBASE_MESSAGING_SENDER_ID`
+- `FIREBASE_APP_ID`
+- `FIREBASE_ADMIN_KEY` (Base64エンコードされたサービスアカウントキー)
+- `FIREBASE_CLIENT_EMAIL`
+- `FIREBASE_PRIVATE_KEY`
 
-SITE_URL=https://yourdomain.com
-```
+**Email**
+- `EMAIL_USER`
+- `EMAIL_PASSWORD`
+- `EMAIL_REPLY_TO`
+
+**その他**
+- `INTERNAL_API_SECRET`
+- `SITE_URL` (例: https://furniturehouse1-booking.vercel.app)
+- `BRAND_SITE_URL` (例: https://furniturehouse1.com)
+
+#### カスタムドメイン設定
+- Project Settings → Domains
+- カスタムドメインを追加
+- DNSレコードを設定
 
 ---
 
@@ -273,6 +356,23 @@ Firebaseを既に使用しているため、Firebase Hostingも選択肢です�
 
 ## トラブルシューティング
 
+### デプロイが失敗する場合
+
+1. ビルドキャッシュをクリア:
+   ```bash
+   rm -rf .nuxt .output .vercel
+   ```
+
+2. 環境変数を確認:
+   ```bash
+   vercel env ls
+   ```
+
+3. ログを確認:
+   ```bash
+   vercel logs
+   ```
+
 ### ビルドエラー
 
 **エラー**: `Module not found`
@@ -291,7 +391,30 @@ Firebaseを既に使用しているため、Firebase Hostingも選択肢です�
 
 - `.env`ファイルがプロジェクトルートにあるか確認
 - Vercel/Netlifyの場合、ダッシュボードで環境変数を設定
-- サーバー再起動
+- 環境変数を更新した後は、再デプロイが必要:
+  ```bash
+  ./scripts/deploy.sh
+  ```
+
+---
+
+## デプロイの確認
+
+デプロイ後、以下を確認:
+
+1. **トップページ**: https://furniturehouse1-booking.vercel.app/
+2. **予約ページ**: https://furniturehouse1-booking.vercel.app/booking/request
+3. **ヘルスチェック**: https://furniturehouse1-booking.vercel.app/api/health
+   - `status: "healthy"` が返ることを確認
+4. **Stripe Webhook**: Stripeダッシュボードで成功ステータスを確認
+5. **Firebase**: Firestoreでデータが正しく保存されているか確認
+6. **運用ログ**: Firestore `operationLogs` コレクションにログが記録されているか確認
+
+## 注意事項
+
+- `main`ブランチは本番環境に直結しています
+- テストは必ずローカルまたはプレビュー環境で行ってください
+- 環境変数は絶対にGitにコミットしないでください
 
 ---
 

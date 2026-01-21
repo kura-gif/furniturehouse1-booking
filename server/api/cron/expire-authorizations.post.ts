@@ -14,8 +14,13 @@
 import Stripe from 'stripe'
 import { FieldValue } from 'firebase-admin/firestore'
 import { getFirestoreAdmin } from '~/server/utils/firebase-admin'
+import { getErrorMessage, getStripeErrorCode } from '~/server/utils/error-handling'
+import { cronLogger, bookingLogger, paymentLogger } from '~/server/utils/operation-logger'
+
+const JOB_NAME = 'expire-authorizations'
 
 export default defineEventHandler(async (event) => {
+  const startTime = Date.now()
   const config = useRuntimeConfig()
 
   // Cron認証チェック
@@ -40,6 +45,9 @@ export default defineEventHandler(async (event) => {
     cancelled: 0,
     errors: [] as string[]
   }
+
+  // ジョブ開始ログ
+  await cronLogger.started(JOB_NAME)
 
   try {
     const now = new Date()
@@ -75,9 +83,9 @@ export default defineEventHandler(async (event) => {
           if (booking.stripePaymentIntentId) {
             try {
               await stripe.paymentIntents.cancel(booking.stripePaymentIntentId)
-            } catch (stripeError: any) {
+            } catch (stripeError: unknown) {
               // 既にキャンセル済みまたは期限切れの場合はエラーを無視
-              if (!stripeError.message?.includes('cannot be canceled')) {
+              if (!getErrorMessage(stripeError).includes('cannot be canceled')) {
                 throw stripeError
               }
               console.log(`ℹ️ PaymentIntent already cancelled or expired: ${booking.stripePaymentIntentId}`)
@@ -139,11 +147,11 @@ export default defineEventHandler(async (event) => {
           }
 
           results.cancelled++
+          await bookingLogger.expired(bookingId, booking.bookingReference)
+          await paymentLogger.released(bookingId, booking.bookingReference)
 
         // 72時間以上経過（まだ7日未満）：警告通知
         } else if (createdAt < warningThreshold && !booking.authorizationWarningNotified) {
-          console.log(`⚠️ Warning for booking nearing expiration: ${booking.bookingReference}`)
-
           const hoursElapsed = Math.round((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60))
           const hoursRemaining = 168 - hoursElapsed
 
@@ -186,25 +194,35 @@ export default defineEventHandler(async (event) => {
           })
 
           results.warned++
+          await cronLogger.warning(JOB_NAME, `与信期限警告: ${booking.bookingReference}`, {
+            bookingReference: booking.bookingReference,
+            hoursElapsed,
+            hoursRemaining,
+          })
         }
-      } catch (error: any) {
-        results.errors.push(`${booking.bookingReference}: ${error.message}`)
-        console.error(`❌ Error processing booking ${booking.bookingReference}:`, error.message)
+      } catch (error: unknown) {
+        const errorMsg = getErrorMessage(error)
+        results.errors.push(`${booking.bookingReference}: ${errorMsg}`)
+        console.error(`❌ Error processing booking ${booking.bookingReference}:`, errorMsg)
       }
     }
 
-    console.log(`✅ Authorization expiry check complete: ${results.warned} warned, ${results.cancelled} cancelled`)
+    const duration = Date.now() - startTime
+    await cronLogger.completed(JOB_NAME, results, duration)
 
     return {
       success: true,
       message: `与信期限チェック完了: ${results.warned}件警告, ${results.cancelled}件キャンセル`,
       results
     }
-  } catch (error: any) {
-    console.error('❌ Authorization expiry cron error:', error)
+  } catch (error: unknown) {
+    const duration = Date.now() - startTime
+    const errorMsg = getErrorMessage(error)
+    await cronLogger.failed(JOB_NAME, errorMsg, duration)
+
     throw createError({
       statusCode: 500,
-      message: error.message || '与信期限チェックに失敗しました'
+      message: errorMsg || '与信期限チェックに失敗しました'
     })
   }
 })

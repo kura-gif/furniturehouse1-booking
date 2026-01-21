@@ -158,12 +158,12 @@ export default defineEventHandler(async (event) => {
       success: true,
       messageId: info.messageId
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('タスク割り当てメール送信エラー:', error)
     throw createError({
       statusCode: 500,
       statusMessage: 'メール送信に失敗しました',
-      message: error.message
+      message: error instanceof Error ? error.message : 'Unknown error'
     })
   }
 })

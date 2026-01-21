@@ -1,8 +1,10 @@
 # 家具の家 No.1 予約システム 要件定義書
 
-**バージョン**: 1.0
+**バージョン**: 2.0
 **作成日**: 2025年1月
-**プロジェクト**: 民泊・ワークショップ統合予約システム
+**最終更新**: 2026年1月
+**プロジェクト**: 民泊予約システム
+**本番URL**: https://booking.furniturehouse1.com/
 
 ---
 
@@ -19,20 +21,26 @@
 
 ### 1.3 スコープ
 
-#### 対象範囲
+#### 対象範囲（実装済み）
+
 - 宿泊予約機能（1日1組限定）
-- ワークショップ予約機能（日帰り利用）
-- オンライン決済機能
+- オンライン決済機能（Stripe与信確保→審査→決済確定フロー）
 - 予約管理ダッシュボード
 - 自動メール配信機能
 - クーポン管理機能
-- ダイナミックプライシング機能
+- ダイナミックプライシング機能（拡張料金システム）
+- 多言語対応（日本語・英語）
+- レビュー・評価機能
+- 会員機能（Firebase Authentication）
+- ゲストガイド機能
+- 清掃タスク管理機能
+- サポーター管理機能
+- メッセージング機能
 
 #### 対象外
-- 多言語対応（Phase 2以降）
+
 - モバイルアプリ
-- レビュー・評価機能（Phase 2以降）
-- 会員制度（Phase 2以降）
+- ワークショップ予約機能（日帰り利用）
 
 ---
 
@@ -54,7 +62,7 @@
    - FR-105: チェックイン日とチェックアウト日を選択できること
 
 2. **予約情報入力**
-   - FR-106: 宿泊人数（1-4名）を選択できること
+   - FR-106: 宿泊人数（1-10名）を選択できること
    - FR-107: ゲスト氏名（必須）を入力できること
    - FR-108: メールアドレス（必須）を入力できること
    - FR-109: 電話番号（必須）を入力できること
@@ -352,6 +360,12 @@
 | guestName | string | ○ | ゲスト名 |
 | guestEmail | string | ○ | メールアドレス |
 | guestPhone | string | ○ | 電話番号 |
+| guestPostalCode | string | ○ | 郵便番号 |
+| guestAddress | string | ○ | 住所 |
+| guestOccupation | string | ○ | 職業 |
+| isForeignNational | boolean | ○ | 外国籍フラグ |
+| guestNationality | string | - | 国籍（外国籍の場合） |
+| guestPassportNumber | string | - | パスポート番号（外国籍の場合） |
 | status | BookingStatus | ○ | ステータス |
 | paymentStatus | PaymentStatus | ○ | 支払いステータス |
 | totalAmount | number | ○ | 合計金額 |
@@ -446,39 +460,43 @@
 ### 4.1 技術スタック
 
 #### フロントエンド
+
 - **フレームワーク**: Nuxt 3
 - **UIライブラリ**: Vue 3
 - **言語**: TypeScript
 - **スタイリング**: TailwindCSS
-- **状態管理**: Pinia
+- **状態管理**: Composables（Vue 3 Composition API）
 
 #### バックエンド
-- **BaaS**: Firebase
-  - Firestore（データベース）
-  - Authentication（認証）
-  - Functions（サーバーレス関数）
-  - Hosting（ホスティング）
+
+- **ランタイム**: Nitro（Nuxt Server）
+- **データベース**: Firebase Firestore
+- **認証**: Firebase Authentication
+- **ファイルストレージ**: Firebase Storage
+- **ホスティング**: Vercel
 
 #### 決済
-- **決済プラットフォーム**: Stripe
+
+- **決済プラットフォーム**: Stripe（Payment Intent、Webhook）
 
 #### メール送信
-- **メール配信**: SendGrid / Firebase Functions
+
+- **メール配信**: Gmail SMTP（Nodemailer）
 
 ### 4.2 インフラ構成
 
-```
+```text
 [クライアント（ブラウザ）]
     ↓ HTTPS
-[Firebase Hosting]
+[Vercel Edge Network]
     ↓
-[Nuxt 3 SSR/SSG]
+[Nuxt 3 (Nitro Runtime)]
     ↓
 [Firebase Firestore] ← [Firebase Authentication]
     ↓
-[Firebase Functions] ← [Stripe API]
+[Server API (Nitro)] ← [Stripe API]
     ↓
-[SendGrid API]
+[Gmail SMTP]
 ```
 
 ### 4.3 セキュリティ対策
@@ -683,28 +701,42 @@ So that 適切な価格戦略を実行できる
 
 ## 10. フェーズ計画
 
-### Phase 1（MVP - 現在）
+### Phase 1（MVP - 完了）
+
 - [x] プロジェクト基盤構築
-- [x] 宿泊・ワークショップ予約機能
+- [x] 宿泊予約機能
 - [x] ダイナミックプライシング
-- [x] Stripe決済統合
+- [x] Stripe決済統合（与信確保→審査→決済確定フロー）
 - [x] 管理ダッシュボード基本機能
-- [ ] Firebase本番環境設定
-- [ ] 自動メール配信実装
-- [ ] 本番デプロイ
+- [x] Firebase本番環境設定
+- [x] 自動メール配信実装
+- [x] 本番デプロイ（Vercel）
 
-### Phase 2（機能拡張）
-- [ ] 多言語対応（英語）
-- [ ] 会員機能
-- [ ] 予約履歴・マイページ
-- [ ] レビュー・評価機能
-- [ ] 画像ギャラリー拡充
-- [ ] キャンセル機能の自動化
+### Phase 2（機能拡張 - 完了）
 
-### Phase 3（最適化）
-- [ ] パフォーマンス最適化
-- [ ] SEO対策強化
-- [ ] アクセス解析統合
+- [x] 多言語対応（日本語・英語）
+- [x] 会員機能（Firebase Authentication）
+- [x] 予約履歴・マイページ
+- [x] レビュー・評価機能
+- [x] キャンセル機能の自動化
+- [x] 清掃タスク管理機能
+- [x] サポーター管理機能
+- [x] ゲストガイド機能
+- [x] メッセージング機能
+
+### Phase 3（本番運用 - 完了）
+
+- [x] セキュリティ強化（レート制限、CSP、セキュリティヘッダー）
+- [x] 運用ログ・監視機能
+- [x] 整合性チェック機能
+- [x] 与信期限自動管理
+- [x] パフォーマンス最適化（@nuxt/image、キャッシュ設定、プリコネクト）
+- [x] SEO対策強化（robots.txt、sitemap.xml、構造化データ、メタタグ強化）
+
+### 将来の検討事項
+
+- [ ] ワークショップ予約機能
+- [ ] モバイルアプリ
 - [ ] A/Bテスト機能
 - [ ] レコメンデーション機能
 
@@ -793,5 +825,8 @@ So that 適切な価格戦略を実行できる
 ---
 
 **文書管理**
-- 最終更新日: 2025年1月
-- 更新履歴: v1.0 - 初版作成
+
+- 最終更新日: 2026年1月20日
+- 更新履歴:
+  - v2.0 (2026/01/20) - 実装済み機能を反映、技術スタック・フェーズ計画を更新
+  - v1.0 (2025/01) - 初版作成

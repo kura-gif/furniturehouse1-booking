@@ -75,25 +75,27 @@ export default defineEventHandler(async (event) => {
       userDocId: userRecord.uid,
       supporterDocId: supporterDoc.id
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('❌ サポーター作成エラー:', error)
 
+    const firebaseError = error as { code?: string }
+
     // Firebase Authエラーのハンドリング
-    if (error.code === 'auth/email-already-exists') {
+    if (firebaseError.code === 'auth/email-already-exists') {
       throw createError({
         statusCode: 400,
         statusMessage: 'このメールアドレスは既に使用されています'
       })
     }
 
-    if (error.code === 'auth/invalid-email') {
+    if (firebaseError.code === 'auth/invalid-email') {
       throw createError({
         statusCode: 400,
         statusMessage: 'メールアドレスの形式が正しくありません'
       })
     }
 
-    if (error.code === 'auth/weak-password') {
+    if (firebaseError.code === 'auth/weak-password') {
       throw createError({
         statusCode: 400,
         statusMessage: 'パスワードが弱すぎます'
@@ -102,7 +104,7 @@ export default defineEventHandler(async (event) => {
 
     throw createError({
       statusCode: 500,
-      statusMessage: 'サポーターの作成に失敗しました: ' + error.message
+      statusMessage: 'サポーターの作成に失敗しました: ' + (error instanceof Error ? error.message : 'Unknown error')
     })
   }
 })

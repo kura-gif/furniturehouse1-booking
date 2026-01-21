@@ -2,17 +2,17 @@
   <div class="min-h-screen bg-gray-50">
     <AppHeader />
 
-    <div class="max-w-2xl mx-auto px-4 py-16">
+    <main class="max-w-2xl mx-auto px-4 py-16" role="main" aria-labelledby="page-title">
       <!-- 審査中表示 -->
       <div class="bg-white rounded-xl shadow-md p-8">
         <div class="text-center mb-8">
-          <div class="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <div class="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6" aria-hidden="true">
             <svg class="w-8 h-8 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
           </div>
 
-          <h1 class="text-3xl font-semibold text-gray-900 mb-4">予約リクエストを受け付けました</h1>
+          <h1 id="page-title" class="text-3xl font-semibold text-gray-900 mb-4">予約リクエストを受け付けました</h1>
           <p class="text-gray-600 mb-2">
             ご予約リクエストありがとうございます。
           </p>
@@ -78,9 +78,9 @@
         </div>
 
         <!-- ゲストユーザー向け案内 -->
-        <div v-if="!isLoggedIn" class="bg-blue-50 border-2 border-blue-200 rounded-xl p-6 mb-6">
-          <h2 class="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div v-if="!isLoggedIn" class="bg-blue-50 border-2 border-blue-200 rounded-xl p-6 mb-6" role="region" aria-labelledby="signup-heading">
+          <h2 id="signup-heading" class="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
             予約を管理するにはアカウントが必要です
@@ -90,14 +90,15 @@
           </p>
           <button
             @click="goToSignup"
-            class="w-full px-6 py-3 text-white font-medium rounded-lg transition-all hover:opacity-90"
+            class="w-full px-6 py-3 text-white font-medium rounded-lg transition-all hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
             style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"
+            aria-label="アカウントを作成してマイページで予約を管理"
           >
             アカウントを作成する
           </button>
           <p class="text-xs text-gray-500 mt-3 text-center">
             すでにアカウントをお持ちの方は
-            <NuxtLink to="/login" class="text-purple-600 hover:underline">ログイン</NuxtLink>
+            <NuxtLink to="/login" class="text-purple-600 hover:underline focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 rounded">ログイン</NuxtLink>
           </p>
         </div>
 
@@ -105,8 +106,9 @@
         <div v-else class="space-y-4">
           <NuxtLink
             to="/mypage"
-            class="block w-full px-6 py-3 text-white font-medium rounded-lg transition-all hover:opacity-90 text-center"
+            class="block w-full px-6 py-3 text-white font-medium rounded-lg transition-all hover:opacity-90 text-center focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
             style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"
+            aria-label="マイページで予約を確認"
           >
             予約を確認する
           </NuxtLink>
@@ -116,7 +118,8 @@
         <div class="mt-4">
           <NuxtLink
             to="/"
-            class="block w-full px-6 py-3 border-2 border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors text-center"
+            class="block w-full px-6 py-3 border-2 border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors text-center focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+            aria-label="ホームページに戻る"
           >
             ホームに戻る
           </NuxtLink>
@@ -130,7 +133,7 @@
           </p>
         </div>
       </div>
-    </div>
+    </main>
 
     <AppFooter />
   </div>

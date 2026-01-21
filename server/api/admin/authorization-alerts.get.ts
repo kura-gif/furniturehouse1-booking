@@ -115,11 +115,14 @@ export default defineEventHandler(async (event) => {
       alertCount: alerts.length,
       alerts
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('❌ Authorization alerts error:', error)
+    const statusCode = error && typeof error === 'object' && 'statusCode' in error
+      ? (error as { statusCode: number }).statusCode
+      : 500
     throw createError({
-      statusCode: error.statusCode || 500,
-      message: error.message || '与信アラートの取得に失敗しました'
+      statusCode,
+      message: error instanceof Error ? error.message : '与信アラートの取得に失敗しました'
     })
   }
 })

@@ -43,8 +43,8 @@ export default defineEventHandler(async (): Promise<{ success: boolean; bookedDa
       success: true,
       bookedDates
     }
-  } catch (error: any) {
-    console.error('[API /public/booked-dates] Error:', error.message)
+  } catch (error: unknown) {
+    console.error('[API /public/booked-dates] Error:', error instanceof Error ? error.message : 'Unknown error')
     return {
       success: false,
       bookedDates: [],

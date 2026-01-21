@@ -65,12 +65,12 @@ export default defineEventHandler(async (event) => {
         expiresAt: invitationData.expiresAt
       }
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('招待検証エラー:', error)
     throw createError({
       statusCode: 500,
       message: '招待の検証に失敗しました',
-      data: error.message
+      data: error instanceof Error ? error.message : 'Unknown error'
     })
   }
 })

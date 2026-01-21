@@ -1,29 +1,29 @@
 <template>
-  <div v-if="indoor || outdoor" class="mb-6">
-    <div class="bg-gradient-to-r from-slate-800 to-slate-900 rounded-2xl p-5 text-white shadow-lg">
-      <div class="flex items-center justify-between">
+  <div v-if="indoor || outdoor" class="px-4 sm:px-6 md:px-8 pb-4">
+    <div class="bg-white max-w-md mx-auto shadow-sm" style="border-radius: 0 !important;">
+      <div class="flex items-center justify-between p-4">
         <!-- 室内 -->
         <div v-if="indoor" class="flex-1 text-center">
           <div class="flex items-center justify-center gap-2 mb-1">
-            <svg class="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
+            <svg class="w-4 h-4 text-organic-accent" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
             </svg>
-            <span class="text-xs text-slate-400 uppercase tracking-wide">室内</span>
+            <span class="text-[10px] text-organic-text-light tracking-wide">室内</span>
           </div>
-          <div class="flex items-baseline justify-center gap-1">
-            <span class="text-3xl font-light">{{ indoor.temperature }}</span>
-            <span class="text-lg text-slate-400">°C</span>
+          <div class="flex items-baseline justify-center gap-0.5">
+            <span class="text-2xl font-light text-organic-text">{{ indoor.temperature }}</span>
+            <span class="text-sm text-organic-text-light">°C</span>
           </div>
-          <div class="flex items-center justify-center gap-1 mt-1">
-            <svg class="w-3 h-3 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M5.5 17a4.5 4.5 0 01-1.44-8.765 4 4 0 018.302-3.046 3.5 3.5 0 014.504 4.272A4 4 0 0115 17H5.5zm3.75-2.75a.75.75 0 001.5 0V9.66l1.95 2.1a.75.75 0 101.1-1.02l-3.25-3.5a.75.75 0 00-1.1 0l-3.25 3.5a.75.75 0 101.1 1.02l1.95-2.1v4.59z" clip-rule="evenodd"/>
+          <div class="flex items-center justify-center gap-1 mt-0.5">
+            <svg class="w-3 h-3 text-organic-accent" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
             </svg>
-            <span class="text-sm text-slate-300">{{ indoor.humidity }}%</span>
+            <span class="text-xs text-organic-text-light">{{ indoor.humidity }}%</span>
           </div>
         </div>
 
         <!-- 区切り線 -->
-        <div v-if="indoor && outdoor" class="w-px h-16 bg-slate-600 mx-4"></div>
+        <div v-if="indoor && outdoor" class="w-px h-14 bg-organic-border mx-3"></div>
 
         <!-- 屋外 -->
         <div v-if="outdoor" class="flex-1 text-center">
@@ -34,13 +34,13 @@
               :alt="outdoor.weather.description"
               class="w-6 h-6 -ml-1"
             />
-            <span class="text-xs text-slate-400 uppercase tracking-wide">山中湖</span>
+            <span class="text-[10px] text-organic-text-light tracking-wide">山中湖</span>
           </div>
-          <div class="flex items-baseline justify-center gap-1">
-            <span class="text-3xl font-light">{{ outdoor.temperature }}</span>
-            <span class="text-lg text-slate-400">°C</span>
+          <div class="flex items-baseline justify-center gap-0.5">
+            <span class="text-2xl font-light text-organic-text">{{ outdoor.temperature }}</span>
+            <span class="text-sm text-organic-text-light">°C</span>
           </div>
-          <p class="text-sm text-slate-300 mt-1 text-center">{{ outdoor.weather?.description }}</p>
+          <p class="text-xs text-organic-text-light mt-0.5 text-center">{{ outdoor.weather?.description }}</p>
         </div>
       </div>
     </div>

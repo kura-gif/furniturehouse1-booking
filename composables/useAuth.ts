@@ -100,9 +100,10 @@ export const useAuth = () => {
     try {
       const userCredential = await signInWithEmailAndPassword($auth, email, password)
       return userCredential.user
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Login error:', error)
-      throw new Error(getErrorMessage(error.code))
+      const errorCode = error instanceof Error && 'code' in error ? (error as { code: string }).code : ''
+      throw new Error(getErrorMessage(errorCode))
     }
   }
 
@@ -147,21 +148,22 @@ export const useAuth = () => {
       }
 
       return firebaseUser
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('[Auth] Google login error:', error)
-      console.error('[Auth] Error code:', error.code)
-      console.error('[Auth] Error message:', error.message)
-      console.error('[Auth] Error customData:', error.customData)
+      const firebaseError = error as { code?: string; message?: string; customData?: unknown }
+      console.error('[Auth] Error code:', firebaseError.code)
+      console.error('[Auth] Error message:', firebaseError.message)
+      console.error('[Auth] Error customData:', firebaseError.customData)
       // ポップアップがブロックされた場合やキャンセルされた場合のエラー処理
-      if (error.code === 'auth/popup-closed-by-user') {
+      if (firebaseError.code === 'auth/popup-closed-by-user') {
         throw new Error('ログインがキャンセルされました')
       }
-      if (error.code === 'auth/popup-blocked') {
+      if (firebaseError.code === 'auth/popup-blocked') {
         throw new Error('ポップアップがブロックされました。ポップアップを許可してください')
       }
       // エラーコードも含めて表示
-      const errorMsg = getErrorMessage(error.code)
-      const errorDetail = error.code || error.message || JSON.stringify(error)
+      const errorMsg = getErrorMessage(firebaseError.code || '')
+      const errorDetail = firebaseError.code || firebaseError.message || JSON.stringify(error)
       throw new Error(`${errorMsg} (${errorDetail})`)
     }
   }
@@ -187,9 +189,10 @@ export const useAuth = () => {
       await setDoc(doc($db, 'users', user.uid), userData)
 
       return user
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Signup error:', error)
-      throw new Error(getErrorMessage(error.code))
+      const errorCode = error instanceof Error && 'code' in error ? (error as { code: string }).code : ''
+      throw new Error(getErrorMessage(errorCode))
     }
   }
 
@@ -202,7 +205,7 @@ export const useAuth = () => {
       user.value = null
       appUser.value = null
       navigateTo('/')
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Logout error:', error)
       throw new Error('ログアウトに失敗しました')
     }
@@ -214,9 +217,10 @@ export const useAuth = () => {
 
     try {
       await sendPasswordResetEmail($auth, email)
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Password reset error:', error)
-      throw new Error(getErrorMessage(error.code))
+      const errorCode = error instanceof Error && 'code' in error ? (error as { code: string }).code : ''
+      throw new Error(getErrorMessage(errorCode))
     }
   }
 

@@ -47,6 +47,16 @@ export default {
           700: '#564943',
           800: '#3c322d',
           900: '#231815',
+        },
+        // オーガニック・モダン（デジタルゲストブック用）
+        organic: {
+          cream: '#F5F0E6',      // 背景ベージュ
+          paper: '#FAF8F5',      // 明るいペーパー色
+          text: '#4A4A4A',       // メインテキスト
+          'text-light': '#7A7A7A', // サブテキスト
+          accent: '#8B7355',     // アクセント茶色
+          border: '#E8E2D9',     // ボーダー色
+          button: '#5C5347',     // ボタン背景
         }
       },
       fontFamily: {
@@ -58,6 +68,14 @@ export default {
           'Segoe UI',
           'Hiragino Sans',
           'sans-serif'
+        ],
+        serif: [
+          'Noto Serif JP',
+          'Yu Mincho',
+          'YuMincho',
+          'Hiragino Mincho ProN',
+          'HiraMinProN-W3',
+          'serif'
         ],
       },
       fontSize: {

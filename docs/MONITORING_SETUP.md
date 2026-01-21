@@ -112,16 +112,59 @@ Performance Monitoring を有効化すると：
 
 | コレクション | 内容 |
 |-------------|------|
+| `operationLogs` | **運用ログ（自動記録）** - 予約、決済、メール、Cron実行など |
 | `webhookLogs` | Stripe Webhookの処理ログ |
 | `emailLogs` | メール送信エラーログ |
 | `errorLogs` | アプリケーションエラー |
 | `consistencyReports` | 整合性チェック結果 |
+
+#### operationLogsの構造
+
+```
+category: "booking" | "payment" | "email" | "cron" | "admin" | "system" | "error"
+level: "info" | "warn" | "error"
+action: "BOOKING_CREATED" | "PAYMENT_CAPTURED" | "CRON_COMPLETED" など
+message: 人間が読めるメッセージ
+timestamp: 記録日時
+duration: 処理時間（ミリ秒）※Cronジョブの場合
+data: 追加データ（マスク済み）
+```
 
 ### 4.2 ログ確認方法
 
 Firebase Console → Firestore → 該当コレクション
 
 または管理画面の「システム」タブから確認可能
+
+### 4.3 ヘルスチェックエンドポイント
+
+外部監視サービスから死活監視に使用できます：
+
+```
+GET /api/health
+
+レスポンス:
+{
+  "status": "healthy" | "degraded" | "unhealthy",
+  "services": {
+    "firestore": { "status": "healthy", "latency": 45 },
+    "stripe": { "status": "healthy", "latency": 120 }
+  },
+  "uptime": 3600
+}
+```
+
+- **200**: 正常
+- **503**: サービス異常
+
+#### 監視サービスの設定例（UptimeRobot）
+
+1. UptimeRobot（https://uptimerobot.com/）にログイン
+2. 「Add New Monitor」
+3. Monitor Type: HTTP(s)
+4. URL: `https://booking.furniturehouse1.com/api/health`
+5. Monitoring Interval: 5 minutes
+6. Alert Contacts: 管理者メール
 
 ## 5. 推奨監視ルーティン
 

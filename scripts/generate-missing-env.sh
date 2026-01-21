@@ -9,9 +9,10 @@ INTERNAL_SECRET=$(openssl rand -base64 32)
 echo "INTERNAL_API_SECRET=$INTERNAL_SECRET"
 echo ""
 
-# EMAIL_REPLY_TO
-echo "2. EMAIL_REPLY_TO"
-echo "EMAIL_REPLY_TO=kura@chladni.co.jp"
+# EMAIL設定
+echo "2. EMAIL設定"
+echo "EMAIL_FROM=furniturehouse1@chladni.co.jp"
+echo "EMAIL_REPLY_TO=furniturehouse1@chladni.co.jp"
 echo ""
 
 echo "✅ 生成完了！"

@@ -5,10 +5,12 @@ export default defineNuxtConfig({
 
   modules: [
     '@nuxtjs/tailwindcss',
+    '@nuxt/image',
     // 'nuxt-csurf', // 一時的に無効化（E2Eテスト用）
     '@nuxtjs/i18n',
     // '@sentry/nuxt/module' // 一時的に無効化（ビルドエラー対応）
   ],
+
 
   // Sentry設定（一時的に無効化）
   // sentry: {
@@ -52,16 +54,38 @@ export default defineNuxtConfig({
       charset: 'utf-8',
       viewport: 'width=device-width, initial-scale=1',
       title: '家具の家 No.1 | 坂茂の初期作品に宿泊する',
+      htmlAttrs: {
+        lang: 'ja'
+      },
       meta: [
-        { name: 'description', content: '家具が家を支える「体験する建築」。風が通り、光が移ろい、音が吸い込まれる。静かな時間の中で、構造体としての家具に囲まれる不思議な感覚を味わう宿泊体験。' },
-        { property: 'og:site_name', content: '家具の家 No.1 | 坂茂の初期作品に宿泊する' },
+        { name: 'description', content: '家具が家を支える「体験する建築」。風が通り、光が移ろい、音が吸い込まれる。静かな時間の中で、構造体としての家具に囲まれる不思議な感覚を味わう宿泊体験。1日1組限定。' },
+        { name: 'keywords', content: '家具の家,坂茂,建築,宿泊,民泊,二宮町,神奈川,一棟貸し,建築体験' },
+        { name: 'author', content: '家具の家 No.1' },
+        { name: 'theme-color', content: '#667eea' },
+        { name: 'format-detection', content: 'telephone=no' },
+        { property: 'og:site_name', content: '家具の家 No.1' },
         { property: 'og:title', content: '家具の家 No.1｜坂茂の初期作品に宿泊する' },
-        { property: 'og:description', content: '家具が家を支える『体験する建築』。静かな時間の中で構造体に囲まれる不思議な宿泊体験。' },
+        { property: 'og:description', content: '家具が家を支える「体験する建築」。静かな時間の中で構造体に囲まれる不思議な宿泊体験。1日1組限定。' },
         { property: 'og:type', content: 'website' },
-        { name: 'twitter:card', content: 'summary_large_image' }
+        { property: 'og:url', content: 'https://booking.furniturehouse1.com/' },
+        { property: 'og:image', content: 'https://booking.furniturehouse1.com/images/ogp-image.jpg' },
+        { property: 'og:image:width', content: '1200' },
+        { property: 'og:image:height', content: '630' },
+        { property: 'og:locale', content: 'ja_JP' },
+        { name: 'twitter:card', content: 'summary_large_image' },
+        { name: 'twitter:title', content: '家具の家 No.1｜坂茂の初期作品に宿泊する' },
+        { name: 'twitter:description', content: '家具が家を支える「体験する建築」。1日1組限定の宿泊体験。' },
+        { name: 'twitter:image', content: 'https://booking.furniturehouse1.com/images/ogp-image.jpg' }
       ],
       link: [
-        { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
+        { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
+        { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon.png' },
+        { rel: 'apple-touch-icon', href: '/favicon.png' },
+        { rel: 'canonical', href: 'https://booking.furniturehouse1.com/' },
+        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
+        { rel: 'dns-prefetch', href: 'https://js.stripe.com' },
+        { rel: 'dns-prefetch', href: 'https://firestore.googleapis.com' }
       ]
     }
   },

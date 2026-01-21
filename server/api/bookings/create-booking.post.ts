@@ -14,6 +14,12 @@ interface CreateBookingBody {
   guestName: string
   guestEmail: string
   guestPhone: string
+  guestPostalCode?: string      // 郵便番号
+  guestAddress?: string         // 住所
+  guestOccupation?: string      // 職業
+  isForeignNational?: boolean   // 外国籍かどうか
+  guestNationality?: string     // 国籍（外国籍の場合）
+  guestPassportNumber?: string  // パスポート番号（外国籍の場合）
   totalAmount: number
   baseAmount: number
   cleaningFee?: number
@@ -95,6 +101,12 @@ export default defineEventHandler(async (event) => {
       guestName: body.guestName,
       guestEmail: body.guestEmail,
       guestPhone: body.guestPhone || '',
+      guestPostalCode: body.guestPostalCode || '',
+      guestAddress: body.guestAddress || '',
+      guestOccupation: body.guestOccupation || '',
+      isForeignNational: body.isForeignNational || false,
+      ...(body.isForeignNational && body.guestNationality && { guestNationality: body.guestNationality }),
+      ...(body.isForeignNational && body.guestPassportNumber && { guestPassportNumber: body.guestPassportNumber }),
       status: 'pending' as const,
       paymentStatus: 'pending' as const,
       totalAmount: body.totalAmount,

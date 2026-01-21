@@ -53,8 +53,8 @@ export const useCleaningTasks = () => {
       const tasksRef = collection(getDb(), 'cleaningTasks')
 
       // チェックイン日とチェックアウト日を取得（useBookings側ではstartDate/endDateとして保存されている場合もある）
-      const checkInDate = (booking as any).startDate || booking.checkInDate
-      const checkOutDate = (booking as any).endDate || booking.checkOutDate
+      const checkInDate = (booking as { startDate?: string }).startDate || booking.checkInDate
+      const checkOutDate = (booking as { endDate?: string }).endDate || booking.checkOutDate
 
       // チェックリストを新しい形式で作成
       const checklist = defaultChecklist.map(item => ({
@@ -96,10 +96,10 @@ export const useCleaningTasks = () => {
       ])
 
       console.log('✅ 清掃タスク自動生成完了:', booking.bookingReference)
-    } catch (e: any) {
-      console.error('❌ 清掃タスク生成エラー:', e)
-      error.value = e.message
-      throw e
+    } catch (err: unknown) {
+      console.error('❌ 清掃タスク生成エラー:', err)
+      error.value = err instanceof Error ? err.message : 'Unknown error'
+      throw err
     } finally {
       loading.value = false
     }
@@ -144,10 +144,10 @@ export const useCleaningTasks = () => {
       })) as CleaningTask[]
 
       console.log('✅ タスク読み込み完了:', tasks.value.length, '件')
-    } catch (e: any) {
-      console.error('❌ タスク読み込みエラー:', e)
-      error.value = e.message
-      throw e
+    } catch (err: unknown) {
+      console.error('❌ タスク読み込みエラー:', err)
+      error.value = err instanceof Error ? err.message : 'Unknown error'
+      throw err
     } finally {
       loading.value = false
     }
@@ -174,10 +174,10 @@ export const useCleaningTasks = () => {
       } as CleaningTask
 
       console.log('✅ タスク読み込み完了:', taskId)
-    } catch (e: any) {
-      console.error('❌ タスク読み込みエラー:', e)
-      error.value = e.message
-      throw e
+    } catch (err: unknown) {
+      console.error('❌ タスク読み込みエラー:', err)
+      error.value = err instanceof Error ? err.message : 'Unknown error'
+      throw err
     } finally {
       loading.value = false
     }
@@ -223,10 +223,10 @@ export const useCleaningTasks = () => {
       if (tasks.value.length > 0) {
         await loadTasks()
       }
-    } catch (e: any) {
-      console.error('❌ サポーター割り当てエラー:', e)
-      error.value = e.message
-      throw e
+    } catch (err: unknown) {
+      console.error('❌ サポーター割り当てエラー:', err)
+      error.value = err instanceof Error ? err.message : 'Unknown error'
+      throw err
     } finally {
       loading.value = false
     }
@@ -262,10 +262,10 @@ export const useCleaningTasks = () => {
       if (tasks.value.length > 0) {
         await loadTasks()
       }
-    } catch (e: any) {
-      console.error('❌ サポーター割り当て解除エラー:', e)
-      error.value = e.message
-      throw e
+    } catch (err: unknown) {
+      console.error('❌ サポーター割り当て解除エラー:', err)
+      error.value = err instanceof Error ? err.message : 'Unknown error'
+      throw err
     } finally {
       loading.value = false
     }
@@ -286,10 +286,10 @@ export const useCleaningTasks = () => {
       })
 
       console.log('✅ タスクステータス更新:', status)
-    } catch (e: any) {
-      console.error('❌ タスクステータス更新エラー:', e)
-      error.value = e.message
-      throw e
+    } catch (err: unknown) {
+      console.error('❌ タスクステータス更新エラー:', err)
+      error.value = err instanceof Error ? err.message : 'Unknown error'
+      throw err
     } finally {
       loading.value = false
     }
@@ -316,10 +316,10 @@ export const useCleaningTasks = () => {
       if (currentTask.value?.id === taskId) {
         await loadTask(taskId)
       }
-    } catch (e: any) {
-      console.error('❌ タスク開始エラー:', e)
-      error.value = e.message
-      throw e
+    } catch (err: unknown) {
+      console.error('❌ タスク開始エラー:', err)
+      error.value = err instanceof Error ? err.message : 'Unknown error'
+      throw err
     } finally {
       loading.value = false
     }
@@ -373,10 +373,10 @@ export const useCleaningTasks = () => {
       if (currentTask.value?.id === taskId) {
         await loadTask(taskId)
       }
-    } catch (e: any) {
-      console.error('❌ タスク完了エラー:', e)
-      error.value = e.message
-      throw e
+    } catch (err: unknown) {
+      console.error('❌ タスク完了エラー:', err)
+      error.value = err instanceof Error ? err.message : 'Unknown error'
+      throw err
     } finally {
       loading.value = false
     }
@@ -402,10 +402,10 @@ export const useCleaningTasks = () => {
       if (currentTask.value?.id === taskId) {
         currentTask.value.checklist = checklist
       }
-    } catch (e: any) {
-      console.error('❌ チェックリスト更新エラー:', e)
-      error.value = e.message
-      throw e
+    } catch (err: unknown) {
+      console.error('❌ チェックリスト更新エラー:', err)
+      error.value = err instanceof Error ? err.message : 'Unknown error'
+      throw err
     } finally {
       loading.value = false
     }
@@ -449,10 +449,10 @@ export const useCleaningTasks = () => {
       if (currentTask.value?.id === taskId) {
         currentTask.value.checklist = updatedChecklist
       }
-    } catch (e: any) {
-      console.error('❌ カスタム項目追加エラー:', e)
-      error.value = e.message
-      throw e
+    } catch (err: unknown) {
+      console.error('❌ カスタム項目追加エラー:', err)
+      error.value = err instanceof Error ? err.message : 'Unknown error'
+      throw err
     } finally {
       loading.value = false
     }
@@ -506,10 +506,10 @@ export const useCleaningTasks = () => {
       if (currentTask.value?.id === taskId) {
         currentTask.value.photos = updatedPhotos
       }
-    } catch (e: any) {
-      console.error('❌ 写真アップロードエラー:', e)
-      error.value = e.message
-      throw e
+    } catch (err: unknown) {
+      console.error('❌ 写真アップロードエラー:', err)
+      error.value = err instanceof Error ? err.message : 'Unknown error'
+      throw err
     } finally {
       loading.value = false
     }
@@ -539,10 +539,10 @@ export const useCleaningTasks = () => {
       if (currentTask.value?.id === taskId) {
         currentTask.value.photoRequestedByAdmin = true
       }
-    } catch (e: any) {
-      console.error('❌ 写真リクエストエラー:', e)
-      error.value = e.message
-      throw e
+    } catch (err: unknown) {
+      console.error('❌ 写真リクエストエラー:', err)
+      error.value = err instanceof Error ? err.message : 'Unknown error'
+      throw err
     } finally {
       loading.value = false
     }
@@ -577,10 +577,10 @@ export const useCleaningTasks = () => {
       if (currentTask.value?.id === taskId) {
         currentTask.value.usedSupplies = updatedSupplies
       }
-    } catch (e: any) {
-      console.error('❌ 備品使用記録エラー:', e)
-      error.value = e.message
-      throw e
+    } catch (err: unknown) {
+      console.error('❌ 備品使用記録エラー:', err)
+      error.value = err instanceof Error ? err.message : 'Unknown error'
+      throw err
     } finally {
       loading.value = false
     }
@@ -611,10 +611,10 @@ export const useCleaningTasks = () => {
       if (currentTask.value?.id === taskId) {
         await loadTask(taskId)
       }
-    } catch (e: any) {
-      console.error('❌ 支払い記録エラー:', e)
-      error.value = e.message
-      throw e
+    } catch (err: unknown) {
+      console.error('❌ 支払い記録エラー:', err)
+      error.value = err instanceof Error ? err.message : 'Unknown error'
+      throw err
     } finally {
       loading.value = false
     }
@@ -644,10 +644,10 @@ export const useCleaningTasks = () => {
       if (currentTask.value?.id === taskId) {
         currentTask.value = null
       }
-    } catch (e: any) {
-      console.error('❌ タスク削除エラー:', e)
-      error.value = e.message
-      throw e
+    } catch (err: unknown) {
+      console.error('❌ タスク削除エラー:', err)
+      error.value = err instanceof Error ? err.message : 'Unknown error'
+      throw err
     } finally {
       loading.value = false
     }
@@ -662,7 +662,7 @@ export const useCleaningTasks = () => {
       error.value = null
 
       const taskRef = doc(getDb(), 'cleaningTasks', taskId)
-      const updateData: any = {
+      const updateData: Record<string, unknown> = {
         updatedAt: Timestamp.now()
       }
 
@@ -687,10 +687,10 @@ export const useCleaningTasks = () => {
           currentTask.value.notes = notes
         }
       }
-    } catch (e: any) {
-      console.error('❌ ノート更新エラー:', e)
-      error.value = e.message
-      throw e
+    } catch (err: unknown) {
+      console.error('❌ ノート更新エラー:', err)
+      error.value = err instanceof Error ? err.message : 'Unknown error'
+      throw err
     } finally {
       loading.value = false
     }
@@ -712,9 +712,9 @@ export const useCleaningTasks = () => {
         id: taskDoc.id,
         ...taskDoc.data()
       } as CleaningTask
-    } catch (e: any) {
-      console.error('❌ タスク取得エラー:', e)
-      throw e
+    } catch (error: unknown) {
+      console.error('❌ タスク取得エラー:', error)
+      throw error
     }
   }
 
@@ -744,9 +744,9 @@ export const useCleaningTasks = () => {
         id: doc.id,
         ...doc.data()
       })) as CleaningTask[]
-    } catch (e: any) {
-      console.error('❌ サポータータスク取得エラー:', e)
-      throw e
+    } catch (error: unknown) {
+      console.error('❌ サポータータスク取得エラー:', error)
+      throw error
     }
   }
 
@@ -761,9 +761,9 @@ export const useCleaningTasks = () => {
         updatedAt: Timestamp.now()
       })
       console.log('✅ タスク更新完了:', taskId)
-    } catch (e: any) {
-      console.error('❌ タスク更新エラー:', e)
-      throw e
+    } catch (error: unknown) {
+      console.error('❌ タスク更新エラー:', error)
+      throw error
     }
   }
 
@@ -780,9 +780,9 @@ export const useCleaningTasks = () => {
         id: doc.id,
         ...doc.data()
       })) as CleaningTask[]
-    } catch (e: any) {
-      console.error('❌ 全タスク取得エラー:', e)
-      throw e
+    } catch (error: unknown) {
+      console.error('❌ 全タスク取得エラー:', error)
+      throw error
     }
   }
 

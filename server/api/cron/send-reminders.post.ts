@@ -9,7 +9,13 @@
  * 外部Cronサービス（Vercel Cron、Cloud Scheduler等）から呼び出す
  */
 
+import { getErrorMessage } from '~/server/utils/error-handling'
+import { cronLogger, emailOperationLogger } from '~/server/utils/operation-logger'
+
+const JOB_NAME = 'send-reminders'
+
 export default defineEventHandler(async (event) => {
+  const startTime = Date.now()
   const config = useRuntimeConfig()
 
   // Cron認証チェック（Vercel Cronまたはカスタムシークレット）
@@ -31,6 +37,9 @@ export default defineEventHandler(async (event) => {
     sent: 0,
     errors: [] as string[]
   }
+
+  // ジョブ開始ログ
+  await cronLogger.started(JOB_NAME)
 
   try {
     // 今日の日付を取得（日本時間）
@@ -100,24 +109,31 @@ export default defineEventHandler(async (event) => {
           })
 
           results.sent++
-          console.log(`✅ Reminder sent (${days}d): ${booking.bookingReference}`)
-        } catch (error: any) {
-          results.errors.push(`${booking.bookingReference}: ${error.message}`)
-          console.error(`❌ Reminder error: ${booking.bookingReference}`, error.message)
+          await emailOperationLogger.sent(`checkin-reminder-${days}d`, booking.guestEmail, booking.bookingReference)
+        } catch (error: unknown) {
+          const errorMsg = getErrorMessage(error)
+          results.errors.push(`${booking.bookingReference}: ${errorMsg}`)
+          await emailOperationLogger.failed(`checkin-reminder-${days}d`, booking.guestEmail, errorMsg, booking.bookingReference)
         }
       }
     }
+
+    const duration = Date.now() - startTime
+    await cronLogger.completed(JOB_NAME, results, duration)
 
     return {
       success: true,
       message: `リマインダー処理完了: ${results.sent}件送信`,
       results
     }
-  } catch (error: any) {
-    console.error('❌ Reminder cron error:', error)
+  } catch (error: unknown) {
+    const duration = Date.now() - startTime
+    const errorMsg = getErrorMessage(error)
+    await cronLogger.failed(JOB_NAME, errorMsg, duration)
+
     throw createError({
       statusCode: 500,
-      message: error.message || 'リマインダー処理に失敗しました'
+      message: errorMsg || 'リマインダー処理に失敗しました'
     })
   }
 })

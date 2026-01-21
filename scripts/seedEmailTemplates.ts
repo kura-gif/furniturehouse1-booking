@@ -58,7 +58,7 @@ const defaultTemplates = [
           <div class="info-box">
             <h3 style="margin-top: 0;">ご予約内容</h3>
             <p><strong>予約番号:</strong> {{bookingReference}}</p>
-            <p><strong>チェックイン:</strong> {{checkInDate}} 15:00〜</p>
+            <p><strong>チェックイン:</strong> {{checkInDate}} 14:00〜</p>
             <p><strong>チェックアウト:</strong> {{checkOutDate}} 〜11:00</p>
             <p><strong>人数:</strong> {{guestCount}}名様</p>
           </div>
@@ -104,7 +104,7 @@ const defaultTemplates = [
           <div class="info-box">
             <h3 style="margin-top: 0;">チェックイン時の注意事項</h3>
             <ul>
-              <li>チェックイン時間: 15:00〜18:00</li>
+              <li>チェックイン時間: 14:00〜18:00</li>
               <li>鍵の受け渡し方法: [詳細]</li>
               <li>ご持参いただくもの: [リスト]</li>
             </ul>
@@ -143,7 +143,7 @@ const defaultTemplates = [
           <p>いよいよ明日がチェックイン日となりました。</p>
           <div class="info-box">
             <h3 style="margin-top: 0;">明日の流れ</h3>
-            <p><strong>チェックイン:</strong> {{checkInDate}} 15:00〜18:00</p>
+            <p><strong>チェックイン:</strong> {{checkInDate}} 14:00〜18:00</p>
             <p><strong>住所:</strong> [詳細住所]</p>
             <p><strong>緊急連絡先:</strong> [電話番号]</p>
           </div>

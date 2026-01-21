@@ -72,12 +72,15 @@ export default defineEventHandler(async (event) => {
         total: calculatedAmount,
       },
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('❌ Payment Intent creation error:', error)
 
+    const statusCode = error && typeof error === 'object' && 'statusCode' in error
+      ? (error as { statusCode: number }).statusCode
+      : 500
     throw createError({
-      statusCode: error.statusCode || 500,
-      message: error.message || '決済の準備に失敗しました',
+      statusCode,
+      message: error instanceof Error ? error.message : '決済の準備に失敗しました',
     })
   }
 })

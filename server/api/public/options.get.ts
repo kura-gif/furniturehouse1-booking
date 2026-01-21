@@ -34,7 +34,7 @@ export default defineEventHandler(async (event) => {
       success: true,
       options
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('オプション取得エラー:', error)
     throw createError({
       statusCode: 500,

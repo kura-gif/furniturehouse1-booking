@@ -113,16 +113,18 @@ export default defineEventHandler(async (event) => {
       message: '管理者アカウントが作成されました',
       uid: userRecord.uid
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('❌ 管理者アカウント作成エラー:', error)
+
+    const firebaseError = error as { code?: string }
 
     // Firebase Authのエラーメッセージを日本語化
     let errorMessage = 'アカウント作成に失敗しました'
-    if (error.code === 'auth/email-already-exists') {
+    if (firebaseError.code === 'auth/email-already-exists') {
       errorMessage = 'このメールアドレスは既に使用されています'
-    } else if (error.code === 'auth/invalid-email') {
+    } else if (firebaseError.code === 'auth/invalid-email') {
       errorMessage = '無効なメールアドレスです'
-    } else if (error.code === 'auth/weak-password') {
+    } else if (firebaseError.code === 'auth/weak-password') {
       errorMessage = 'パスワードが弱すぎます'
     }
 
