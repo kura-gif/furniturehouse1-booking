@@ -5,13 +5,25 @@
       <div class="container-responsive py-4 flex items-center justify-between">
         <div class="flex items-center gap-4">
           <NuxtLink to="/admin" class="text-gray-600 hover:text-gray-900">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 19l-7-7 7-7"
+              />
             </svg>
           </NuxtLink>
           <h1 class="text-2xl font-bold">レビュー管理</h1>
         </div>
-        <button @click="handleLogout" class="btn-secondary text-sm">ログアウト</button>
+        <button @click="handleLogout" class="btn-secondary text-sm">
+          ログアウト
+        </button>
       </div>
     </header>
 
@@ -23,7 +35,9 @@
             @click="activeTab = 'pending'"
             :class="[
               'px-4 py-2 font-medium border-b-2 transition-colors',
-              activeTab === 'pending' ? 'border-purple-600 text-purple-600' : 'border-transparent text-gray-600 hover:text-gray-900'
+              activeTab === 'pending'
+                ? 'border-purple-600 text-purple-600'
+                : 'border-transparent text-gray-600 hover:text-gray-900',
             ]"
           >
             承認待ち ({{ pendingReviews.length }})
@@ -32,7 +46,9 @@
             @click="activeTab = 'approved'"
             :class="[
               'px-4 py-2 font-medium border-b-2 transition-colors',
-              activeTab === 'approved' ? 'border-purple-600 text-purple-600' : 'border-transparent text-gray-600 hover:text-gray-900'
+              activeTab === 'approved'
+                ? 'border-purple-600 text-purple-600'
+                : 'border-transparent text-gray-600 hover:text-gray-900',
             ]"
           >
             承認済み ({{ approvedReviews.length }})
@@ -41,7 +57,9 @@
             @click="activeTab = 'rejected'"
             :class="[
               'px-4 py-2 font-medium border-b-2 transition-colors',
-              activeTab === 'rejected' ? 'border-purple-600 text-purple-600' : 'border-transparent text-gray-600 hover:text-gray-900'
+              activeTab === 'rejected'
+                ? 'border-purple-600 text-purple-600'
+                : 'border-transparent text-gray-600 hover:text-gray-900',
             ]"
           >
             却下済み ({{ rejectedReviews.length }})
@@ -51,14 +69,13 @@
 
       <!-- 承認待ちレビュー -->
       <div v-if="activeTab === 'pending'" class="space-y-4">
-        <div v-if="pendingReviews.length === 0" class="card text-center py-8 text-gray-500">
+        <div
+          v-if="pendingReviews.length === 0"
+          class="card text-center py-8 text-gray-500"
+        >
           承認待ちのレビューはありません
         </div>
-        <div
-          v-for="review in pendingReviews"
-          :key="review.id"
-          class="card"
-        >
+        <div v-for="review in pendingReviews" :key="review.id" class="card">
           <div class="flex items-start justify-between mb-4">
             <div>
               <h3 class="font-semibold text-lg">{{ review.userName }}</h3>
@@ -69,15 +86,26 @@
             </div>
             <div class="text-right">
               <div class="flex items-center gap-1 mb-1">
-                <span v-for="star in review.rating" :key="star" class="text-yellow-500 text-lg">★</span>
+                <span
+                  v-for="star in review.rating"
+                  :key="star"
+                  class="text-yellow-500 text-lg"
+                  >★</span
+                >
               </div>
-              <p v-if="review.stayType" class="text-sm text-gray-600">{{ review.stayType }}</p>
-              <p v-if="review.stayDate" class="text-sm text-gray-600">{{ review.stayDate }}</p>
+              <p v-if="review.stayType" class="text-sm text-gray-600">
+                {{ review.stayType }}
+              </p>
+              <p v-if="review.stayDate" class="text-sm text-gray-600">
+                {{ review.stayDate }}
+              </p>
             </div>
           </div>
 
           <div class="mb-4">
-            <p class="text-gray-800 whitespace-pre-wrap">{{ review.comment }}</p>
+            <p class="text-gray-800 whitespace-pre-wrap">
+              {{ review.comment }}
+            </p>
           </div>
 
           <div class="flex gap-2">
@@ -101,7 +129,10 @@
 
       <!-- 承認済みレビュー -->
       <div v-if="activeTab === 'approved'" class="space-y-4">
-        <div v-if="approvedReviews.length === 0" class="card text-center py-8 text-gray-500">
+        <div
+          v-if="approvedReviews.length === 0"
+          class="card text-center py-8 text-gray-500"
+        >
           承認済みのレビューはありません
         </div>
         <div
@@ -119,28 +150,54 @@
             </div>
             <div class="text-right">
               <div class="flex items-center gap-1 mb-1">
-                <span v-for="star in review.rating" :key="star" class="text-yellow-500 text-lg">★</span>
+                <span
+                  v-for="star in review.rating"
+                  :key="star"
+                  class="text-yellow-500 text-lg"
+                  >★</span
+                >
               </div>
-              <p v-if="review.stayType" class="text-sm text-gray-600">{{ review.stayType }}</p>
-              <p v-if="review.stayDate" class="text-sm text-gray-600">{{ review.stayDate }}</p>
+              <p v-if="review.stayType" class="text-sm text-gray-600">
+                {{ review.stayType }}
+              </p>
+              <p v-if="review.stayDate" class="text-sm text-gray-600">
+                {{ review.stayDate }}
+              </p>
             </div>
           </div>
 
           <div class="mb-4">
-            <p class="text-gray-800 whitespace-pre-wrap">{{ review.comment }}</p>
+            <p class="text-gray-800 whitespace-pre-wrap">
+              {{ review.comment }}
+            </p>
           </div>
 
           <!-- 管理者返信セクション -->
           <div class="border-t border-green-300 pt-4 mt-4">
             <!-- 既存の返信がある場合 -->
-            <div v-if="review.adminReply" class="bg-white rounded-lg p-4 border-l-4 border-purple-500">
+            <div
+              v-if="review.adminReply"
+              class="bg-white rounded-lg p-4 border-l-4 border-purple-500"
+            >
               <div class="flex items-center justify-between mb-2">
                 <div class="flex items-center gap-2">
-                  <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                  <svg
+                    class="w-5 h-5 text-purple-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
+                    />
                   </svg>
                   <span class="font-medium text-purple-800">返信済み</span>
-                  <span class="text-xs text-gray-500">{{ formatDate(review.adminRepliedAt) }}</span>
+                  <span class="text-xs text-gray-500">{{
+                    formatDate(review.adminRepliedAt)
+                  }}</span>
                 </div>
                 <button
                   @click="openReplyModal(review)"
@@ -157,8 +214,18 @@
                 @click="openReplyModal(review)"
                 class="flex items-center gap-2 text-sm text-purple-600 hover:text-purple-800 font-medium"
               >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                <svg
+                  class="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
+                  />
                 </svg>
                 返信を追加
               </button>
@@ -169,7 +236,10 @@
 
       <!-- 却下済みレビュー -->
       <div v-if="activeTab === 'rejected'" class="space-y-4">
-        <div v-if="rejectedReviews.length === 0" class="card text-center py-8 text-gray-500">
+        <div
+          v-if="rejectedReviews.length === 0"
+          class="card text-center py-8 text-gray-500"
+        >
           却下されたレビューはありません
         </div>
         <div
@@ -187,20 +257,36 @@
             </div>
             <div class="text-right">
               <div class="flex items-center gap-1 mb-1">
-                <span v-for="star in review.rating" :key="star" class="text-yellow-500 text-lg">★</span>
+                <span
+                  v-for="star in review.rating"
+                  :key="star"
+                  class="text-yellow-500 text-lg"
+                  >★</span
+                >
               </div>
-              <p v-if="review.stayType" class="text-sm text-gray-600">{{ review.stayType }}</p>
-              <p v-if="review.stayDate" class="text-sm text-gray-600">{{ review.stayDate }}</p>
+              <p v-if="review.stayType" class="text-sm text-gray-600">
+                {{ review.stayType }}
+              </p>
+              <p v-if="review.stayDate" class="text-sm text-gray-600">
+                {{ review.stayDate }}
+              </p>
             </div>
           </div>
 
           <div class="mb-4">
-            <p class="text-gray-800 whitespace-pre-wrap">{{ review.comment }}</p>
+            <p class="text-gray-800 whitespace-pre-wrap">
+              {{ review.comment }}
+            </p>
           </div>
 
-          <div v-if="review.rejectionReason" class="bg-red-100 border border-red-300 rounded-lg p-3">
+          <div
+            v-if="review.rejectionReason"
+            class="bg-red-100 border border-red-300 rounded-lg p-3"
+          >
             <p class="text-sm font-medium text-red-800">却下理由:</p>
-            <p class="text-sm text-red-700 mt-1">{{ review.rejectionReason }}</p>
+            <p class="text-sm text-red-700 mt-1">
+              {{ review.rejectionReason }}
+            </p>
           </div>
         </div>
       </div>
@@ -212,7 +298,10 @@
       class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
       @click="closeRejectModal"
     >
-      <div @click.stop class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6">
+      <div
+        @click.stop
+        class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6"
+      >
         <h3 class="text-xl font-semibold mb-4">レビューを却下</h3>
 
         <div class="mb-4">
@@ -251,20 +340,34 @@
       class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
       @click="closeReplyModal"
     >
-      <div @click.stop class="bg-white rounded-xl shadow-2xl max-w-lg w-full mx-4 p-6">
+      <div
+        @click.stop
+        class="bg-white rounded-xl shadow-2xl max-w-lg w-full mx-4 p-6"
+      >
         <h3 class="text-xl font-semibold mb-4">
-          {{ selectedReviewForReply?.adminReply ? '返信を編集' : 'レビューに返信' }}
+          {{
+            selectedReviewForReply?.adminReply ? "返信を編集" : "レビューに返信"
+          }}
         </h3>
 
         <!-- 元のレビュー表示 -->
         <div class="bg-gray-50 rounded-lg p-4 mb-4">
           <div class="flex items-center justify-between mb-2">
-            <span class="font-medium text-gray-900">{{ selectedReviewForReply?.userName }}</span>
+            <span class="font-medium text-gray-900">{{
+              selectedReviewForReply?.userName
+            }}</span>
             <div class="flex items-center gap-1">
-              <span v-for="star in (selectedReviewForReply?.rating || 0)" :key="star" class="text-yellow-500 text-sm">★</span>
+              <span
+                v-for="star in selectedReviewForReply?.rating || 0"
+                :key="star"
+                class="text-yellow-500 text-sm"
+                >★</span
+              >
             </div>
           </div>
-          <p class="text-sm text-gray-700 line-clamp-3">{{ selectedReviewForReply?.comment }}</p>
+          <p class="text-sm text-gray-700 line-clamp-3">
+            {{ selectedReviewForReply?.comment }}
+          </p>
         </div>
 
         <div class="mb-4">
@@ -293,9 +396,11 @@
             @click="confirmReply"
             :disabled="isProcessing || !replyContent.trim()"
             class="flex-1 px-4 py-2 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"
+            style="
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            "
           >
-            {{ selectedReviewForReply?.adminReply ? '更新する' : '返信する' }}
+            {{ selectedReviewForReply?.adminReply ? "更新する" : "返信する" }}
           </button>
         </div>
       </div>
@@ -304,156 +409,169 @@
 </template>
 
 <script setup lang="ts">
-import type { Review } from '~/types'
+import { Timestamp } from "firebase/firestore";
+import type { Review } from "~/types";
+import { formatSlashDate } from "~/composables/useDateFormatting";
 
 definePageMeta({
-  middleware: 'admin'
-})
+  middleware: "admin",
+});
 
-const { getAllReviews, getPendingReviews, approveReview, rejectReview, replyToReview } = useReviews()
-const { logout } = useAuth()
-const router = useRouter()
+const {
+  getAllReviews,
+  getPendingReviews,
+  approveReview,
+  rejectReview,
+  replyToReview,
+} = useReviews();
+const { logout } = useAuth();
+const router = useRouter();
+const toast = useToast();
+const confirmDialog = useConfirmDialog();
 
 // レビューデータ
-const allReviews = ref<Review[]>([])
-const activeTab = ref<'pending' | 'approved' | 'rejected'>('pending')
+const allReviews = ref<Review[]>([]);
+const activeTab = ref<"pending" | "approved" | "rejected">("pending");
 
 // レビューをステータスごとにフィルタリング
-const pendingReviews = computed(() => allReviews.value.filter(r => r.status === 'pending'))
-const approvedReviews = computed(() => allReviews.value.filter(r => r.status === 'approved'))
-const rejectedReviews = computed(() => allReviews.value.filter(r => r.status === 'rejected'))
+const pendingReviews = computed(() =>
+  allReviews.value.filter((r) => r.status === "pending"),
+);
+const approvedReviews = computed(() =>
+  allReviews.value.filter((r) => r.status === "approved"),
+);
+const rejectedReviews = computed(() =>
+  allReviews.value.filter((r) => r.status === "rejected"),
+);
 
 // 却下モーダル
-const showRejectModal = ref(false)
-const selectedReview = ref<Review | null>(null)
-const rejectionReason = ref('')
-const isProcessing = ref(false)
+const showRejectModal = ref(false);
+const selectedReview = ref<Review | null>(null);
+const rejectionReason = ref("");
+const isProcessing = ref(false);
 
 // 返信モーダル
-const showReplyModal = ref(false)
-const selectedReviewForReply = ref<Review | null>(null)
-const replyContent = ref('')
+const showReplyModal = ref(false);
+const selectedReviewForReply = ref<Review | null>(null);
+const replyContent = ref("");
 
 // レビューを読み込み
 const loadReviews = async () => {
   try {
-    allReviews.value = await getAllReviews()
+    allReviews.value = await getAllReviews();
   } catch (error) {
-    console.error('レビューの取得に失敗:', error)
-    alert('レビューの取得に失敗しました')
+    console.error("レビューの取得に失敗:", error);
+    toast.error("レビューの取得に失敗しました");
   }
-}
+};
 
 // 承認処理
 const handleApprove = async (reviewId: string) => {
-  if (!confirm('このレビューを承認しますか？')) return
+  if (!(await confirmDialog.confirm("このレビューを承認しますか？"))) return;
 
-  isProcessing.value = true
+  isProcessing.value = true;
   try {
-    await approveReview(reviewId)
-    await loadReviews()
-    alert('レビューを承認しました')
+    await approveReview(reviewId);
+    await loadReviews();
+    toast.success("レビューを承認しました");
   } catch (error) {
-    console.error('承認エラー:', error)
-    alert('承認に失敗しました')
+    console.error("承認エラー:", error);
+    toast.error("承認に失敗しました");
   } finally {
-    isProcessing.value = false
+    isProcessing.value = false;
   }
-}
+};
 
 // 却下モーダルを開く
 const openRejectModal = (review: Review) => {
-  selectedReview.value = review
-  rejectionReason.value = ''
-  showRejectModal.value = true
-}
+  selectedReview.value = review;
+  rejectionReason.value = "";
+  showRejectModal.value = true;
+};
 
 // 却下モーダルを閉じる
 const closeRejectModal = () => {
-  showRejectModal.value = false
-  selectedReview.value = null
-  rejectionReason.value = ''
-}
+  showRejectModal.value = false;
+  selectedReview.value = null;
+  rejectionReason.value = "";
+};
 
 // 却下確定
 const confirmReject = async () => {
-  if (!selectedReview.value?.id) return
+  if (!selectedReview.value?.id) return;
 
-  isProcessing.value = true
+  isProcessing.value = true;
   try {
-    await rejectReview(selectedReview.value.id, rejectionReason.value)
-    await loadReviews()
-    closeRejectModal()
-    alert('レビューを却下しました')
+    await rejectReview(selectedReview.value.id, rejectionReason.value);
+    await loadReviews();
+    closeRejectModal();
+    toast.success("レビューを却下しました");
   } catch (error) {
-    console.error('却下エラー:', error)
-    alert('却下に失敗しました')
+    console.error("却下エラー:", error);
+    toast.error("却下に失敗しました");
   } finally {
-    isProcessing.value = false
+    isProcessing.value = false;
   }
-}
+};
 
-// 日付フォーマット
-const formatDate = (timestamp: any): string => {
-  if (!timestamp) return ''
-  const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp)
-  return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`
-}
+// formatDate は composables/useDateFormatting から import
+const formatDate = formatSlashDate;
 
 // 返信モーダルを開く
 const openReplyModal = (review: Review) => {
-  selectedReviewForReply.value = review
-  replyContent.value = review.adminReply || ''
-  showReplyModal.value = true
-}
+  selectedReviewForReply.value = review;
+  replyContent.value = review.adminReply || "";
+  showReplyModal.value = true;
+};
 
 // 返信モーダルを閉じる
 const closeReplyModal = () => {
-  showReplyModal.value = false
-  selectedReviewForReply.value = null
-  replyContent.value = ''
-}
+  showReplyModal.value = false;
+  selectedReviewForReply.value = null;
+  replyContent.value = "";
+};
 
 // 返信確定
 const confirmReply = async () => {
-  if (!selectedReviewForReply.value?.id || !replyContent.value.trim()) return
+  if (!selectedReviewForReply.value?.id || !replyContent.value.trim()) return;
 
-  isProcessing.value = true
+  isProcessing.value = true;
   try {
-    await replyToReview(selectedReviewForReply.value.id, replyContent.value.trim())
-    await loadReviews()
-    closeReplyModal()
-    alert('返信を保存しました')
+    await replyToReview(
+      selectedReviewForReply.value.id,
+      replyContent.value.trim(),
+    );
+    await loadReviews();
+    closeReplyModal();
+    toast.success("返信を保存しました");
   } catch (error) {
-    console.error('返信エラー:', error)
-    alert('返信の保存に失敗しました')
+    console.error("返信エラー:", error);
+    toast.error("返信の保存に失敗しました");
   } finally {
-    isProcessing.value = false
+    isProcessing.value = false;
   }
-}
+};
 
 // ログアウト
 const handleLogout = async () => {
   try {
-    await logout()
-    router.push('/login')
+    await logout();
+    router.push("/login");
   } catch (error) {
-    console.error('ログアウトエラー:', error)
+    console.error("ログアウトエラー:", error);
   }
-}
+};
 
 // 初期読み込み
 onMounted(() => {
-  loadReviews()
-})
+  loadReviews();
+});
 
 // SEO設定
 useHead({
-  title: 'レビュー管理 | 管理ダッシュボード',
-  meta: [
-    { name: 'robots', content: 'noindex' }
-  ]
-})
+  title: "レビュー管理 | 管理ダッシュボード",
+  meta: [{ name: "robots", content: "noindex" }],
+});
 </script>
 
 <style scoped>

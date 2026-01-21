@@ -1,5 +1,5 @@
-import nodemailer from 'nodemailer'
-import { getFacilitySettings } from '~/server/utils/facility-settings'
+import nodemailer from "nodemailer";
+import { getFacilitySettings } from "~/server/utils/facility-settings";
 
 /**
  * 予約確認メール送信API
@@ -9,48 +9,63 @@ import { getFacilitySettings } from '~/server/utils/facility-settings'
  * - シークレットキーによる認証が必要
  */
 export default defineEventHandler(async (event) => {
-  const config = useRuntimeConfig()
-  const facilitySettings = await getFacilitySettings()
-  
+  const config = useRuntimeConfig();
+  const facilitySettings = await getFacilitySettings();
+
   // 内部呼び出し認証チェック
-  const authHeader = getHeader(event, 'x-internal-secret')
-  const internalSecret = config.internalApiSecret
-  
+  const authHeader = getHeader(event, "x-internal-secret");
+  const internalSecret = config.internalApiSecret;
+
   if (!authHeader || authHeader !== internalSecret) {
     throw createError({
       statusCode: 403,
-      statusMessage: 'このAPIは内部呼び出し専用です'
-    })
+      statusMessage: "このAPIは内部呼び出し専用です",
+    });
   }
 
-  const body = await readBody(event)
-  const { to, bookingId, bookingReference, bookingToken, guestName, checkInDate, checkOutDate, totalAmount, isPendingReview } = body
+  const body = await readBody(event);
+  const {
+    to,
+    bookingId,
+    bookingReference,
+    bookingToken,
+    guestName,
+    checkInDate,
+    checkOutDate,
+    totalAmount,
+    isPendingReview,
+  } = body;
 
   // メール送信設定（Gmail）
   const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    service: "gmail",
     auth: {
-      user: config.emailUser || process.env.EMAIL_USER || '',
-      pass: config.emailPassword || process.env.EMAIL_PASSWORD || ''
-    }
-  })
+      user: config.emailUser || process.env.EMAIL_USER || "",
+      pass: config.emailPassword || process.env.EMAIL_PASSWORD || "",
+    },
+  });
 
   // 送信元はグループメール（furniturehouse1@）を表示、認証はemailUserで行う
-  const fromEmail = config.emailFrom || config.emailReplyTo || config.emailUser || 'noreply@furniturehouse1.com'
-  const replyToEmail = config.emailReplyTo || config.emailFrom || config.emailUser
+  const fromEmail =
+    config.emailFrom ||
+    config.emailReplyTo ||
+    config.emailUser ||
+    "noreply@furniturehouse1.com";
+  const replyToEmail =
+    config.emailReplyTo || config.emailFrom || config.emailUser;
 
   // 審査中かどうかで件名と内容を変更
   const emailSubject = isPendingReview
-    ? '【家具の家 No.1】予約リクエストを受け付けました'
-    : '【家具の家 No.1】ご予約確定のお知らせ'
+    ? "【家具の家 No.1】予約リクエストを受け付けました"
+    : "【家具の家 No.1】ご予約確定のお知らせ";
 
   const headerMessage = isPendingReview
-    ? '予約リクエストを受け付けました'
-    : 'ご予約ありがとうございます'
+    ? "予約リクエストを受け付けました"
+    : "ご予約ありがとうございます";
 
   const headerColor = isPendingReview
-    ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)'
-    : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+    ? "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)"
+    : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)";
 
   const mailOptions = {
     from: `"家具の家 No.1" <${fromEmail}>`,
@@ -134,7 +149,9 @@ export default defineEventHandler(async (event) => {
         <div class="content">
           <p>${guestName} 様</p>
 
-          ${isPendingReview ? `
+          ${
+            isPendingReview
+              ? `
           <p>この度は「家具の家 No.1」への予約リクエストをいただき、誠にありがとうございます。<br>
           現在、ホストが予約内容を確認しております。</p>
 
@@ -148,13 +165,15 @@ export default defineEventHandler(async (event) => {
           </div>
 
           <p>リクエスト内容は以下の通りです。</p>
-          ` : `
+          `
+              : `
           <p>この度は「家具の家 No.1」をご予約いただき、誠にありがとうございます。<br>
           ご予約内容は以下の通りです。</p>
-          `}
+          `
+          }
 
           <div class="info-box">
-            <h3 style="margin-top: 0;">${isPendingReview ? 'リクエスト内容' : 'ご予約内容'}</h3>
+            <h3 style="margin-top: 0;">${isPendingReview ? "リクエスト内容" : "ご予約内容"}</h3>
             <div class="info-row">
               <span class="label">予約番号</span>
               <span class="value" style="font-family: monospace; font-weight: bold;">${bookingReference}</span>
@@ -178,7 +197,7 @@ export default defineEventHandler(async (event) => {
             <p style="margin: 0 0 15px 0; font-size: 13px; color: #856404;">
               アカウント不要で、いつでも予約詳細を確認できます
             </p>
-            <a href="${config.public.siteUrl || 'http://localhost:3000'}/booking/view?token=${bookingToken}"
+            <a href="${config.public.siteUrl || "http://localhost:3000"}/booking/view?token=${bookingToken}"
                class="button"
                style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: inline-block;">
               予約内容を確認
@@ -188,7 +207,9 @@ export default defineEventHandler(async (event) => {
             </p>
           </div>
 
-          ${isPendingReview ? `
+          ${
+            isPendingReview
+              ? `
           <div class="info-box" style="border-left-color: #f59e0b;">
             <h3 style="margin-top: 0;">今後の流れ</h3>
             <ul style="margin: 0; padding-left: 20px;">
@@ -206,7 +227,8 @@ export default defineEventHandler(async (event) => {
               与信枠のみ確保されており、却下された場合は自動的に解放されます。
             </p>
           </div>
-          ` : `
+          `
+              : `
           <div class="info-box">
             <h3 style="margin-top: 0;">重要事項</h3>
             <ul style="margin: 0; padding-left: 20px;">
@@ -216,7 +238,8 @@ export default defineEventHandler(async (event) => {
               <li>お問い合わせの際は、予約番号（${bookingReference}）をお伝えください</li>
             </ul>
           </div>
-          `}
+          `
+          }
 
           <div style="background: #e7f3ff; border-radius: 8px; padding: 15px; margin: 20px 0; font-size: 13px;">
             <p style="margin: 0 0 10px 0; font-weight: 600;">💡 アカウントを作成すると、さらに便利に</p>
@@ -226,14 +249,14 @@ export default defineEventHandler(async (event) => {
               <li>レビューの投稿</li>
             </ul>
             <p style="margin: 10px 0 0 0; text-align: center;">
-              <a href="${config.public.siteUrl || 'http://localhost:3000'}/signup?email=${encodeURIComponent(to)}&booking_id=${bookingId}"
+              <a href="${config.public.siteUrl || "http://localhost:3000"}/signup?email=${encodeURIComponent(to)}&booking_id=${bookingId}"
                  style="color: #667eea; text-decoration: none; font-weight: 600;">
                 アカウントを作成 →
               </a>
             </p>
           </div>
 
-          <p>${isPendingReview ? '審査結果をお待ちください。' : 'ご滞在を心よりお待ちしております。'}</p>
+          <p>${isPendingReview ? "審査結果をお待ちください。" : "ご滞在を心よりお待ちしております。"}</p>
 
           <p>家具の家 No.1 運営委員会</p>
         </div>
@@ -245,24 +268,24 @@ export default defineEventHandler(async (event) => {
         </div>
       </body>
       </html>
-    `
-  }
+    `,
+  };
 
   try {
     // メール送信
-    const info = await transporter.sendMail(mailOptions)
+    const info = await transporter.sendMail(mailOptions);
 
     return {
       success: true,
-      messageId: info.messageId
-    }
+      messageId: info.messageId,
+    };
   } catch (error: unknown) {
     // ログには詳細を記録（SMTPエラー等の診断用）
-    console.error('メール送信エラー:', error)
+    console.error("メール送信エラー:", error);
     // クライアントには詳細を漏洩させない
     throw createError({
       statusCode: 500,
-      statusMessage: 'メール送信に失敗しました'
-    })
+      statusMessage: "メール送信に失敗しました",
+    });
   }
-})
+});

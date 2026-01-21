@@ -1,5 +1,7 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 flex items-center justify-center p-4">
+  <div
+    class="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 flex items-center justify-center p-4"
+  >
     <div class="max-w-md w-full">
       <!-- ロゴ/ヘッダー -->
       <div class="text-center mb-8">
@@ -10,7 +12,9 @@
       <div class="bg-white rounded-xl shadow-lg p-8">
         <!-- ローディング -->
         <div v-if="loading" class="text-center py-8">
-          <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+          <div
+            class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"
+          ></div>
           <p class="mt-4 text-gray-600">招待を確認しています...</p>
         </div>
 
@@ -19,16 +23,17 @@
           <div class="text-red-600 text-5xl mb-4">❌</div>
           <h2 class="text-xl font-bold text-gray-900 mb-2">招待が無効です</h2>
           <p class="text-gray-600 mb-6">{{ error }}</p>
-          <NuxtLink to="/" class="btn-primary">
-            トップページへ
-          </NuxtLink>
+          <NuxtLink to="/" class="btn-primary"> トップページへ </NuxtLink>
         </div>
 
         <!-- 招待情報表示 & アカウント作成フォーム -->
         <div v-else-if="invitation">
-          <div class="mb-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+          <div
+            class="mb-6 p-4 bg-purple-50 border border-purple-200 rounded-lg"
+          >
             <p class="text-sm text-gray-700">
-              <span class="font-semibold">{{ invitation.invitedByName }}</span> 様より招待されました
+              <span class="font-semibold">{{ invitation.invitedByName }}</span>
+              様より招待されました
             </p>
             <p class="text-sm text-gray-600 mt-1">
               招待先: <span class="font-medium">{{ invitation.email }}</span>
@@ -77,7 +82,10 @@
               />
             </div>
 
-            <div v-if="errorMessage" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+            <div
+              v-if="errorMessage"
+              class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm"
+            >
               {{ errorMessage }}
             </div>
 
@@ -86,7 +94,7 @@
               :disabled="creating"
               class="btn-primary w-full"
             >
-              {{ creating ? 'アカウント作成中...' : 'アカウントを作成' }}
+              {{ creating ? "アカウント作成中..." : "アカウントを作成" }}
             </button>
           </form>
         </div>
@@ -100,121 +108,131 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { ref, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
-const route = useRoute()
-const router = useRouter()
+const route = useRoute();
+const router = useRouter();
+const toast = useToast();
 
-const loading = ref(true)
-const creating = ref(false)
-const error = ref('')
-const errorMessage = ref('')
+const loading = ref(true);
+const creating = ref(false);
+const error = ref("");
+const errorMessage = ref("");
 
-const invitation = ref<any>(null)
-const displayName = ref('')
-const password = ref('')
-const passwordConfirm = ref('')
+// 招待情報の型定義
+interface InvitationData {
+  email: string;
+  invitedByName: string;
+  token: string;
+}
+
+const invitation = ref<InvitationData | null>(null);
+const displayName = ref("");
+const password = ref("");
+const passwordConfirm = ref("");
 
 const loadInvitation = async () => {
-  const token = route.query.token as string
+  const token = route.query.token as string;
 
   if (!token) {
-    error.value = '招待トークンが見つかりません'
-    loading.value = false
-    return
+    error.value = "招待トークンが見つかりません";
+    loading.value = false;
+    return;
   }
 
   try {
     // サーバーサイドで招待を検証
-    const response = await fetch('/api/public/verify-invitation', {
-      method: 'POST',
+    const response = await fetch("/api/public/verify-invitation", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ token })
-    })
+      body: JSON.stringify({ token }),
+    });
 
-    const data = await response.json()
+    const data = await response.json();
 
     if (!response.ok || !data.valid) {
-      error.value = data.error || '招待の確認に失敗しました'
-      loading.value = false
-      return
+      error.value = data.error || "招待の確認に失敗しました";
+      loading.value = false;
+      return;
     }
 
     // 招待情報を保存
     invitation.value = {
       ...data.invitation,
-      token
-    } as any
+      token,
+    } as InvitationData;
 
-    loading.value = false
-  } catch (err: any) {
-    console.error('招待取得エラー:', err)
-    error.value = `招待の確認中にエラーが発生しました: ${err.message}`
-    loading.value = false
+    loading.value = false;
+  } catch (err: unknown) {
+    console.error("招待取得エラー:", err);
+    const message = err instanceof Error ? err.message : "不明なエラー";
+    error.value = `招待の確認中にエラーが発生しました: ${message}`;
+    loading.value = false;
   }
-}
+};
 
 const createAccount = async () => {
-  errorMessage.value = ''
+  errorMessage.value = "";
 
   // バリデーション
   if (!displayName.value.trim()) {
-    errorMessage.value = '表示名を入力してください'
-    return
+    errorMessage.value = "表示名を入力してください";
+    return;
   }
 
   if (password.value.length < 8) {
-    errorMessage.value = 'パスワードは8文字以上で入力してください'
-    return
+    errorMessage.value = "パスワードは8文字以上で入力してください";
+    return;
   }
 
   if (password.value !== passwordConfirm.value) {
-    errorMessage.value = 'パスワードが一致しません'
-    return
+    errorMessage.value = "パスワードが一致しません";
+    return;
   }
 
   if (!invitation.value) {
-    errorMessage.value = '招待情報が見つかりません'
-    return
+    errorMessage.value = "招待情報が見つかりません";
+    return;
   }
 
-  creating.value = true
+  creating.value = true;
 
   try {
     // サーバーサイドでアカウント作成
-    const response = await fetch('/api/public/accept-invitation', {
-      method: 'POST',
+    const response = await fetch("/api/public/accept-invitation", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        token: (invitation.value as any).token,
+        token: invitation.value.token,
         displayName: displayName.value,
-        password: password.value
-      })
-    })
+        password: password.value,
+      }),
+    });
 
-    const data = await response.json()
+    const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.message || 'アカウント作成に失敗しました')
+      throw new Error(data.message || "アカウント作成に失敗しました");
     }
 
     // 成功メッセージ表示後、ログインページへリダイレクト
-    alert(`アカウントを作成しました！\nメールアドレス: ${data.email}\n\nログインページに移動します。`)
-    router.push('/admin/login')
-  } catch (err: any) {
-    console.error('アカウント作成エラー:', err)
-    errorMessage.value = err.message || 'アカウント作成に失敗しました'
+    toast.success(`アカウントを作成しました！（${data.email}）`);
+    router.push("/admin/login");
+  } catch (err: unknown) {
+    console.error("アカウント作成エラー:", err);
+    errorMessage.value =
+      err instanceof Error ? err.message : "アカウント作成に失敗しました";
   } finally {
-    creating.value = false
+    creating.value = false;
   }
-}
+};
 
 onMounted(() => {
-  loadInvitation()
-})
+  loadInvitation();
+});
 </script>

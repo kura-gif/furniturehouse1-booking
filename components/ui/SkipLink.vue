@@ -6,22 +6,22 @@
  */
 
 interface Props {
-  targetId?: string
-  label?: string
+  targetId?: string;
+  label?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  targetId: 'main-content',
-  label: 'メインコンテンツへスキップ'
-})
+  targetId: "main-content",
+  label: "メインコンテンツへスキップ",
+});
 
 const skipToContent = () => {
-  const target = document.getElementById(props.targetId)
+  const target = document.getElementById(props.targetId);
   if (target) {
-    target.focus()
-    target.scrollIntoView({ behavior: 'smooth' })
+    target.focus();
+    target.scrollIntoView({ behavior: "smooth" });
   }
-}
+};
 </script>
 
 <template>

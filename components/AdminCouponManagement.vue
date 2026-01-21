@@ -5,16 +5,18 @@
       <div class="flex items-center justify-between mb-6">
         <div>
           <h2 class="text-2xl font-semibold">クーポン管理</h2>
-          <p class="text-sm text-gray-600 mt-1">割引クーポンの作成・管理ができます</p>
+          <p class="text-sm text-gray-600 mt-1">
+            割引クーポンの作成・管理ができます
+          </p>
         </div>
-        <button @click="openCreateModal" class="btn-primary">
-          + 新規作成
-        </button>
+        <button @click="openCreateModal" class="btn-primary">+ 新規作成</button>
       </div>
 
       <!-- ローディング -->
       <div v-if="isLoading" class="text-center py-12">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto"></div>
+        <div
+          class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto"
+        ></div>
         <p class="text-gray-500 mt-2">読み込み中...</p>
       </div>
 
@@ -23,21 +25,40 @@
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">コード</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">割引内容</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">有効期間</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">使用状況</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">ステータス</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">操作</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">
+                コード
+              </th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">
+                割引内容
+              </th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">
+                有効期間
+              </th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">
+                使用状況
+              </th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">
+                ステータス
+              </th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500">
+                操作
+              </th>
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
-            <tr v-for="coupon in coupons" :key="coupon.id" class="hover:bg-gray-50">
+            <tr
+              v-for="coupon in coupons"
+              :key="coupon.id"
+              class="hover:bg-gray-50"
+            >
               <td class="px-4 py-3 text-sm font-mono font-semibold">
                 {{ coupon.code }}
               </td>
               <td class="px-4 py-3 text-sm">
-                <span v-if="coupon.discountType === 'percentage'" class="text-purple-600">
+                <span
+                  v-if="coupon.discountType === 'percentage'"
+                  class="text-purple-600"
+                >
                   {{ coupon.discountValue }}% OFF
                 </span>
                 <span v-else class="text-purple-600">
@@ -49,7 +70,9 @@
               </td>
               <td class="px-4 py-3 text-sm">
                 <div>{{ formatDate(coupon.validFrom) }}</div>
-                <div class="text-gray-500">〜 {{ formatDate(coupon.validUntil) }}</div>
+                <div class="text-gray-500">
+                  〜 {{ formatDate(coupon.validUntil) }}
+                </div>
               </td>
               <td class="px-4 py-3 text-sm">
                 <div>{{ coupon.usageCount }}回使用</div>
@@ -61,10 +84,12 @@
                 <span
                   :class="[
                     'px-2 py-1 rounded-full text-xs',
-                    coupon.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                    coupon.isActive
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-gray-100 text-gray-800',
                   ]"
                 >
-                  {{ coupon.isActive ? '有効' : '無効' }}
+                  {{ coupon.isActive ? "有効" : "無効" }}
                 </span>
               </td>
               <td class="px-4 py-3 text-sm space-x-2">
@@ -86,7 +111,7 @@
                   :disabled="isSaving"
                   class="text-blue-600 hover:text-blue-800 disabled:opacity-50"
                 >
-                  {{ coupon.isActive ? '無効化' : '有効化' }}
+                  {{ coupon.isActive ? "無効化" : "有効化" }}
                 </button>
                 <button
                   @click="deleteCoupon(coupon.id)"
@@ -112,9 +137,11 @@
       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
       @click.self="closeModal"
     >
-      <div class="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div
+        class="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+      >
         <h3 class="text-xl font-semibold mb-4">
-          {{ editingCoupon ? 'クーポン編集' : 'クーポン新規作成' }}
+          {{ editingCoupon ? "クーポン編集" : "クーポン新規作成" }}
         </h3>
 
         <form @submit.prevent="saveCoupon" class="space-y-4">
@@ -130,7 +157,9 @@
               placeholder="例: WELCOME50"
               required
             />
-            <p class="text-xs text-gray-500 mt-1">大文字英数字で入力してください</p>
+            <p class="text-xs text-gray-500 mt-1">
+              大文字英数字で入力してください
+            </p>
           </div>
 
           <!-- 割引タイプ -->
@@ -163,7 +192,7 @@
           <!-- 割引値 -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">
-              割引{{ couponForm.discountType === 'percentage' ? '率' : '額' }}
+              割引{{ couponForm.discountType === "percentage" ? "率" : "額" }}
               <span class="text-red-500">*</span>
             </label>
             <div class="flex items-center gap-2">
@@ -171,13 +200,19 @@
                 v-model.number="couponForm.discountValue"
                 type="number"
                 class="flex-1 px-3 py-2 border rounded-lg"
-                :placeholder="couponForm.discountType === 'percentage' ? '例: 25' : '例: 5000'"
+                :placeholder="
+                  couponForm.discountType === 'percentage'
+                    ? '例: 25'
+                    : '例: 5000'
+                "
                 :min="couponForm.discountType === 'percentage' ? 1 : 100"
-                :max="couponForm.discountType === 'percentage' ? 100 : undefined"
+                :max="
+                  couponForm.discountType === 'percentage' ? 100 : undefined
+                "
                 required
               />
               <span class="text-gray-600">
-                {{ couponForm.discountType === 'percentage' ? '%' : '円' }}
+                {{ couponForm.discountType === "percentage" ? "%" : "円" }}
               </span>
             </div>
           </div>
@@ -211,9 +246,7 @@
               placeholder="例: 20000"
               step="1000"
             />
-            <p class="text-xs text-gray-500 mt-1">
-              割引額の上限を設定
-            </p>
+            <p class="text-xs text-gray-500 mt-1">割引額の上限を設定</p>
           </div>
 
           <!-- 有効期間 -->
@@ -254,9 +287,7 @@
               placeholder="無制限"
               min="1"
             />
-            <p class="text-xs text-gray-500 mt-1">
-              空欄の場合は無制限
-            </p>
+            <p class="text-xs text-gray-500 mt-1">空欄の場合は無制限</p>
           </div>
 
           <!-- ステータス -->
@@ -286,7 +317,7 @@
               :disabled="isSaving"
               class="btn-primary px-6 disabled:opacity-50"
             >
-              {{ isSaving ? '保存中...' : (editingCoupon ? '更新' : '作成') }}
+              {{ isSaving ? "保存中..." : editingCoupon ? "更新" : "作成" }}
             </button>
           </div>
         </form>
@@ -296,7 +327,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted } from "vue";
 import {
   collection,
   getDocs,
@@ -306,106 +337,110 @@ import {
   doc,
   query,
   orderBy,
-  Timestamp
-} from 'firebase/firestore'
-import type { Coupon } from '~/types'
+  Timestamp,
+} from "firebase/firestore";
+import type { Coupon } from "~/types";
 
-const { $db } = useNuxtApp()
-const $firestore = $db as ReturnType<typeof import('firebase/firestore').getFirestore>
+const { $db } = useNuxtApp();
+const $firestore = $db as ReturnType<
+  typeof import("firebase/firestore").getFirestore
+>;
 
 // クーポンリスト
-const coupons = ref<Coupon[]>([])
-const isLoading = ref(false)
-const isSaving = ref(false)
+const coupons = ref<Coupon[]>([]);
+const isLoading = ref(false);
+const isSaving = ref(false);
 
 // モーダル表示
-const showModal = ref(false)
-const editingCoupon = ref<Coupon | null>(null)
+const showModal = ref(false);
+const editingCoupon = ref<Coupon | null>(null);
 
 // クーポンフォーム
 const couponForm = reactive({
-  code: '',
-  discountType: 'percentage' as 'percentage' | 'fixed',
+  code: "",
+  discountType: "percentage" as "percentage" | "fixed",
   discountValue: 0,
   minAmount: undefined as number | undefined,
   maxDiscount: undefined as number | undefined,
-  validFrom: '',
-  validUntil: '',
+  validFrom: "",
+  validUntil: "",
   usageLimit: undefined as number | undefined,
-  isActive: true
-})
+  isActive: true,
+});
 
 // 初期化時にFirestoreから読み込み
 onMounted(() => {
-  loadCoupons()
-})
+  loadCoupons();
+});
 
 async function loadCoupons() {
-  isLoading.value = true
+  isLoading.value = true;
   try {
-    const couponsRef = collection($firestore, 'coupons')
-    const q = query(couponsRef, orderBy('createdAt', 'desc'))
-    const snapshot = await getDocs(q)
-    coupons.value = snapshot.docs.map(doc => ({
+    const couponsRef = collection($firestore, "coupons");
+    const q = query(couponsRef, orderBy("createdAt", "desc"));
+    const snapshot = await getDocs(q);
+    coupons.value = snapshot.docs.map((doc) => ({
       id: doc.id,
-      ...doc.data()
-    })) as Coupon[]
+      ...doc.data(),
+    })) as Coupon[];
   } catch (e) {
-    console.error('クーポンの読み込みエラー:', e)
-    alert('クーポンの読み込みに失敗しました')
+    console.error("クーポンの読み込みエラー:", e);
+    alert("クーポンの読み込みに失敗しました");
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
 }
 
 function openCreateModal() {
-  editingCoupon.value = null
-  resetForm()
-  showModal.value = true
+  editingCoupon.value = null;
+  resetForm();
+  showModal.value = true;
 }
 
 function editCoupon(coupon: Coupon) {
-  editingCoupon.value = coupon
-  couponForm.code = coupon.code
-  couponForm.discountType = coupon.discountType
-  couponForm.discountValue = coupon.discountValue
-  couponForm.minAmount = coupon.minAmount
-  couponForm.maxDiscount = coupon.maxDiscount
+  editingCoupon.value = coupon;
+  couponForm.code = coupon.code;
+  couponForm.discountType = coupon.discountType;
+  couponForm.discountValue = coupon.discountValue;
+  couponForm.minAmount = coupon.minAmount;
+  couponForm.maxDiscount = coupon.maxDiscount;
 
   // Timestampを日付文字列に変換
-  const validFrom = coupon.validFrom instanceof Timestamp
-    ? coupon.validFrom.toDate()
-    : new Date(coupon.validFrom as any)
-  const validUntil = coupon.validUntil instanceof Timestamp
-    ? coupon.validUntil.toDate()
-    : new Date(coupon.validUntil as any)
+  const validFrom =
+    coupon.validFrom instanceof Timestamp
+      ? coupon.validFrom.toDate()
+      : new Date(coupon.validFrom as unknown as string | number | Date);
+  const validUntil =
+    coupon.validUntil instanceof Timestamp
+      ? coupon.validUntil.toDate()
+      : new Date(coupon.validUntil as unknown as string | number | Date);
 
-  couponForm.validFrom = validFrom.toISOString().split('T')[0]
-  couponForm.validUntil = validUntil.toISOString().split('T')[0]
-  couponForm.usageLimit = coupon.usageLimit
-  couponForm.isActive = coupon.isActive
-  showModal.value = true
+  couponForm.validFrom = validFrom.toISOString().split("T")[0];
+  couponForm.validUntil = validUntil.toISOString().split("T")[0];
+  couponForm.usageLimit = coupon.usageLimit;
+  couponForm.isActive = coupon.isActive;
+  showModal.value = true;
 }
 
 function closeModal() {
-  showModal.value = false
-  resetForm()
+  showModal.value = false;
+  resetForm();
 }
 
 function resetForm() {
-  couponForm.code = ''
-  couponForm.discountType = 'percentage'
-  couponForm.discountValue = 0
-  couponForm.minAmount = undefined
-  couponForm.maxDiscount = undefined
-  couponForm.validFrom = ''
-  couponForm.validUntil = ''
-  couponForm.usageLimit = undefined
-  couponForm.isActive = true
+  couponForm.code = "";
+  couponForm.discountType = "percentage";
+  couponForm.discountValue = 0;
+  couponForm.minAmount = undefined;
+  couponForm.maxDiscount = undefined;
+  couponForm.validFrom = "";
+  couponForm.validUntil = "";
+  couponForm.usageLimit = undefined;
+  couponForm.isActive = true;
 }
 
 async function saveCoupon() {
-  isSaving.value = true
+  isSaving.value = true;
   try {
     const couponData = {
       code: couponForm.code.toUpperCase(),
@@ -414,89 +449,106 @@ async function saveCoupon() {
       minAmount: couponForm.minAmount || null,
       maxDiscount: couponForm.maxDiscount || null,
       validFrom: Timestamp.fromDate(new Date(couponForm.validFrom)),
-      validUntil: Timestamp.fromDate(new Date(couponForm.validUntil + 'T23:59:59')),
+      validUntil: Timestamp.fromDate(
+        new Date(couponForm.validUntil + "T23:59:59"),
+      ),
       usageLimit: couponForm.usageLimit || null,
       isActive: couponForm.isActive,
-      updatedAt: Timestamp.now()
-    }
+      updatedAt: Timestamp.now(),
+    };
 
     if (editingCoupon.value) {
       // 更新
-      const couponRef = doc($firestore, 'coupons', editingCoupon.value.id)
-      await updateDoc(couponRef, couponData)
-      alert(`クーポン「${couponData.code}」を更新しました`)
+      const couponRef = doc($firestore, "coupons", editingCoupon.value.id);
+      await updateDoc(couponRef, couponData);
+      alert(`クーポン「${couponData.code}」を更新しました`);
     } else {
       // 新規作成
-      await addDoc(collection($firestore, 'coupons'), {
+      await addDoc(collection($firestore, "coupons"), {
         ...couponData,
         usageCount: 0,
-        createdAt: Timestamp.now()
-      })
-      alert(`クーポン「${couponData.code}」を作成しました`)
+        createdAt: Timestamp.now(),
+      });
+      alert(`クーポン「${couponData.code}」を作成しました`);
     }
 
-    await loadCoupons()
-    closeModal()
+    await loadCoupons();
+    closeModal();
   } catch (e) {
-    console.error('クーポン保存エラー:', e)
-    alert('クーポンの保存に失敗しました')
+    console.error("クーポン保存エラー:", e);
+    alert("クーポンの保存に失敗しました");
   } finally {
-    isSaving.value = false
+    isSaving.value = false;
   }
 }
 
 async function toggleCoupon(coupon: Coupon) {
-  isSaving.value = true
+  isSaving.value = true;
   try {
-    const couponRef = doc($firestore, 'coupons', coupon.id)
+    const couponRef = doc($firestore, "coupons", coupon.id);
     await updateDoc(couponRef, {
       isActive: !coupon.isActive,
-      updatedAt: Timestamp.now()
-    })
-    await loadCoupons()
+      updatedAt: Timestamp.now(),
+    });
+    await loadCoupons();
   } catch (e) {
-    console.error('クーポン更新エラー:', e)
-    alert('クーポンの更新に失敗しました')
+    console.error("クーポン更新エラー:", e);
+    alert("クーポンの更新に失敗しました");
   } finally {
-    isSaving.value = false
+    isSaving.value = false;
   }
 }
 
 async function deleteCoupon(id: string) {
-  if (!confirm('このクーポンを削除しますか？')) return
+  if (!confirm("このクーポンを削除しますか？")) return;
 
-  isSaving.value = true
+  isSaving.value = true;
   try {
-    await deleteDoc(doc($firestore, 'coupons', id))
-    await loadCoupons()
-    alert('クーポンを削除しました')
+    await deleteDoc(doc($firestore, "coupons", id));
+    await loadCoupons();
+    alert("クーポンを削除しました");
   } catch (e) {
-    console.error('クーポン削除エラー:', e)
-    alert('クーポンの削除に失敗しました')
+    console.error("クーポン削除エラー:", e);
+    alert("クーポンの削除に失敗しました");
   } finally {
-    isSaving.value = false
+    isSaving.value = false;
   }
 }
 
-function formatDate(timestamp: any): string {
-  if (!timestamp) return '-'
-  const date = timestamp instanceof Timestamp
-    ? timestamp.toDate()
-    : (timestamp.toDate ? timestamp.toDate() : new Date(timestamp))
-  return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`
+function formatDate(
+  timestamp:
+    | Timestamp
+    | { toDate?: () => Date }
+    | Date
+    | string
+    | number
+    | null
+    | undefined,
+): string {
+  if (!timestamp) return "-";
+  const date =
+    timestamp instanceof Timestamp
+      ? timestamp.toDate()
+      : typeof timestamp === "object" &&
+          timestamp !== null &&
+          "toDate" in timestamp &&
+          timestamp.toDate
+        ? timestamp.toDate()
+        : new Date(timestamp as string | number | Date);
+  return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
 }
 
 // プロモーションリンクをコピー
 async function copyPromoLink(code: string) {
-  const baseUrl = 'https://booking.furniturehouse1.com'
-  const promoUrl = `${baseUrl}/booking?promo=${code}`
+  const baseUrl = "https://booking.furniturehouse1.com";
+  const promoUrl = `${baseUrl}/booking?promo=${code}`;
 
   try {
-    await navigator.clipboard.writeText(promoUrl)
-    alert(`リンクをコピーしました:\n${promoUrl}`)
+    await navigator.clipboard.writeText(promoUrl);
+    alert(`リンクをコピーしました:\n${promoUrl}`);
   } catch (e) {
     // フォールバック: 手動コピー用のプロンプト
-    prompt('以下のリンクをコピーしてください:', promoUrl)
+    prompt("以下のリンクをコピーしてください:", promoUrl);
   }
 }
 </script>

@@ -49,8 +49,9 @@ async function seedSampleData() {
         displayName: '田中太郎'
       })
       console.log('  ✓ 田中太郎 (tanaka@example.com) を作成')
-    } catch (e: any) {
-      if (e.code === 'auth/email-already-exists') {
+    } catch (e: unknown) {
+      const error = e as { code?: string }
+      if (error.code === 'auth/email-already-exists') {
         guestUser1 = await auth.getUserByEmail('tanaka@example.com')
         console.log('  ⚠ 田中太郎は既に存在します')
       } else {
@@ -65,8 +66,9 @@ async function seedSampleData() {
         displayName: '鈴木花子'
       })
       console.log('  ✓ 鈴木花子 (suzuki@example.com) を作成')
-    } catch (e: any) {
-      if (e.code === 'auth/email-already-exists') {
+    } catch (e: unknown) {
+      const error = e as { code?: string }
+      if (error.code === 'auth/email-already-exists') {
         guestUser2 = await auth.getUserByEmail('suzuki@example.com')
         console.log('  ⚠ 鈴木花子は既に存在します')
       } else {
@@ -81,8 +83,9 @@ async function seedSampleData() {
         displayName: '山田次郎'
       })
       console.log('  ✓ 山田次郎 (yamada@example.com) を作成')
-    } catch (e: any) {
-      if (e.code === 'auth/email-already-exists') {
+    } catch (e: unknown) {
+      const error = e as { code?: string }
+      if (error.code === 'auth/email-already-exists') {
         guestUser3 = await auth.getUserByEmail('yamada@example.com')
         console.log('  ⚠ 山田次郎は既に存在します')
       } else {

@@ -17,12 +17,14 @@
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div class="card">
           <h3 class="text-sm text-gray-600 mb-2">登録サポーター数</h3>
-          <p class="text-3xl font-bold text-blue-600">{{ supporters.length }}</p>
+          <p class="text-3xl font-bold text-blue-600">
+            {{ supporters.length }}
+          </p>
         </div>
         <div class="card">
           <h3 class="text-sm text-gray-600 mb-2">アクティブサポーター</h3>
           <p class="text-3xl font-bold text-green-600">
-            {{ supporters.filter(s => s.isActive !== false).length }}
+            {{ supporters.filter((s) => s.isActive !== false).length }}
           </p>
         </div>
         <div class="card">
@@ -49,7 +51,10 @@
           <p class="text-gray-600 mt-4">読み込み中...</p>
         </div>
 
-        <div v-else-if="supporters.length === 0" class="text-center text-gray-500 py-12">
+        <div
+          v-else-if="supporters.length === 0"
+          class="text-center text-gray-500 py-12"
+        >
           まだサポーターが登録されていません
         </div>
 
@@ -57,25 +62,39 @@
           <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                >
                   氏名
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                >
                   メール
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                >
                   電話番号
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                >
                   時給
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                >
                   交通費
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                >
                   ステータス
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                >
                   操作
                 </th>
               </tr>
@@ -89,7 +108,7 @@
                   {{ supporter.email }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm">
-                  {{ supporter.phone || '-' }}
+                  {{ supporter.phone || "-" }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold">
                   ¥{{ (supporter.hourlyRate || 0).toLocaleString() }}
@@ -103,10 +122,10 @@
                       'px-2 py-1 rounded-full text-xs',
                       supporter.isActive
                         ? 'bg-green-100 text-green-800'
-                        : 'bg-gray-100 text-gray-800'
+                        : 'bg-gray-100 text-gray-800',
                     ]"
                   >
-                    {{ supporter.isActive ? 'アクティブ' : '非アクティブ' }}
+                    {{ supporter.isActive ? "アクティブ" : "非アクティブ" }}
                   </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm space-x-2">
@@ -120,7 +139,7 @@
                     @click="toggleSupporterStatus(supporter)"
                     class="text-purple-600 hover:text-purple-900"
                   >
-                    {{ supporter.isActive ? '無効化' : '有効化' }}
+                    {{ supporter.isActive ? "無効化" : "有効化" }}
                   </button>
                 </td>
               </tr>
@@ -136,12 +155,9 @@
       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
       @click="closeModal"
     >
-      <div
-        class="bg-white rounded-xl p-6 max-w-lg w-full mx-4"
-        @click.stop
-      >
+      <div class="bg-white rounded-xl p-6 max-w-lg w-full mx-4" @click.stop>
         <h3 class="text-2xl font-semibold mb-6">
-          {{ editingSupporter ? 'サポーター編集' : 'サポーター追加' }}
+          {{ editingSupporter ? "サポーター編集" : "サポーター追加" }}
         </h3>
 
         <form @submit.prevent="submitSupporter" class="space-y-4">
@@ -260,7 +276,9 @@
               :disabled="submitting"
               class="btn-primary flex-1"
             >
-              {{ submitting ? '処理中...' : editingSupporter ? '更新' : '追加' }}
+              {{
+                submitting ? "処理中..." : editingSupporter ? "更新" : "追加"
+              }}
             </button>
             <button
               type="button"
@@ -277,52 +295,64 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
-import { collection, getDocs, query, where, updateDoc, doc } from 'firebase/firestore'
-import type { User } from '~/types'
+import { ref, computed, onMounted, watch } from "vue";
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  updateDoc,
+  doc,
+} from "firebase/firestore";
+import type { User } from "~/types";
 
 definePageMeta({
   layout: false,
-  middleware: 'admin'
-})
+  middleware: "admin",
+});
 
-const { $db } = useNuxtApp()
-const { loading: authLoading, user } = useAuth()
+const { $db } = useNuxtApp();
+const { loading: authLoading, user } = useAuth();
+const toast = useToast();
+const confirmDialog = useConfirmDialog();
 
-const supporters = ref<User[]>([])
-const loading = ref(false)
-const showAddModal = ref(false)
-const editingSupporter = ref<User | null>(null)
-const submitting = ref(false)
-const dataLoaded = ref(false)
+const supporters = ref<User[]>([]);
+const loading = ref(false);
+const showAddModal = ref(false);
+const editingSupporter = ref<User | null>(null);
+const submitting = ref(false);
+const dataLoaded = ref(false);
 
 const supporterForm = ref({
-  displayName: '',
-  email: '',
-  password: '',
-  phone: '',
+  displayName: "",
+  email: "",
+  password: "",
+  phone: "",
   hourlyRate: 1500,
   transportationFee: 500,
-  isActive: true
-})
+  isActive: true,
+});
 
 // 平均時給を計算
 const averageHourlyRate = computed(() => {
-  if (supporters.value.length === 0) return 0
-  const total = supporters.value.reduce((sum, s) => sum + (s.hourlyRate || 0), 0)
-  return Math.round(total / supporters.value.length)
-})
+  if (supporters.value.length === 0) return 0;
+  const total = supporters.value.reduce(
+    (sum, s) => sum + (s.hourlyRate || 0),
+    0,
+  );
+  return Math.round(total / supporters.value.length);
+});
 
 // サポーター一覧を読み込み（supportersコレクションから）
 const loadSupporters = async () => {
-  if (!$db) return
-  loading.value = true
+  if (!$db) return;
+  loading.value = true;
   try {
-    const supportersRef = collection($db, 'supporters')
-    const snapshot = await getDocs(supportersRef)
+    const supportersRef = collection($db, "supporters");
+    const snapshot = await getDocs(supportersRef);
 
-    supporters.value = snapshot.docs.map(doc => {
-      const data = doc.data()
+    supporters.value = snapshot.docs.map((doc) => {
+      const data = doc.data();
       return {
         id: doc.id,
         uid: data.uid,
@@ -332,68 +362,68 @@ const loadSupporters = async () => {
         hourlyRate: data.hourlyRate,
         transportationFee: data.transportationFee,
         isActive: data.isActive,
-        role: 'supporter'
-      }
-    }) as User[]
+        role: "supporter",
+      };
+    }) as User[];
 
-    console.log('✅ サポーター読み込み完了:', supporters.value.length, '人')
-  } catch (error: any) {
-    console.error('❌ サポーター読み込みエラー:', error)
-    alert('サポーター情報の読み込みに失敗しました')
+    console.log("✅ サポーター読み込み完了:", supporters.value.length, "人");
+  } catch (error: unknown) {
+    console.error("❌ サポーター読み込みエラー:", error);
+    toast.error("サポーター情報の読み込みに失敗しました");
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 // サポーター編集
 const editSupporter = (supporter: User) => {
-  editingSupporter.value = supporter
+  editingSupporter.value = supporter;
   supporterForm.value = {
     displayName: supporter.displayName,
     email: supporter.email,
-    password: '',
-    phone: supporter.phone || '',
+    password: "",
+    phone: supporter.phone || "",
     hourlyRate: supporter.hourlyRate || 1500,
     transportationFee: supporter.transportationFee || 500,
-    isActive: supporter.isActive !== false
-  }
-}
+    isActive: supporter.isActive !== false,
+  };
+};
 
 // モーダルを閉じる
 const closeModal = () => {
-  showAddModal.value = false
-  editingSupporter.value = null
+  showAddModal.value = false;
+  editingSupporter.value = null;
   supporterForm.value = {
-    displayName: '',
-    email: '',
-    password: '',
-    phone: '',
+    displayName: "",
+    email: "",
+    password: "",
+    phone: "",
     hourlyRate: 1500,
     transportationFee: 500,
-    isActive: true
-  }
-}
+    isActive: true,
+  };
+};
 
 // サポーター追加/更新
 const submitSupporter = async () => {
-  if (!$db) return
-  submitting.value = true
+  if (!$db) return;
+  submitting.value = true;
   try {
     if (editingSupporter.value) {
-      const supporterRef = doc($db, 'supporters', editingSupporter.value.id)
+      const supporterRef = doc($db, "supporters", editingSupporter.value.id);
       await updateDoc(supporterRef, {
         name: supporterForm.value.displayName,
         phone: supporterForm.value.phone,
         hourlyRate: supporterForm.value.hourlyRate,
         transportationFee: supporterForm.value.transportationFee,
         isActive: supporterForm.value.isActive,
-        updatedAt: new Date()
-      })
-      alert('サポーター情報を更新しました')
+        updatedAt: new Date(),
+      });
+      toast.success("サポーター情報を更新しました");
     } else {
       // 新規追加 - サーバー側APIを使用（現在の管理者セッションに影響しない）
-      const response = await $fetch('/api/admin/create-supporter', {
-        method: 'POST',
+      const response = await $fetch("/api/admin/create-supporter", {
+        method: "POST",
         body: {
           email: supporterForm.value.email,
           password: supporterForm.value.password,
@@ -401,55 +431,70 @@ const submitSupporter = async () => {
           phone: supporterForm.value.phone,
           hourlyRate: supporterForm.value.hourlyRate,
           transportationFee: supporterForm.value.transportationFee,
-          isActive: supporterForm.value.isActive
-        }
-      })
+          isActive: supporterForm.value.isActive,
+        },
+      });
 
-      console.log('✅ サポーター作成完了:', response)
-      alert('サポーターを追加しました')
+      console.log("✅ サポーター作成完了:", response);
+      toast.success("サポーターを追加しました");
     }
 
-    closeModal()
-    await loadSupporters()
-  } catch (error: any) {
-    console.error('❌ サポーター登録/更新エラー:', error)
-    const message = error.data?.statusMessage || error.message || 'エラーが発生しました'
-    alert('サポーターの登録/更新に失敗しました: ' + message)
+    closeModal();
+    await loadSupporters();
+  } catch (error: unknown) {
+    console.error("❌ サポーター登録/更新エラー:", error);
+    const fetchError = error as {
+      data?: { statusMessage?: string };
+      message?: string;
+    };
+    const message =
+      fetchError.data?.statusMessage ||
+      fetchError.message ||
+      "エラーが発生しました";
+    toast.error("サポーターの登録/更新に失敗しました: " + message);
   } finally {
-    submitting.value = false
+    submitting.value = false;
   }
-}
+};
 
 // サポーターのアクティブ状態を切り替え
 const toggleSupporterStatus = async (supporter: User) => {
-  if (!$db) return
-  const newStatus = supporter.isActive !== true
-  const action = newStatus ? '有効化' : '無効化'
+  if (!$db) return;
+  const newStatus = supporter.isActive !== true;
+  const action = newStatus ? "有効化" : "無効化";
 
-  if (!confirm(`${supporter.displayName}さんを${action}しますか？`)) {
-    return
+  if (
+    !(await confirmDialog.confirm(
+      `${supporter.displayName}さんを${action}しますか？`,
+    ))
+  ) {
+    return;
   }
 
   try {
-    const supporterRef = doc($db, 'supporters', supporter.id)
+    const supporterRef = doc($db, "supporters", supporter.id);
     await updateDoc(supporterRef, {
       isActive: newStatus,
-      updatedAt: new Date()
-    })
+      updatedAt: new Date(),
+    });
 
-    alert(`${supporter.displayName}さんを${action}しました`)
-    await loadSupporters()
+    toast.success(`${supporter.displayName}さんを${action}しました`);
+    await loadSupporters();
   } catch (error) {
-    console.error('❌ ステータス更新エラー:', error)
-    alert('ステータスの更新に失敗しました')
+    console.error("❌ ステータス更新エラー:", error);
+    toast.error("ステータスの更新に失敗しました");
   }
-}
+};
 
 // 認証状態を監視してデータを読み込み
-watch([authLoading, user], ([isLoading, currentUser]) => {
-  if (!isLoading && currentUser && !dataLoaded.value) {
-    dataLoaded.value = true
-    loadSupporters()
-  }
-}, { immediate: true })
+watch(
+  [authLoading, user],
+  ([isLoading, currentUser]) => {
+    if (!isLoading && currentUser && !dataLoaded.value) {
+      dataLoaded.value = true;
+      loadSupporters();
+    }
+  },
+  { immediate: true },
+);
 </script>

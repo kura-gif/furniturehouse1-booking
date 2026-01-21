@@ -1,5 +1,6 @@
 import * as functions from 'firebase-functions'
 import * as admin from 'firebase-admin'
+import { DocumentData } from 'firebase-admin/firestore'
 import { calculateTargetDate } from './utils/dateCalculator'
 import { sendEmail } from './utils/emailSender'
 import { replaceTemplateVariables, getTemplateVariables } from './utils/templateProcessor'
@@ -71,8 +72,8 @@ export const sendScheduledEmails = functions
  * 個別の予約にスケジュールメールを送信
  */
 async function sendScheduledEmail(
-  booking: any,
-  schedule: any,
+  booking: DocumentData & { id: string },
+  schedule: DocumentData,
   scheduleId: string
 ) {
   const db = admin.firestore()
@@ -124,10 +125,11 @@ async function sendScheduledEmail(
     })
 
     console.log(`メール送信成功: ${booking.guestEmail} (${booking.bookingReference})`)
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(`メール送信エラー: ${booking.guestEmail}`, error)
 
     // エラーログ保存
+    const errorMessage = error instanceof Error ? error.message : String(error)
     await db.collection('sentEmails').add({
       bookingId: booking.id,
       scheduleId,
@@ -136,7 +138,7 @@ async function sendScheduledEmail(
       subject,
       sentAt: admin.firestore.FieldValue.serverTimestamp(),
       status: 'failed',
-      error: error.message || String(error)
+      error: errorMessage
     })
   }
 }

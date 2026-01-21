@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer'
+import nodemailer from "nodemailer";
 
 /**
  * 予約キャンセル確認メール送信API
@@ -7,20 +7,20 @@ import nodemailer from 'nodemailer'
  * ⚠️ セキュリティ: このAPIは内部呼び出し専用です
  */
 export default defineEventHandler(async (event) => {
-  const config = useRuntimeConfig()
+  const config = useRuntimeConfig();
 
   // 内部呼び出し認証チェック
-  const authHeader = getHeader(event, 'x-internal-secret')
-  const internalSecret = config.internalApiSecret
+  const authHeader = getHeader(event, "x-internal-secret");
+  const internalSecret = config.internalApiSecret;
 
   if (!authHeader || authHeader !== internalSecret) {
     throw createError({
       statusCode: 403,
-      statusMessage: 'このAPIは内部呼び出し専用です'
-    })
+      statusMessage: "このAPIは内部呼び出し専用です",
+    });
   }
 
-  const body = await readBody(event)
+  const body = await readBody(event);
   const {
     to,
     bookingReference,
@@ -28,23 +28,28 @@ export default defineEventHandler(async (event) => {
     checkInDate,
     checkOutDate,
     refundAmount,
-    refundPercentage
-  } = body
+    refundPercentage,
+  } = body;
 
   // メール送信設定（Gmail）
   const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    service: "gmail",
     auth: {
-      user: config.emailUser || process.env.EMAIL_USER || '',
-      pass: config.emailPassword || process.env.EMAIL_PASSWORD || ''
-    }
-  })
+      user: config.emailUser || process.env.EMAIL_USER || "",
+      pass: config.emailPassword || process.env.EMAIL_PASSWORD || "",
+    },
+  });
 
   // 送信元はグループメール（furniturehouse1@）を表示
-  const fromEmail = config.emailFrom || config.emailReplyTo || config.emailUser || 'noreply@furniturehouse1.com'
-  const replyToEmail = config.emailReplyTo || config.emailFrom || config.emailUser
+  const fromEmail =
+    config.emailFrom ||
+    config.emailReplyTo ||
+    config.emailUser ||
+    "noreply@furniturehouse1.com";
+  const replyToEmail =
+    config.emailReplyTo || config.emailFrom || config.emailUser;
 
-  const hasRefund = refundAmount > 0
+  const hasRefund = refundAmount > 0;
 
   const mailOptions = {
     from: `"家具の家 No.1" <${fromEmail}>`,
@@ -151,7 +156,9 @@ export default defineEventHandler(async (event) => {
             </div>
           </div>
 
-          ${hasRefund ? `
+          ${
+            hasRefund
+              ? `
           <div class="refund-box">
             <h4 style="margin-top: 0; color: #1d4ed8;">💰 返金について</h4>
             <p style="margin: 0 0 10px 0;">
@@ -162,7 +169,8 @@ export default defineEventHandler(async (event) => {
               <li>返金の反映には3〜10営業日程度かかる場合があります</li>
             </ul>
           </div>
-          ` : `
+          `
+              : `
           <div class="no-refund-box">
             <h4 style="margin-top: 0; color: #92400e;">ご返金について</h4>
             <p style="margin: 0; color: #78350f;">
@@ -170,7 +178,8 @@ export default defineEventHandler(async (event) => {
               ご理解いただけますようお願いいたします。
             </p>
           </div>
-          `}
+          `
+          }
 
           <p>またのご利用を心よりお待ちしております。</p>
 
@@ -184,23 +193,23 @@ export default defineEventHandler(async (event) => {
         </div>
       </body>
       </html>
-    `
-  }
+    `,
+  };
 
   try {
-    const info = await transporter.sendMail(mailOptions)
-    console.log('✅ Booking cancelled email sent to:', to)
+    const info = await transporter.sendMail(mailOptions);
+    console.log("✅ Booking cancelled email sent to:", to);
 
     return {
       success: true,
-      messageId: info.messageId
-    }
+      messageId: info.messageId,
+    };
   } catch (error: unknown) {
-    console.error('❌ Booking cancelled email error:', error)
+    console.error("❌ Booking cancelled email error:", error);
     throw createError({
       statusCode: 500,
-      statusMessage: 'キャンセル確認メールの送信に失敗しました',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    })
+      statusMessage: "キャンセル確認メールの送信に失敗しました",
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
   }
-})
+});

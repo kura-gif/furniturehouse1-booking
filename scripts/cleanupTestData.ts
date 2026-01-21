@@ -100,9 +100,10 @@ async function deleteNonAdminUsers(): Promise<{ firestoreDeleted: number; authDe
         try {
           await auth.deleteUser(doc.id)
           authDeleted++
-        } catch (e: any) {
-          if (e.code !== 'auth/user-not-found') {
-            console.warn(`  ⚠ Auth削除失敗 (${doc.id}): ${e.message}`)
+        } catch (e: unknown) {
+          const error = e as { code?: string; message?: string }
+          if (error.code !== 'auth/user-not-found') {
+            console.warn(`  ⚠ Auth削除失敗 (${doc.id}): ${error.message}`)
           }
         }
       }
@@ -117,9 +118,10 @@ async function deleteNonAdminUsers(): Promise<{ firestoreDeleted: number; authDe
       try {
         await auth.deleteUser(doc.id)
         authDeleted++
-      } catch (e: any) {
-        if (e.code !== 'auth/user-not-found') {
-          console.warn(`  ⚠ Auth削除失敗 (${doc.id}): ${e.message}`)
+      } catch (e: unknown) {
+        const error = e as { code?: string; message?: string }
+        if (error.code !== 'auth/user-not-found') {
+          console.warn(`  ⚠ Auth削除失敗 (${doc.id}): ${error.message}`)
         }
       }
     }

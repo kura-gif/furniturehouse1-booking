@@ -661,7 +661,7 @@ const handleDelete = async () => {
 
 | # | タスク | 工数 | 状態 |
 |---|--------|------|------|
-| 4 | ゲスト向けalert()をToast化 | 8h | ⬜ 未着手 |
+| 4 | ゲスト向けalert()をToast化 | 8h | ✅ 完了（1/21） |
 | 5 | Sentry導入 | 2h | ⬜ 未着手 |
 | 6 | 外形監視設定 | 1h | ⬜ 未着手 |
 
@@ -669,9 +669,9 @@ const handleDelete = async () => {
 
 | # | タスク | 工数 | 状態 |
 |---|--------|------|------|
-| 7 | 管理画面confirm()をモーダル化 | 16h | ⬜ 未着手 |
-| 8 | TypeScript any型削除 | 8h | ⬜ 未着手 |
-| 9 | コード重複解消 | 8h | ⬜ 未着手 |
+| 7 | 管理画面confirm()をモーダル化 | 16h | ✅ 完了（1/21） |
+| 8 | TypeScript any型削除 | 8h | ✅ 完了（1/21）92→0箇所 |
+| 9 | コード重複解消 | 8h | ✅ 完了（1/21）共通composable作成 |
 
 ---
 
@@ -683,7 +683,14 @@ const handleDelete = async () => {
 | 2026/01/18 | Critical課題3件の対応完了、公開判断を更新 | Claude Code |
 | 2026/01/19 | 全ドキュメント更新に伴う整合性確認 | Claude Code |
 | 2026/01/20 | 前回指摘漏れ項目追加（DB分離、ダイアログ、UX強化） | Claude Code |
+| 2026/01/21 | alert/confirm→Toast/ConfirmDialog変換完了 | Claude Code |
+| 2026/01/21 | TypeScript any型を全92箇所削除完了 | Claude Code |
+| 2026/01/21 | コード重複解消（useDateFormatting, useErrorHandler作成） | Claude Code |
+| 2026/01/21 | ビルド検証・TypeScript型チェック完了 | Claude Code |
+| 2026/01/21 | セキュリティ監査実施（npm audit fix、1件修正） | Claude Code |
+| 2026/01/21 | コード品質改善（Prettier適用、188ファイルフォーマット） | Claude Code |
+| 2026/01/21 | 未使用パッケージ削除（nuxt-csurf） | Claude Code |
 
 ---
 
-*このレポートは2026年1月20日時点のコードベースに基づいています。コード変更により内容が古くなる可能性があります。*
+*このレポートは2026年1月21日時点のコードベースに基づいています。コード変更により内容が古くなる可能性があります。*

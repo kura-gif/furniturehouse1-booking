@@ -2,8 +2,12 @@
   <div class="border-t border-gray-200 pt-4 space-y-2">
     <!-- 基本料金 -->
     <div class="flex justify-between text-sm">
-      <span class="text-gray-600">¥{{ pricePerNight.toLocaleString() }} × {{ nights }}泊</span>
-      <span class="text-gray-900">¥{{ (pricePerNight * nights).toLocaleString() }}</span>
+      <span class="text-gray-600"
+        >¥{{ pricePerNight.toLocaleString() }} × {{ nights }}泊</span
+      >
+      <span class="text-gray-900"
+        >¥{{ (pricePerNight * nights).toLocaleString() }}</span
+      >
     </div>
 
     <!-- 清掃料 -->
@@ -40,9 +44,7 @@
 
     <!-- 補足説明 -->
     <div v-if="showDetails" class="pt-2 mt-2 border-t border-gray-100">
-      <p class="text-xs text-gray-500">
-        ※ 表示料金は確定料金です
-      </p>
+      <p class="text-xs text-gray-500">※ 表示料金は確定料金です</p>
       <p v-if="cancellationPolicy" class="text-xs text-gray-500 mt-1">
         {{ cancellationPolicy }}
       </p>
@@ -51,33 +53,38 @@
 </template>
 
 <script setup lang="ts">
-const props = withDefaults(defineProps<{
-  pricePerNight: number
-  nights: number
-  cleaningFee?: number
-  discount?: number
-  taxRate?: number
-  showDetails?: boolean
-  cancellationPolicy?: string
-}>(), {
-  cleaningFee: 0,
-  discount: 0,
-  taxRate: 0.123, // 12.3%
-  showDetails: false
-})
+const props = withDefaults(
+  defineProps<{
+    pricePerNight: number;
+    nights: number;
+    cleaningFee?: number;
+    discount?: number;
+    taxRate?: number;
+    showDetails?: boolean;
+    cancellationPolicy?: string;
+  }>(),
+  {
+    cleaningFee: 0,
+    discount: 0,
+    taxRate: 0.123, // 12.3%
+    showDetails: false,
+  },
+);
 
 // 小計（税抜き）
 const subtotal = computed(() => {
-  return (props.pricePerNight * props.nights) + props.cleaningFee - props.discount
-})
+  return (
+    props.pricePerNight * props.nights + props.cleaningFee - props.discount
+  );
+});
 
 // 税額
 const taxAmount = computed(() => {
-  return Math.round(subtotal.value * props.taxRate)
-})
+  return Math.round(subtotal.value * props.taxRate);
+});
 
 // 合計（税込み）
 const totalAmount = computed(() => {
-  return subtotal.value + taxAmount.value
-})
+  return subtotal.value + taxAmount.value;
+});
 </script>

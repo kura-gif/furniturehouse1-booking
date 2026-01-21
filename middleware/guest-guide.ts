@@ -75,10 +75,32 @@ export const useGuideState = () => {
 interface GuideState {
   isAuthenticated: boolean
   token: string | null
-  tokenData: any | null
+  tokenData: GuestGuideToken | null
   guestName?: string
   bookingReference?: string
   checkInDate?: Date
   checkOutDate?: Date
   rulesAgreed?: boolean
+}
+
+// GuestGuideToken型をインポートできないため、ここで必要なプロパティを定義
+interface GuestGuideToken {
+  id: string
+  bookingId: string
+  bookingReference: string
+  token: string
+  guestName: string
+  guestEmail: string
+  checkInDate: { toDate: () => Date }
+  checkOutDate: { toDate: () => Date }
+  isActive: boolean
+  rulesAgreedAt?: { toDate: () => Date }
+  accessedAt?: { toDate: () => Date }
+  expiresAt: { toDate: () => Date }
+  createdAt: { toDate: () => Date }
+  updatedAt: { toDate: () => Date }
+  // ゲスト人数情報（オプション）
+  adults?: number
+  children?: number
+  infants?: number
 }

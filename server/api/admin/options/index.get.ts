@@ -5,27 +5,27 @@
 
 export default defineEventHandler(async (event) => {
   try {
-    const db = getFirestoreAdmin()
+    const db = getFirestoreAdmin();
 
     const snapshot = await db
-      .collection('bookingOptions')
-      .orderBy('order', 'asc')
-      .get()
+      .collection("bookingOptions")
+      .orderBy("order", "asc")
+      .get();
 
-    const options = snapshot.docs.map(doc => ({
+    const options = snapshot.docs.map((doc) => ({
       id: doc.id,
-      ...doc.data()
-    }))
+      ...doc.data(),
+    }));
 
     return {
       success: true,
-      options
-    }
+      options,
+    };
   } catch (error: unknown) {
-    console.error('オプション取得エラー:', error)
+    console.error("オプション取得エラー:", error);
     throw createError({
       statusCode: 500,
-      message: 'オプションの取得に失敗しました'
-    })
+      message: "オプションの取得に失敗しました",
+    });
   }
-})
+});

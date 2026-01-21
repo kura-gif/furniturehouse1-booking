@@ -1,4 +1,4 @@
-import Stripe from 'stripe'
+import Stripe from "stripe";
 
 /**
  * Payment Intent更新API
@@ -8,59 +8,61 @@ import Stripe from 'stripe'
  * - CSRFトークンによる認証が必要
  */
 export default defineEventHandler(async (event) => {
-  const config = useRuntimeConfig()
-  const stripe = new Stripe(config.stripeSecretKey)
+  const config = useRuntimeConfig();
+  const stripe = new Stripe(config.stripeSecretKey);
 
   try {
-    const body = await readBody(event)
-    const { paymentIntentId, metadata } = body
+    const body = await readBody(event);
+    const { paymentIntentId, metadata } = body;
 
     if (!paymentIntentId) {
       throw createError({
         statusCode: 400,
-        message: 'Payment Intent IDが必要です'
-      })
+        message: "Payment Intent IDが必要です",
+      });
     }
 
     // metadataの検証（許可されたキーのみ）
     const allowedKeys = [
-      'bookingId',
-      'bookingReference',
-      'guestEmail',
-      'guestName',
-      'guestPhone',
-      'checkIn',
-      'checkOut',
-      'guests',
-      'totalAmount',
-      'options',
-      'discount',
-      'couponCode'
-    ]
-    const metadataKeys = Object.keys(metadata || {})
-    const invalidKeys = metadataKeys.filter(key => !allowedKeys.includes(key))
+      "bookingId",
+      "bookingReference",
+      "guestEmail",
+      "guestName",
+      "guestPhone",
+      "checkIn",
+      "checkOut",
+      "guests",
+      "totalAmount",
+      "options",
+      "discount",
+      "couponCode",
+    ];
+    const metadataKeys = Object.keys(metadata || {});
+    const invalidKeys = metadataKeys.filter(
+      (key) => !allowedKeys.includes(key),
+    );
 
     if (invalidKeys.length > 0) {
       throw createError({
         statusCode: 400,
-        message: `許可されていないmetadataキー: ${invalidKeys}`
-      })
+        message: `許可されていないmetadataキー: ${invalidKeys}`,
+      });
     }
 
     // Payment Intentのmetadataを更新
     const paymentIntent = await stripe.paymentIntents.update(paymentIntentId, {
-      metadata
-    })
+      metadata,
+    });
 
     return {
       success: true,
-      paymentIntentId: paymentIntent.id
-    }
+      paymentIntentId: paymentIntent.id,
+    };
   } catch (error: unknown) {
-    console.error('Payment Intent更新エラー:', error)
+    console.error("Payment Intent更新エラー:", error);
     throw createError({
       statusCode: 500,
-      message: 'Payment Intentの更新に失敗しました'
-    })
+      message: "Payment Intentの更新に失敗しました",
+    });
   }
-})
+});

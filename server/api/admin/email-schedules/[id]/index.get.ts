@@ -1,32 +1,35 @@
-import { getFirestoreAdmin } from '~/server/utils/firebase-admin'
-import { requireAdmin } from '~/server/utils/auth'
+import { getFirestoreAdmin } from "~/server/utils/firebase-admin";
+import { requireAdmin } from "~/server/utils/auth";
 
 /**
  * メールスケジュール取得API
  */
 export default defineEventHandler(async (event) => {
   // 管理者認証チェック
-  await requireAdmin(event)
+  await requireAdmin(event);
 
-  const scheduleId = getRouterParam(event, 'id')
+  const scheduleId = getRouterParam(event, "id");
   if (!scheduleId) {
     throw createError({
       statusCode: 400,
-      message: 'スケジュールIDが必要です'
-    })
+      message: "スケジュールIDが必要です",
+    });
   }
 
-  const db = getFirestoreAdmin()
-  const scheduleDoc = await db.collection('emailSchedules').doc(scheduleId).get()
+  const db = getFirestoreAdmin();
+  const scheduleDoc = await db
+    .collection("emailSchedules")
+    .doc(scheduleId)
+    .get();
 
   if (!scheduleDoc.exists) {
     throw createError({
       statusCode: 404,
-      message: 'スケジュールが見つかりません'
-    })
+      message: "スケジュールが見つかりません",
+    });
   }
 
-  const data = scheduleDoc.data()
+  const data = scheduleDoc.data();
   return {
     success: true,
     schedule: {
@@ -41,7 +44,7 @@ export default defineEventHandler(async (event) => {
       targetStatuses: data?.targetStatuses || [],
       createdAt: data?.createdAt?.toDate?.() || null,
       updatedAt: data?.updatedAt?.toDate?.() || null,
-      createdBy: data?.createdBy
-    }
-  }
-})
+      createdBy: data?.createdBy,
+    },
+  };
+});

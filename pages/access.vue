@@ -2,9 +2,7 @@
   <div class="access-page">
     <!-- Header -->
     <header class="access-header">
-      <NuxtLink to="/" class="back-to-top">
-        ← トップへ戻る
-      </NuxtLink>
+      <NuxtLink to="/" class="back-to-top"> ← トップへ戻る </NuxtLink>
       <div class="access-header-inner">
         <h1>アクセス</h1>
       </div>
@@ -68,7 +66,9 @@
 
               <div class="warning-box">
                 <div class="title">⚠ ご注意</div>
-                <p>高井戸ICには上り方面（山梨方面）の入口がありません。永福ICから首都高経由、または調布ICからご利用ください。</p>
+                <p>
+                  高井戸ICには上り方面（山梨方面）の入口がありません。永福ICから首都高経由、または調布ICからご利用ください。
+                </p>
               </div>
 
               <div class="spots-box">
@@ -134,7 +134,9 @@
                   <div class="step-main">
                     <span class="step-place">御殿場IC</span>
                   </div>
-                  <span class="step-transport">国道138号→須走IC→東富士五湖道路 約30分</span>
+                  <span class="step-transport"
+                    >国道138号→須走IC→東富士五湖道路 約30分</span
+                  >
                 </div>
                 <div class="route-step">
                   <div class="step-main">
@@ -207,7 +209,9 @@
                   <div class="step-main">
                     <span class="step-place">バスタ新宿</span>
                   </div>
-                  <span class="step-transport">富士五湖線（富士急・京王バス）約2時間20分</span>
+                  <span class="step-transport"
+                    >富士五湖線（富士急・京王バス）約2時間20分</span
+                  >
                 </div>
                 <div class="route-step">
                   <div class="step-main">
@@ -259,7 +263,6 @@
                   </div>
                 </div>
               </div>
-
             </div>
           </div>
 
@@ -276,14 +279,28 @@
               <div class="info-box">
                 <div class="title">タクシー会社</div>
                 <ul>
-                  <li><a href="https://kyowa-taxi.jp/" target="_blank" rel="noopener noreferrer">共和タクシー（山中湖）</a></li>
+                  <li>
+                    <a
+                      href="https://kyowa-taxi.jp/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      >共和タクシー（山中湖）</a
+                    >
+                  </li>
                 </ul>
               </div>
 
               <div class="info-box secondary">
                 <div class="title">レンタカー</div>
                 <ul>
-                  <li><a href="https://rent.toyota.co.jp/sp/shop/detail.aspx?rCode=63901&eCode=012" target="_blank" rel="noopener noreferrer">トヨタレンタカー山中湖店</a></li>
+                  <li>
+                    <a
+                      href="https://rent.toyota.co.jp/sp/shop/detail.aspx?rCode=63901&eCode=012"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      >トヨタレンタカー山中湖店</a
+                    >
+                  </li>
                 </ul>
               </div>
             </div>
@@ -382,7 +399,9 @@
                   <div class="step-main">
                     <span class="step-place">品川駅 / 東京駅</span>
                   </div>
-                  <span class="step-transport">東海道本線→国府津で乗換→御殿場線 約2時間</span>
+                  <span class="step-transport"
+                    >東海道本線→国府津で乗換→御殿場線 約2時間</span
+                  >
                 </div>
                 <div class="route-step">
                   <div class="step-main">
@@ -473,14 +492,28 @@
               <div class="info-box">
                 <div class="title">タクシー会社</div>
                 <ul>
-                  <li><a href="https://kyowa-taxi.jp/" target="_blank" rel="noopener noreferrer">共和タクシー（山中湖）</a></li>
+                  <li>
+                    <a
+                      href="https://kyowa-taxi.jp/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      >共和タクシー（山中湖）</a
+                    >
+                  </li>
                 </ul>
               </div>
 
               <div class="info-box secondary">
                 <div class="title">レンタカー</div>
                 <ul>
-                  <li><a href="https://rent.toyota.co.jp/sp/shop/detail.aspx?rCode=63901&eCode=012" target="_blank" rel="noopener noreferrer">トヨタレンタカー山中湖店</a></li>
+                  <li>
+                    <a
+                      href="https://rent.toyota.co.jp/sp/shop/detail.aspx?rCode=63901&eCode=012"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      >トヨタレンタカー山中湖店</a
+                    >
+                  </li>
                 </ul>
               </div>
             </div>
@@ -510,56 +543,67 @@
 
 <script setup lang="ts">
 definePageMeta({
-  layout: false
-})
+  layout: false,
+});
 
-const activeSection = ref('car-chuo')
+const activeSection = ref("car-chuo");
 
 const navItems = [
-  { id: 'car-chuo', label: '車｜中央道ルート' },
-  { id: 'car-tomei', label: '車｜東名ルート' },
-  { id: 'bus', label: '高速バス＋レンタカー・タクシー' },
-  { id: 'train', label: '電車＋バス・タクシー・レンタカー' },
-]
+  { id: "car-chuo", label: "車｜中央道ルート" },
+  { id: "car-tomei", label: "車｜東名ルート" },
+  { id: "bus", label: "高速バス＋レンタカー・タクシー" },
+  { id: "train", label: "電車＋バス・タクシー・レンタカー" },
+];
 
 const setActiveSection = (id: string) => {
-  activeSection.value = id
-}
+  activeSection.value = id;
+};
 
 onMounted(() => {
-  const sections = document.querySelectorAll('section[id]')
+  const sections = document.querySelectorAll("section[id]");
 
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          const id = entry.target.getAttribute('id')
+          const id = entry.target.getAttribute("id");
           if (id) {
-            activeSection.value = id
+            activeSection.value = id;
           }
         }
-      })
+      });
     },
-    { rootMargin: '-20% 0px -80% 0px' }
-  )
+    { rootMargin: "-20% 0px -80% 0px" },
+  );
 
-  sections.forEach((section) => observer.observe(section))
-})
+  sections.forEach((section) => observer.observe(section));
+});
 
 useHead({
-  title: 'アクセス | 家具の家 No.1',
+  title: "アクセス | 家具の家 No.1",
   meta: [
-    { name: 'description', content: '家具の家 No.1へのアクセス方法。車、高速バス、電車でのルートをご案内します。' },
-    { property: 'og:title', content: 'アクセス | 家具の家 No.1' },
-    { property: 'og:description', content: '家具の家 No.1へのアクセス方法' },
-    { name: 'robots', content: 'index, follow' }
+    {
+      name: "description",
+      content:
+        "家具の家 No.1へのアクセス方法。車、高速バス、電車でのルートをご案内します。",
+    },
+    { property: "og:title", content: "アクセス | 家具の家 No.1" },
+    { property: "og:description", content: "家具の家 No.1へのアクセス方法" },
+    { name: "robots", content: "index, follow" },
   ],
-})
+});
 </script>
 
 <style scoped>
 .access-page {
-  font-family: 'Noto Sans JP', 'Tsukushi Gothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', sans-serif;
+  font-family:
+    "Noto Sans JP",
+    "Tsukushi Gothic",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    "Hiragino Sans",
+    sans-serif;
   background-color: #ffffff;
   color: #1a1a1a;
   line-height: 1.8;
@@ -742,7 +786,7 @@ useHead({
 }
 
 .route-step::before {
-  content: '';
+  content: "";
   position: absolute;
   left: -29px;
   top: 50%;
@@ -828,7 +872,7 @@ useHead({
 }
 
 .info-box li::before {
-  content: '›';
+  content: "›";
   position: absolute;
   left: 0;
   color: #999999;

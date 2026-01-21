@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer'
+import nodemailer from "nodemailer";
 
 /**
  * チェックアウト後お礼メール送信API
@@ -7,42 +7,47 @@ import nodemailer from 'nodemailer'
  * ⚠️ セキュリティ: このAPIは内部呼び出し専用です
  */
 export default defineEventHandler(async (event) => {
-  const config = useRuntimeConfig()
+  const config = useRuntimeConfig();
 
   // 内部呼び出し認証チェック
-  const authHeader = getHeader(event, 'x-internal-secret')
-  const internalSecret = config.internalApiSecret
+  const authHeader = getHeader(event, "x-internal-secret");
+  const internalSecret = config.internalApiSecret;
 
   if (!authHeader || authHeader !== internalSecret) {
     throw createError({
       statusCode: 403,
-      statusMessage: 'このAPIは内部呼び出し専用です'
-    })
+      statusMessage: "このAPIは内部呼び出し専用です",
+    });
   }
 
-  const body = await readBody(event)
+  const body = await readBody(event);
   const {
     to,
     bookingReference,
     guestName,
     checkInDate,
     checkOutDate,
-    reviewUrl
-  } = body
+    reviewUrl,
+  } = body;
 
   // メール送信設定（Gmail）
   const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    service: "gmail",
     auth: {
-      user: config.emailUser || process.env.EMAIL_USER || '',
-      pass: config.emailPassword || process.env.EMAIL_PASSWORD || ''
-    }
-  })
+      user: config.emailUser || process.env.EMAIL_USER || "",
+      pass: config.emailPassword || process.env.EMAIL_PASSWORD || "",
+    },
+  });
 
   // 送信元はグループメール（furniturehouse1@）を表示
-  const fromEmail = config.emailFrom || config.emailReplyTo || config.emailUser || 'noreply@furniturehouse1.com'
-  const replyToEmail = config.emailReplyTo || config.emailFrom || config.emailUser
-  const brandSiteUrl = config.brandSiteUrl || 'https://furniturehouse1.com'
+  const fromEmail =
+    config.emailFrom ||
+    config.emailReplyTo ||
+    config.emailUser ||
+    "noreply@furniturehouse1.com";
+  const replyToEmail =
+    config.emailReplyTo || config.emailFrom || config.emailUser;
+  const brandSiteUrl = config.brandSiteUrl || "https://furniturehouse1.com";
 
   const mailOptions = {
     from: `"家具の家 No.1" <${fromEmail}>`,
@@ -147,7 +152,9 @@ export default defineEventHandler(async (event) => {
             <p style="margin: 5px 0;"><strong>ご滞在期間:</strong> ${checkInDate} 〜 ${checkOutDate}</p>
           </div>
 
-          ${reviewUrl ? `
+          ${
+            reviewUrl
+              ? `
           <div class="review-box">
             <h3 style="margin-top: 0; color: #92400e;">⭐ ご感想をお聞かせください</h3>
             <p style="color: #78350f; margin-bottom: 20px;">
@@ -156,7 +163,8 @@ export default defineEventHandler(async (event) => {
             </p>
             <a href="${reviewUrl}" class="button">レビューを書く</a>
           </div>
-          ` : `
+          `
+              : `
           <div class="review-box">
             <h3 style="margin-top: 0; color: #92400e;">⭐ ご感想をお聞かせください</h3>
             <p style="color: #78350f; margin-bottom: 10px;">
@@ -164,7 +172,8 @@ export default defineEventHandler(async (event) => {
               ご感想がございましたら、このメールにご返信ください。
             </p>
           </div>
-          `}
+          `
+          }
 
           <div style="text-align: center; margin: 30px 0;">
             <p style="color: #666; margin-bottom: 15px;">またのご利用を心よりお待ちしております</p>
@@ -187,23 +196,23 @@ export default defineEventHandler(async (event) => {
         </div>
       </body>
       </html>
-    `
-  }
+    `,
+  };
 
   try {
-    const info = await transporter.sendMail(mailOptions)
-    console.log('✅ Thank you email sent to:', to)
+    const info = await transporter.sendMail(mailOptions);
+    console.log("✅ Thank you email sent to:", to);
 
     return {
       success: true,
-      messageId: info.messageId
-    }
+      messageId: info.messageId,
+    };
   } catch (error: unknown) {
-    console.error('❌ Thank you email error:', error)
+    console.error("❌ Thank you email error:", error);
     throw createError({
       statusCode: 500,
-      statusMessage: 'お礼メールの送信に失敗しました',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    })
+      statusMessage: "お礼メールの送信に失敗しました",
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
   }
-})
+});

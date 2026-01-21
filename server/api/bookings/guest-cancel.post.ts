@@ -6,246 +6,259 @@
  * Body: { bookingId: string }
  */
 
-import Stripe from 'stripe'
-import { FieldValue } from 'firebase-admin/firestore'
-import { getErrorMessage, getErrorStatusCode } from '~/server/utils/error-handling'
+import Stripe from "stripe";
+import { FieldValue } from "firebase-admin/firestore";
+import {
+  getErrorMessage,
+  getErrorStatusCode,
+} from "~/server/utils/error-handling";
 
 // キャンセルポリシールール
 interface CancellationPolicyRule {
-  daysBeforeCheckIn: number
-  refundPercentage: number
+  daysBeforeCheckIn: number;
+  refundPercentage: number;
 }
 
 // キャンセルポリシー
 interface CancellationPolicy {
-  name: string
-  rules: CancellationPolicyRule[]
-  isActive: boolean
+  name: string;
+  rules: CancellationPolicyRule[];
+  isActive: boolean;
 }
 
 // デフォルトポリシー
 const defaultPolicy: CancellationPolicy = {
-  name: '標準',
+  name: "標準",
   rules: [
     { daysBeforeCheckIn: 5, refundPercentage: 100 },
     { daysBeforeCheckIn: 3, refundPercentage: 50 },
-    { daysBeforeCheckIn: 0, refundPercentage: 0 }
+    { daysBeforeCheckIn: 0, refundPercentage: 0 },
   ],
-  isActive: true
-}
+  isActive: true,
+};
 
 export default defineEventHandler(async (event) => {
-  const config = useRuntimeConfig()
-  const stripe = new Stripe(config.stripeSecretKey)
+  const config = useRuntimeConfig();
+  const stripe = new Stripe(config.stripeSecretKey);
 
   try {
-    const body = await readBody(event)
-    const { bookingId, userId } = body
+    const body = await readBody(event);
+    const { bookingId, userId } = body;
 
     if (!bookingId) {
       throw createError({
         statusCode: 400,
-        message: '予約IDが必要です',
-      })
+        message: "予約IDが必要です",
+      });
     }
 
-    const db = getFirestoreAdmin()
+    const db = getFirestoreAdmin();
 
     // 1. 予約情報を取得
-    const bookingDoc = await db.collection('bookings').doc(bookingId).get()
+    const bookingDoc = await db.collection("bookings").doc(bookingId).get();
 
     if (!bookingDoc.exists) {
       throw createError({
         statusCode: 404,
-        message: '予約が見つかりません',
-      })
+        message: "予約が見つかりません",
+      });
     }
 
-    const booking = bookingDoc.data()!
+    const booking = bookingDoc.data()!;
 
     // 2. ユーザー権限チェック（ゲスト本人か確認）
     // 予約にuserIdがある場合のみチェック（ゲスト予約はuserIdなしで作成される場合がある）
     if (booking.userId && userId && booking.userId !== userId) {
       throw createError({
         statusCode: 403,
-        message: 'この予約をキャンセルする権限がありません',
-      })
+        message: "この予約をキャンセルする権限がありません",
+      });
     }
 
     // 3. キャンセル可能かチェック
-    if (booking.status === 'cancelled' || booking.status === 'refunded') {
+    if (booking.status === "cancelled" || booking.status === "refunded") {
       throw createError({
         statusCode: 400,
-        message: 'この予約は既にキャンセル済みです',
-      })
+        message: "この予約は既にキャンセル済みです",
+      });
     }
 
-    if (booking.status === 'completed') {
+    if (booking.status === "completed") {
       throw createError({
         statusCode: 400,
-        message: '完了済みの予約はキャンセルできません',
-      })
+        message: "完了済みの予約はキャンセルできません",
+      });
     }
 
     // 4. キャンセルポリシーを取得
-    let policy = defaultPolicy
-    const policiesSnapshot = await db.collection('cancellationPolicies')
-      .where('isActive', '==', true)
+    let policy = defaultPolicy;
+    const policiesSnapshot = await db
+      .collection("cancellationPolicies")
+      .where("isActive", "==", true)
       .limit(1)
-      .get()
+      .get();
 
     if (!policiesSnapshot.empty) {
-      const policyData = policiesSnapshot.docs[0].data() as CancellationPolicy
-      policy = policyData
+      const policyData = policiesSnapshot.docs[0].data() as CancellationPolicy;
+      policy = policyData;
     }
 
     // 5. チェックイン日までの日数を計算
-    const now = new Date()
-    now.setHours(0, 0, 0, 0)
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
 
-    let checkInDate: Date
+    let checkInDate: Date;
     if (booking.startDate && booking.startDate.toDate) {
-      checkInDate = booking.startDate.toDate()
+      checkInDate = booking.startDate.toDate();
     } else if (booking.checkInDate && booking.checkInDate.toDate) {
-      checkInDate = booking.checkInDate.toDate()
+      checkInDate = booking.checkInDate.toDate();
     } else {
       throw createError({
         statusCode: 400,
-        message: 'チェックイン日が設定されていません',
-      })
+        message: "チェックイン日が設定されていません",
+      });
     }
-    checkInDate.setHours(0, 0, 0, 0)
+    checkInDate.setHours(0, 0, 0, 0);
 
-    const diffTime = checkInDate.getTime() - now.getTime()
-    const daysBeforeCheckIn = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    const diffTime = checkInDate.getTime() - now.getTime();
+    const daysBeforeCheckIn = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
     // チェックイン後はキャンセル不可
     if (daysBeforeCheckIn < 0) {
       throw createError({
         statusCode: 400,
-        message: 'チェックイン後の予約はキャンセルできません',
-      })
+        message: "チェックイン後の予約はキャンセルできません",
+      });
     }
 
     // 6. 適用されるルールを取得
-    const sortedRules = [...policy.rules].sort((a, b) => b.daysBeforeCheckIn - a.daysBeforeCheckIn)
+    const sortedRules = [...policy.rules].sort(
+      (a, b) => b.daysBeforeCheckIn - a.daysBeforeCheckIn,
+    );
 
-    let appliedRule = { daysBeforeCheckIn: 0, refundPercentage: 0 }
+    let appliedRule = { daysBeforeCheckIn: 0, refundPercentage: 0 };
     for (const rule of sortedRules) {
       if (daysBeforeCheckIn >= rule.daysBeforeCheckIn) {
-        appliedRule = rule
-        break
+        appliedRule = rule;
+        break;
       }
     }
 
     // 7. 返金額を計算
-    const totalAmount = booking.totalAmount || 0
-    const refundPercentage = appliedRule.refundPercentage
-    const refundAmount = Math.floor(totalAmount * (refundPercentage / 100))
+    const totalAmount = booking.totalAmount || 0;
+    const refundPercentage = appliedRule.refundPercentage;
+    const refundAmount = Math.floor(totalAmount * (refundPercentage / 100));
 
-    console.log('🔄 Guest self-cancel:', {
+    console.log("🔄 Guest self-cancel:", {
       bookingId,
       daysBeforeCheckIn,
       refundPercentage,
       refundAmount,
-    })
+    });
 
     // 8. 返金処理（支払い済みの場合）
-    let refundResult = null
-    if (booking.paymentStatus === 'paid' && booking.stripePaymentIntentId && refundAmount > 0) {
+    let refundResult = null;
+    if (
+      booking.paymentStatus === "paid" &&
+      booking.stripePaymentIntentId &&
+      refundAmount > 0
+    ) {
       try {
         // Chargeを取得
         const charges = await stripe.charges.list({
           payment_intent: booking.stripePaymentIntentId,
           limit: 1,
-        })
+        });
 
         if (charges.data.length > 0) {
-          const charge = charges.data[0]
-          const availableForRefund = charge.amount - charge.amount_refunded
+          const charge = charges.data[0];
+          const availableForRefund = charge.amount - charge.amount_refunded;
 
           if (refundAmount <= availableForRefund) {
-            const refund = await stripe.refunds.create({
-              charge: charge.id,
-              amount: refundAmount,
-              reason: 'requested_by_customer',
-              metadata: {
-                bookingId,
-                bookingReference: booking.bookingReference || '',
-                cancelType: 'guest_self_cancel',
-                daysBeforeCheckIn: String(daysBeforeCheckIn),
+            const refund = await stripe.refunds.create(
+              {
+                charge: charge.id,
+                amount: refundAmount,
+                reason: "requested_by_customer",
+                metadata: {
+                  bookingId,
+                  bookingReference: booking.bookingReference || "",
+                  cancelType: "guest_self_cancel",
+                  daysBeforeCheckIn: String(daysBeforeCheckIn),
+                },
               },
-            }, {
-              idempotencyKey: `refund-guest-cancel-${bookingId}-${refundAmount}`,
-            })
+              {
+                idempotencyKey: `refund-guest-cancel-${bookingId}-${refundAmount}`,
+              },
+            );
 
             refundResult = {
               refundId: refund.id,
               amount: refund.amount,
               status: refund.status,
-            }
+            };
 
-            console.log('✅ Stripe refund created:', refundResult)
+            console.log("✅ Stripe refund created:", refundResult);
           }
         }
       } catch (stripeError: unknown) {
-        console.error('⚠️ Stripe refund error:', getErrorMessage(stripeError))
+        console.error("⚠️ Stripe refund error:", getErrorMessage(stripeError));
         // 返金失敗してもキャンセル自体は続行
       }
     }
 
     // 9. 予約ステータスを更新
-    const isFullRefund = refundAmount === totalAmount
+    const isFullRefund = refundAmount === totalAmount;
     const updateData: Record<string, unknown> = {
-      status: 'cancelled',
+      status: "cancelled",
       cancelledAt: FieldValue.serverTimestamp(),
-      cancelledBy: 'guest',
-      cancelReason: 'ゲストによるセルフキャンセル',
+      cancelledBy: "guest",
+      cancelReason: "ゲストによるセルフキャンセル",
       refundPercentage,
       updatedAt: FieldValue.serverTimestamp(),
-    }
+    };
 
     if (refundResult) {
-      updateData.paymentStatus = isFullRefund ? 'refunded' : 'paid'
-      updateData.refundAmount = refundAmount
-      updateData.refundId = refundResult.refundId
-      updateData.refundedAt = FieldValue.serverTimestamp()
+      updateData.paymentStatus = isFullRefund ? "refunded" : "paid";
+      updateData.refundAmount = refundAmount;
+      updateData.refundId = refundResult.refundId;
+      updateData.refundedAt = FieldValue.serverTimestamp();
     }
 
-    await bookingDoc.ref.update(updateData)
+    await bookingDoc.ref.update(updateData);
 
     // 10. キャンセルログを記録
-    await db.collection('cancellationLogs').add({
+    await db.collection("cancellationLogs").add({
       bookingId,
       bookingReference: booking.bookingReference,
       guestEmail: booking.guestEmail,
       guestName: booking.guestName,
-      cancelledBy: 'guest',
+      cancelledBy: "guest",
       daysBeforeCheckIn,
       refundPercentage,
       refundAmount,
       policyName: policy.name,
       createdAt: FieldValue.serverTimestamp(),
-    })
+    });
 
     // 11. キャンセル確認メールをゲストに送信
     try {
-      const checkInFormatted = `${checkInDate.getFullYear()}年${checkInDate.getMonth() + 1}月${checkInDate.getDate()}日`
-      let checkOutDate: Date
+      const checkInFormatted = `${checkInDate.getFullYear()}年${checkInDate.getMonth() + 1}月${checkInDate.getDate()}日`;
+      let checkOutDate: Date;
       if (booking.endDate && booking.endDate.toDate) {
-        checkOutDate = booking.endDate.toDate()
+        checkOutDate = booking.endDate.toDate();
       } else if (booking.checkOutDate && booking.checkOutDate.toDate) {
-        checkOutDate = booking.checkOutDate.toDate()
+        checkOutDate = booking.checkOutDate.toDate();
       } else {
-        checkOutDate = new Date(checkInDate)
-        checkOutDate.setDate(checkOutDate.getDate() + 1)
+        checkOutDate = new Date(checkInDate);
+        checkOutDate.setDate(checkOutDate.getDate() + 1);
       }
-      const checkOutFormatted = `${checkOutDate.getFullYear()}年${checkOutDate.getMonth() + 1}月${checkOutDate.getDate()}日`
+      const checkOutFormatted = `${checkOutDate.getFullYear()}年${checkOutDate.getMonth() + 1}月${checkOutDate.getDate()}日`;
 
-      await $fetch('/api/emails/send-booking-cancelled', {
-        method: 'POST',
+      await $fetch("/api/emails/send-booking-cancelled", {
+        method: "POST",
         headers: {
-          'x-internal-secret': config.internalApiSecret,
+          "x-internal-secret": config.internalApiSecret,
         },
         body: {
           to: booking.guestEmail,
@@ -256,46 +269,47 @@ export default defineEventHandler(async (event) => {
           refundAmount: refundAmount,
           refundPercentage: refundPercentage,
         },
-      })
-      console.log('✅ Guest cancellation email sent')
+      });
+      console.log("✅ Guest cancellation email sent");
     } catch (emailError: unknown) {
-      console.error('⚠️ Guest email send error:', getErrorMessage(emailError))
+      console.error("⚠️ Guest email send error:", getErrorMessage(emailError));
     }
 
     // 12. 管理者にキャンセル通知メールを送信
     try {
-      await $fetch('/api/emails/send-admin-notification', {
-        method: 'POST',
+      await $fetch("/api/emails/send-admin-notification", {
+        method: "POST",
         headers: {
-          'x-internal-secret': config.internalApiSecret,
+          "x-internal-secret": config.internalApiSecret,
         },
         body: {
-          type: 'booking_cancelled',
+          type: "booking_cancelled",
           bookingId,
           bookingReference: booking.bookingReference,
           guestName: booking.guestName,
           guestEmail: booking.guestEmail,
           checkInDate: `${checkInDate.getFullYear()}年${checkInDate.getMonth() + 1}月${checkInDate.getDate()}日`,
-          checkOutDate: booking.checkOutDate || booking.endDate
-            ? (() => {
-                const d = (booking.checkOutDate || booking.endDate).toDate()
-                return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`
-              })()
-            : '',
+          checkOutDate:
+            booking.checkOutDate || booking.endDate
+              ? (() => {
+                  const d = (booking.checkOutDate || booking.endDate).toDate();
+                  return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
+                })()
+              : "",
           refundAmount: refundAmount,
         },
-      })
-      console.log('✅ Admin cancellation notification sent')
+      });
+      console.log("✅ Admin cancellation notification sent");
     } catch (emailError: unknown) {
-      console.error('⚠️ Admin email send error:', getErrorMessage(emailError))
+      console.error("⚠️ Admin email send error:", getErrorMessage(emailError));
     }
 
     return {
       success: true,
-      message: 'キャンセルが完了しました',
+      message: "キャンセルが完了しました",
       booking: {
         id: bookingId,
-        status: 'cancelled',
+        status: "cancelled",
       },
       refund: {
         percentage: refundPercentage,
@@ -307,13 +321,13 @@ export default defineEventHandler(async (event) => {
         daysBeforeCheckIn,
         appliedRule,
       },
-    }
+    };
   } catch (error: unknown) {
-    console.error('❌ Guest cancel error:', error)
+    console.error("❌ Guest cancel error:", error);
 
     throw createError({
       statusCode: getErrorStatusCode(error),
-      message: getErrorMessage(error) || 'キャンセル処理に失敗しました',
-    })
+      message: getErrorMessage(error) || "キャンセル処理に失敗しました",
+    });
   }
-})
+});

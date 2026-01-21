@@ -37,3 +37,4 @@ furniture-house-1-*.json
 .vercel
 .env*.local
 .claude/settings.local.json
+"node_modules 2"

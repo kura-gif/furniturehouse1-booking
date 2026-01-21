@@ -3,12 +3,15 @@
  * 日本語形式の日付変換を一元管理
  */
 
-import { isFirestoreTimestamp, type FirestoreTimestamp } from './error-handling'
+import {
+  isFirestoreTimestamp,
+  type FirestoreTimestamp,
+} from "./error-handling";
 
 /** 日付として受け入れ可能な型 */
-type DateLike = Date | FirestoreTimestamp | string | number | null | undefined
+type DateLike = Date | FirestoreTimestamp | string | number | null | undefined;
 
-const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土']
+const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"];
 
 /**
  * 任意の日付形式をDateオブジェクトに変換
@@ -18,32 +21,32 @@ const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土']
  */
 export function toDate(value: DateLike): Date | null {
   if (!value) {
-    return null
+    return null;
   }
 
   // Firestore Timestamp
   if (isFirestoreTimestamp(value)) {
-    return value.toDate()
+    return value.toDate();
   }
 
   // Date オブジェクト
   if (value instanceof Date) {
-    return isNaN(value.getTime()) ? null : value
+    return isNaN(value.getTime()) ? null : value;
   }
 
   // 文字列 (ISO形式など)
-  if (typeof value === 'string') {
-    const date = new Date(value)
-    return isNaN(date.getTime()) ? null : date
+  if (typeof value === "string") {
+    const date = new Date(value);
+    return isNaN(date.getTime()) ? null : date;
   }
 
   // 数値 (ミリ秒)
-  if (typeof value === 'number') {
-    const date = new Date(value)
-    return isNaN(date.getTime()) ? null : date
+  if (typeof value === "number") {
+    const date = new Date(value);
+    return isNaN(date.getTime()) ? null : date;
   }
 
-  return null
+  return null;
 }
 
 /**
@@ -54,16 +57,16 @@ export function toDate(value: DateLike): Date | null {
  * @returns フォーマット済み文字列、変換できない場合は空文字
  */
 export function formatJapaneseDate(value: DateLike): string {
-  const date = toDate(value)
+  const date = toDate(value);
   if (!date) {
-    return ''
+    return "";
   }
 
-  const year = date.getFullYear()
-  const month = date.getMonth() + 1
-  const day = date.getDate()
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
 
-  return `${year}年${month}月${day}日`
+  return `${year}年${month}月${day}日`;
 }
 
 /**
@@ -74,17 +77,17 @@ export function formatJapaneseDate(value: DateLike): string {
  * @returns フォーマット済み文字列、変換できない場合は空文字
  */
 export function formatJapaneseDateWithWeekday(value: DateLike): string {
-  const date = toDate(value)
+  const date = toDate(value);
   if (!date) {
-    return ''
+    return "";
   }
 
-  const year = date.getFullYear()
-  const month = date.getMonth() + 1
-  const day = date.getDate()
-  const weekday = WEEKDAYS[date.getDay()]
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const weekday = WEEKDAYS[date.getDay()];
 
-  return `${year}年${month}月${day}日（${weekday}）`
+  return `${year}年${month}月${day}日（${weekday}）`;
 }
 
 /**
@@ -95,16 +98,16 @@ export function formatJapaneseDateWithWeekday(value: DateLike): string {
  * @returns ISO形式の日付文字列、変換できない場合は空文字
  */
 export function formatISODate(value: DateLike): string {
-  const date = toDate(value)
+  const date = toDate(value);
   if (!date) {
-    return ''
+    return "";
   }
 
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
 
-  return `${year}-${month}-${day}`
+  return `${year}-${month}-${day}`;
 }
 
 /**
@@ -116,14 +119,14 @@ export function formatISODate(value: DateLike): string {
  * @returns フォーマット済み文字列
  */
 export function formatDateRange(start: DateLike, end: DateLike): string {
-  const startStr = formatJapaneseDate(start)
-  const endStr = formatJapaneseDate(end)
+  const startStr = formatJapaneseDate(start);
+  const endStr = formatJapaneseDate(end);
 
   if (!startStr || !endStr) {
-    return ''
+    return "";
   }
 
-  return `${startStr} 〜 ${endStr}`
+  return `${startStr} 〜 ${endStr}`;
 }
 
 /**
@@ -133,19 +136,19 @@ export function formatDateRange(start: DateLike, end: DateLike): string {
  * @returns 日数（過去の場合は負の値）
  */
 export function daysUntil(targetDate: DateLike): number {
-  const target = toDate(targetDate)
+  const target = toDate(targetDate);
   if (!target) {
-    return 0
+    return 0;
   }
 
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-  const targetDay = new Date(target)
-  targetDay.setHours(0, 0, 0, 0)
+  const targetDay = new Date(target);
+  targetDay.setHours(0, 0, 0, 0);
 
-  const diffTime = targetDay.getTime() - today.getTime()
-  return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  const diffTime = targetDay.getTime() - today.getTime();
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 }
 
 /**
@@ -156,19 +159,19 @@ export function daysUntil(targetDate: DateLike): number {
  * @returns 日数
  */
 export function daysBetween(start: DateLike, end: DateLike): number {
-  const startDate = toDate(start)
-  const endDate = toDate(end)
+  const startDate = toDate(start);
+  const endDate = toDate(end);
 
   if (!startDate || !endDate) {
-    return 0
+    return 0;
   }
 
-  const startDay = new Date(startDate)
-  startDay.setHours(0, 0, 0, 0)
+  const startDay = new Date(startDate);
+  startDay.setHours(0, 0, 0, 0);
 
-  const endDay = new Date(endDate)
-  endDay.setHours(0, 0, 0, 0)
+  const endDay = new Date(endDate);
+  endDay.setHours(0, 0, 0, 0);
 
-  const diffTime = endDay.getTime() - startDay.getTime()
-  return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  const diffTime = endDay.getTime() - startDay.getTime();
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 }

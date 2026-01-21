@@ -5,87 +5,91 @@
  */
 
 interface Props {
-  type?: 'success' | 'error' | 'warning' | 'info'
-  message: string
-  dismissible?: boolean
-  autoDismiss?: boolean
-  autoDismissDelay?: number
+  type?: "success" | "error" | "warning" | "info";
+  message: string;
+  dismissible?: boolean;
+  autoDismiss?: boolean;
+  autoDismissDelay?: number;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  type: 'info',
+  type: "info",
   dismissible: true,
   autoDismiss: false,
-  autoDismissDelay: 5000
-})
+  autoDismissDelay: 5000,
+});
 
 const emit = defineEmits<{
-  dismiss: []
-}>()
+  dismiss: [];
+}>();
 
-const isVisible = ref(true)
+const isVisible = ref(true);
 
 const typeConfig = computed(() => {
   const configs = {
     success: {
-      bgColor: 'bg-green-50',
-      borderColor: 'border-green-400',
-      textColor: 'text-green-800',
-      iconColor: 'text-green-400',
-      icon: 'check-circle'
+      bgColor: "bg-green-50",
+      borderColor: "border-green-400",
+      textColor: "text-green-800",
+      iconColor: "text-green-400",
+      icon: "check-circle",
     },
     error: {
-      bgColor: 'bg-red-50',
-      borderColor: 'border-red-400',
-      textColor: 'text-red-800',
-      iconColor: 'text-red-400',
-      icon: 'x-circle'
+      bgColor: "bg-red-50",
+      borderColor: "border-red-400",
+      textColor: "text-red-800",
+      iconColor: "text-red-400",
+      icon: "x-circle",
     },
     warning: {
-      bgColor: 'bg-yellow-50',
-      borderColor: 'border-yellow-400',
-      textColor: 'text-yellow-800',
-      iconColor: 'text-yellow-400',
-      icon: 'exclamation-triangle'
+      bgColor: "bg-yellow-50",
+      borderColor: "border-yellow-400",
+      textColor: "text-yellow-800",
+      iconColor: "text-yellow-400",
+      icon: "exclamation-triangle",
     },
     info: {
-      bgColor: 'bg-blue-50',
-      borderColor: 'border-blue-400',
-      textColor: 'text-blue-800',
-      iconColor: 'text-blue-400',
-      icon: 'information-circle'
-    }
-  }
-  return configs[props.type]
-})
+      bgColor: "bg-blue-50",
+      borderColor: "border-blue-400",
+      textColor: "text-blue-800",
+      iconColor: "text-blue-400",
+      icon: "information-circle",
+    },
+  };
+  return configs[props.type];
+});
 
 // aria-live の値を決定（エラーは即座に、その他は丁寧に）
-const ariaLive = computed(() => props.type === 'error' ? 'assertive' : 'polite')
+const ariaLive = computed(() =>
+  props.type === "error" ? "assertive" : "polite",
+);
 
 // role の値を決定（エラーと警告はalert、その他はstatus）
-const role = computed(() => ['error', 'warning'].includes(props.type) ? 'alert' : 'status')
+const role = computed(() =>
+  ["error", "warning"].includes(props.type) ? "alert" : "status",
+);
 
 const dismiss = () => {
-  isVisible.value = false
-  emit('dismiss')
-}
+  isVisible.value = false;
+  emit("dismiss");
+};
 
 // 自動非表示
-let dismissTimeout: ReturnType<typeof setTimeout> | null = null
+let dismissTimeout: ReturnType<typeof setTimeout> | null = null;
 
 onMounted(() => {
   if (props.autoDismiss) {
     dismissTimeout = setTimeout(() => {
-      dismiss()
-    }, props.autoDismissDelay)
+      dismiss();
+    }, props.autoDismissDelay);
   }
-})
+});
 
 onUnmounted(() => {
   if (dismissTimeout) {
-    clearTimeout(dismissTimeout)
+    clearTimeout(dismissTimeout);
   }
-})
+});
 </script>
 
 <template>
@@ -105,7 +109,7 @@ onUnmounted(() => {
       :class="[
         'rounded-lg border p-4',
         typeConfig.bgColor,
-        typeConfig.borderColor
+        typeConfig.borderColor,
       ]"
     >
       <div class="flex">
@@ -191,7 +195,7 @@ onUnmounted(() => {
               'inline-flex rounded-md p-1.5 focus:outline-none focus:ring-2 focus:ring-offset-2',
               typeConfig.bgColor,
               typeConfig.textColor,
-              'hover:opacity-75'
+              'hover:opacity-75',
             ]"
             aria-label="閉じる"
             @click="dismiss"

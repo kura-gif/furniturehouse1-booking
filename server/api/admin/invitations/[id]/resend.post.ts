@@ -1,79 +1,85 @@
-import { FieldValue } from 'firebase-admin/firestore'
-import { getFirestoreAdmin } from '~/server/utils/firebase-admin'
-import { requireAdmin } from '~/server/utils/auth'
-import { generateInvitationToken, getInvitationExpiry } from '~/server/utils/invitation'
-import nodemailer from 'nodemailer'
+import { FieldValue } from "firebase-admin/firestore";
+import { getFirestoreAdmin } from "~/server/utils/firebase-admin";
+import { requireAdmin } from "~/server/utils/auth";
+import {
+  generateInvitationToken,
+  getInvitationExpiry,
+} from "~/server/utils/invitation";
+import nodemailer from "nodemailer";
 
 /**
  * 管理者招待再送信API
  */
 export default defineEventHandler(async (event) => {
   // 管理者認証チェック
-  const admin = await requireAdmin(event)
+  const admin = await requireAdmin(event);
 
-  const invitationId = getRouterParam(event, 'id')
+  const invitationId = getRouterParam(event, "id");
   if (!invitationId) {
     throw createError({
       statusCode: 400,
-      message: '招待IDが必要です'
-    })
+      message: "招待IDが必要です",
+    });
   }
 
-  const db = getFirestoreAdmin()
+  const db = getFirestoreAdmin();
 
   // 招待を取得
-  const invitationDoc = await db.collection('adminInvitations').doc(invitationId).get()
+  const invitationDoc = await db
+    .collection("adminInvitations")
+    .doc(invitationId)
+    .get();
 
   if (!invitationDoc.exists) {
     throw createError({
       statusCode: 404,
-      message: '招待が見つかりません'
-    })
+      message: "招待が見つかりません",
+    });
   }
 
-  const invitation = invitationDoc.data()
+  const invitation = invitationDoc.data();
 
   // pending状態のみ再送信可能
-  if (invitation?.status !== 'pending') {
+  if (invitation?.status !== "pending") {
     throw createError({
       statusCode: 400,
-      message: 'この招待は再送信できません'
-    })
+      message: "この招待は再送信できません",
+    });
   }
 
   // 新しいトークンと有効期限を生成
-  const token = generateInvitationToken()
-  const expiresAt = getInvitationExpiry()
+  const token = generateInvitationToken();
+  const expiresAt = getInvitationExpiry();
 
   // 招待情報を更新
   await invitationDoc.ref.update({
     token,
     expiresAt: new Date(expiresAt),
-    updatedAt: FieldValue.serverTimestamp()
-  })
+    updatedAt: FieldValue.serverTimestamp(),
+  });
 
   // 招待メール再送信
   try {
-    const config = useRuntimeConfig()
-    const siteUrl = config.public.siteUrl || 'http://localhost:3000'
-    const invitationUrl = `${siteUrl}/accept-invitation?token=${token}`
+    const config = useRuntimeConfig();
+    const siteUrl = config.public.siteUrl || "http://localhost:3000";
+    const invitationUrl = `${siteUrl}/accept-invitation?token=${token}`;
 
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
+      service: "gmail",
       auth: {
         user: config.emailUser,
-        pass: config.emailPassword
-      }
-    })
+        pass: config.emailPassword,
+      },
+    });
 
-    const senderEmail = config.emailUser || 'noreply@furniturehouse1.com'
-    const replyToEmail = config.emailReplyTo || senderEmail
+    const senderEmail = config.emailUser || "noreply@furniturehouse1.com";
+    const replyToEmail = config.emailReplyTo || senderEmail;
 
     await transporter.sendMail({
       from: `"家具の家 No.1" <${senderEmail}>`,
       to: invitation.email,
       replyTo: replyToEmail,
-      subject: '【家具の家 No.1】管理者招待のお知らせ（再送）',
+      subject: "【家具の家 No.1】管理者招待のお知らせ（再送）",
       html: `
         <!DOCTYPE html>
         <html>
@@ -152,20 +158,20 @@ export default defineEventHandler(async (event) => {
           </div>
         </body>
         </html>
-      `
-    })
+      `,
+    });
 
-    console.log('✅ 招待メール再送信成功:', invitation.email)
+    console.log("✅ 招待メール再送信成功:", invitation.email);
   } catch (error: unknown) {
-    console.error('❌ 招待メール再送信エラー:', error)
+    console.error("❌ 招待メール再送信エラー:", error);
     throw createError({
       statusCode: 500,
-      message: 'メール送信に失敗しました'
-    })
+      message: "メール送信に失敗しました",
+    });
   }
 
   return {
     success: true,
-    message: '招待メールを再送信しました'
-  }
-})
+    message: "招待メールを再送信しました",
+  };
+});

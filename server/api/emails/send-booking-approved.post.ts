@@ -3,24 +3,24 @@
  * ゲストに予約が承認され、決済が完了したことを通知
  */
 
-import nodemailer from 'nodemailer'
-import { getFacilitySettings } from '~/server/utils/facility-settings'
+import nodemailer from "nodemailer";
+import { getFacilitySettings } from "~/server/utils/facility-settings";
 
 export default defineEventHandler(async (event) => {
-  const config = useRuntimeConfig()
-  const facilitySettings = await getFacilitySettings()
+  const config = useRuntimeConfig();
+  const facilitySettings = await getFacilitySettings();
 
   // 内部呼び出し認証
-  const internalSecret = getHeader(event, 'x-internal-secret')
+  const internalSecret = getHeader(event, "x-internal-secret");
   if (internalSecret !== config.internalApiSecret) {
     throw createError({
       statusCode: 401,
-      message: 'Unauthorized',
-    })
+      message: "Unauthorized",
+    });
   }
 
   try {
-    const body = await readBody(event)
+    const body = await readBody(event);
     const {
       to,
       bookingId,
@@ -29,31 +29,33 @@ export default defineEventHandler(async (event) => {
       guestName,
       checkInDate,
       checkOutDate,
-      totalAmount
-    } = body
+      totalAmount,
+    } = body;
 
     if (!to || !bookingReference || !guestName) {
       throw createError({
         statusCode: 400,
-        message: '必須パラメータが不足しています',
-      })
+        message: "必須パラメータが不足しています",
+      });
     }
 
     // メール送信設定
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
+      service: "gmail",
       auth: {
         user: config.emailUser,
         pass: config.emailPassword,
       },
-    })
+    });
 
-    const siteUrl = config.public.siteUrl || 'http://localhost:3000'
-    const viewUrl = `${siteUrl}/booking/view?token=${bookingToken}`
+    const siteUrl = config.public.siteUrl || "http://localhost:3000";
+    const viewUrl = `${siteUrl}/booking/view?token=${bookingToken}`;
 
     // 送信元はグループメール（furniturehouse1@）を表示
-    const fromEmail = config.emailFrom || config.emailReplyTo || config.emailUser
-    const replyToEmail = config.emailReplyTo || config.emailFrom || config.emailUser
+    const fromEmail =
+      config.emailFrom || config.emailReplyTo || config.emailUser;
+    const replyToEmail =
+      config.emailReplyTo || config.emailFrom || config.emailUser;
 
     const htmlContent = `
 <!DOCTYPE html>
@@ -158,7 +160,7 @@ export default defineEventHandler(async (event) => {
   </table>
 </body>
 </html>
-`
+`;
 
     await transporter.sendMail({
       from: `"家具の家 No.1" <${fromEmail}>`,
@@ -166,16 +168,17 @@ export default defineEventHandler(async (event) => {
       replyTo: replyToEmail,
       subject: `【予約確定】ご予約が承認されました - ${bookingReference}`,
       html: htmlContent,
-    })
+    });
 
-    console.log('✅ Booking approved email sent to:', to)
+    console.log("✅ Booking approved email sent to:", to);
 
-    return { success: true }
+    return { success: true };
   } catch (error: unknown) {
-    console.error('❌ Failed to send booking approved email:', error)
+    console.error("❌ Failed to send booking approved email:", error);
     throw createError({
       statusCode: 500,
-      message: error instanceof Error ? error.message : 'メール送信に失敗しました',
-    })
+      message:
+        error instanceof Error ? error.message : "メール送信に失敗しました",
+    });
   }
-})
+});

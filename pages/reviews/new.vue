@@ -4,7 +4,9 @@
 
     <div class="max-w-2xl mx-auto px-6 py-12 mt-16">
       <div class="bg-white rounded-lg shadow-md p-8">
-        <h1 class="text-2xl font-medium mb-6" style="color: #231815;">レビューを投稿</h1>
+        <h1 class="text-2xl font-medium mb-6" style="color: #231815">
+          レビューを投稿
+        </h1>
 
         <form @submit.prevent="handleSubmit" class="space-y-6">
           <!-- 評価 -->
@@ -19,7 +21,9 @@
                 type="button"
                 @click="formData.rating = star"
                 class="text-3xl transition-colors"
-                :class="star <= formData.rating ? 'text-yellow-500' : 'text-gray-300'"
+                :class="
+                  star <= formData.rating ? 'text-yellow-500' : 'text-gray-300'
+                "
               >
                 ★
               </button>
@@ -79,12 +83,16 @@
           <!-- 注意事項 -->
           <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <p class="text-sm text-gray-700">
-              <strong>ご注意：</strong>投稿されたレビューは管理者の承認後に公開されます。不適切な内容を含むレビューは承認されない場合があります。
+              <strong>ご注意：</strong
+              >投稿されたレビューは管理者の承認後に公開されます。不適切な内容を含むレビューは承認されない場合があります。
             </p>
           </div>
 
           <!-- エラーメッセージ -->
-          <div v-if="errorMessage" class="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div
+            v-if="errorMessage"
+            class="bg-red-50 border border-red-200 rounded-lg p-4"
+          >
             <p class="text-sm text-red-700">{{ errorMessage }}</p>
           </div>
 
@@ -101,9 +109,11 @@
               type="submit"
               :disabled="isSubmitting || !isFormValid"
               class="flex-1 px-6 py-3 text-white font-medium rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"
+              style="
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              "
             >
-              {{ isSubmitting ? '投稿中...' : 'レビューを投稿' }}
+              {{ isSubmitting ? "投稿中..." : "レビューを投稿" }}
             </button>
           </div>
         </form>
@@ -115,64 +125,68 @@
 </template>
 
 <script setup lang="ts">
-import type { CreateReviewRequest } from '~/types'
+import type { CreateReviewRequest } from "~/types";
 
 definePageMeta({
   layout: false,
-  middleware: 'auth'
-})
+  middleware: "auth",
+});
 
-const { createReview } = useReviews()
-const router = useRouter()
+const { createReview } = useReviews();
+const router = useRouter();
+const toast = useToast();
 
 // フォームデータ
 const formData = reactive<CreateReviewRequest>({
   rating: 0,
-  comment: '',
-  stayDate: '',
-  stayType: ''
-})
+  comment: "",
+  stayDate: "",
+  stayType: "",
+});
 
-const isSubmitting = ref(false)
-const errorMessage = ref('')
+const isSubmitting = ref(false);
+const errorMessage = ref("");
 
 // 評価ラベル
-const ratingLabels = ['最悪', '不満', '普通', '良い', '最高']
+const ratingLabels = ["最悪", "不満", "普通", "良い", "最高"];
 
 // フォームのバリデーション
 const isFormValid = computed(() => {
-  return formData.rating > 0 && formData.comment.trim().length > 0 && formData.comment.length <= 500
-})
+  return (
+    formData.rating > 0 &&
+    formData.comment.trim().length > 0 &&
+    formData.comment.length <= 500
+  );
+});
 
 // フォーム送信
 const handleSubmit = async () => {
   if (!isFormValid.value) {
-    errorMessage.value = '評価とレビューは必須です'
-    return
+    errorMessage.value = "評価とレビューは必須です";
+    return;
   }
 
-  isSubmitting.value = true
-  errorMessage.value = ''
+  isSubmitting.value = true;
+  errorMessage.value = "";
 
   try {
-    await createReview(formData)
+    await createReview(formData);
 
     // 成功メッセージを表示してマイページに戻る
-    alert('レビューを投稿しました。管理者の承認をお待ちください。')
-    router.push('/mypage')
-  } catch (error: any) {
-    console.error('レビュー投稿エラー:', error)
-    errorMessage.value = error.message || 'レビューの投稿に失敗しました'
+    toast.success("レビューを投稿しました。管理者の承認をお待ちください。");
+    router.push("/mypage");
+  } catch (error: unknown) {
+    console.error("レビュー投稿エラー:", error);
+    errorMessage.value =
+      error instanceof Error ? error.message : "レビューの投稿に失敗しました";
   } finally {
-    isSubmitting.value = false
+    isSubmitting.value = false;
   }
-}
+};
 
 // SEO設定
 useHead({
-  title: 'レビューを投稿 | 家具の家 No.1',
-  meta: [
-    { name: 'robots', content: 'noindex' }
-  ]
-})
+  title: "レビューを投稿 | 家具の家 No.1",
+  meta: [{ name: "robots", content: "noindex" }],
+});
 </script>

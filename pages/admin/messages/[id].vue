@@ -4,14 +4,32 @@
     <header class="bg-white shadow-sm sticky top-0 z-10">
       <div class="container-responsive py-4 flex items-center justify-between">
         <div class="flex items-center gap-4">
-          <NuxtLink to="/admin/messages" class="text-gray-600 hover:text-gray-900">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          <NuxtLink
+            to="/admin/messages"
+            class="text-gray-600 hover:text-gray-900"
+          >
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 19l-7-7 7-7"
+              />
             </svg>
           </NuxtLink>
           <div>
-            <h1 class="text-xl font-bold">{{ conversation?.guestName || 'メッセージ' }}</h1>
-            <p v-if="conversation?.bookingReference" class="text-sm text-purple-600">
+            <h1 class="text-xl font-bold">
+              {{ conversation?.guestName || "メッセージ" }}
+            </h1>
+            <p
+              v-if="conversation?.bookingReference"
+              class="text-sm text-purple-600"
+            >
               予約番号: {{ conversation.bookingReference }}
             </p>
           </div>
@@ -37,7 +55,9 @@
 
     <!-- ローディング -->
     <div v-if="isLoading" class="flex items-center justify-center h-64">
-      <div class="animate-spin w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full"></div>
+      <div
+        class="animate-spin w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full"
+      ></div>
     </div>
 
     <!-- エラー -->
@@ -52,7 +72,10 @@
     <div v-else class="flex flex-col h-[calc(100vh-80px)]">
       <!-- メッセージ一覧 -->
       <div ref="messagesContainer" class="flex-1 overflow-y-auto p-4 space-y-4">
-        <div v-if="messages.length === 0" class="text-center text-gray-500 py-8">
+        <div
+          v-if="messages.length === 0"
+          class="text-center text-gray-500 py-8"
+        >
           メッセージはまだありません
         </div>
 
@@ -61,7 +84,7 @@
           :key="message.id"
           :class="[
             'flex',
-            message.senderType === 'admin' ? 'justify-end' : 'justify-start'
+            message.senderType === 'admin' ? 'justify-end' : 'justify-start',
           ]"
         >
           <div
@@ -69,7 +92,7 @@
               'max-w-[70%] rounded-lg px-4 py-2',
               message.senderType === 'admin'
                 ? 'bg-purple-600 text-white'
-                : 'bg-white border border-gray-200 text-gray-900'
+                : 'bg-white border border-gray-200 text-gray-900',
             ]"
           >
             <p class="text-xs opacity-70 mb-1">
@@ -85,7 +108,10 @@
 
       <!-- 入力エリア -->
       <div class="bg-white border-t border-gray-200 p-4">
-        <div v-if="conversation?.status === 'closed'" class="text-center text-gray-500">
+        <div
+          v-if="conversation?.status === 'closed'"
+          class="text-center text-gray-500"
+        >
           この会話は完了しています。再開するには上部の「再開する」ボタンをクリックしてください。
         </div>
         <form v-else @submit.prevent="handleSendMessage" class="flex gap-2">
@@ -112,14 +138,17 @@
 </template>
 
 <script setup lang="ts">
-import type { Conversation, Message } from '~/types'
+import { Timestamp } from "firebase/firestore";
+import type { Conversation, Message } from "~/types";
 
 definePageMeta({
-  middleware: 'admin'
-})
+  middleware: "admin",
+});
 
-const route = useRoute()
-const conversationId = route.params.id as string
+const route = useRoute();
+const conversationId = route.params.id as string;
+const toast = useToast();
+const confirmDialog = useConfirmDialog();
 
 const {
   getConversation,
@@ -127,140 +156,140 @@ const {
   sendMessage,
   markAsReadByAdmin,
   closeConversation,
-  reopenConversation
-} = useConversations()
+  reopenConversation,
+} = useConversations();
 
-const conversation = ref<Conversation | null>(null)
-const messages = ref<Message[]>([])
-const newMessage = ref('')
-const isLoading = ref(true)
-const isSending = ref(false)
-const error = ref<string | null>(null)
-const messagesContainer = ref<HTMLElement | null>(null)
+const conversation = ref<Conversation | null>(null);
+const messages = ref<Message[]>([]);
+const newMessage = ref("");
+const isLoading = ref(true);
+const isSending = ref(false);
+const error = ref<string | null>(null);
+const messagesContainer = ref<HTMLElement | null>(null);
 
-let unsubscribe: (() => void) | null = null
+let unsubscribe: (() => void) | null = null;
 
 // メッセージ時刻フォーマット
-const formatMessageTime = (timestamp: any): string => {
-  if (!timestamp) return ''
-  const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp)
-  const now = new Date()
-  const isToday = date.toDateString() === now.toDateString()
+const formatMessageTime = (
+  timestamp: Timestamp | Date | string | null | undefined,
+): string => {
+  if (!timestamp) return "";
+  const date =
+    timestamp instanceof Timestamp ? timestamp.toDate() : new Date(timestamp);
+  const now = new Date();
+  const isToday = date.toDateString() === now.toDateString();
 
-  const time = `${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`
+  const time = `${date.getHours()}:${String(date.getMinutes()).padStart(2, "0")}`;
 
   if (isToday) {
-    return time
+    return time;
   }
 
-  return `${date.getMonth() + 1}/${date.getDate()} ${time}`
-}
+  return `${date.getMonth() + 1}/${date.getDate()} ${time}`;
+};
 
 // 最下部へスクロール
 const scrollToBottom = () => {
   nextTick(() => {
     if (messagesContainer.value) {
-      messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+      messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
     }
-  })
-}
+  });
+};
 
 // 会話とメッセージを読み込み
 const loadConversation = async () => {
-  isLoading.value = true
-  error.value = null
+  isLoading.value = true;
+  error.value = null;
 
   try {
-    conversation.value = await getConversation(conversationId)
+    conversation.value = await getConversation(conversationId);
 
     if (!conversation.value) {
-      error.value = '会話が見つかりません'
-      return
+      error.value = "会話が見つかりません";
+      return;
     }
 
     // 既読にする
-    await markAsReadByAdmin(conversationId)
+    await markAsReadByAdmin(conversationId);
 
     // メッセージをリアルタイム監視
     unsubscribe = subscribeToMessages(conversationId, (newMessages) => {
-      messages.value = newMessages
-      scrollToBottom()
-    })
+      messages.value = newMessages;
+      scrollToBottom();
+    });
   } catch (err) {
-    console.error('会話の取得に失敗:', err)
-    error.value = '会話の取得に失敗しました'
+    console.error("会話の取得に失敗:", err);
+    error.value = "会話の取得に失敗しました";
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
-}
+};
 
 // メッセージ送信
 const handleSendMessage = async () => {
-  if (!newMessage.value.trim() || isSending.value) return
+  if (!newMessage.value.trim() || isSending.value) return;
 
-  isSending.value = true
-  const content = newMessage.value.trim()
-  newMessage.value = ''
+  isSending.value = true;
+  const content = newMessage.value.trim();
+  newMessage.value = "";
 
   try {
-    await sendMessage(
-      conversationId,
-      content,
-      'admin',
-      '管理者'
-    )
-    scrollToBottom()
+    await sendMessage(conversationId, content, "admin", "管理者");
+    scrollToBottom();
   } catch (err) {
-    console.error('メッセージ送信に失敗:', err)
-    alert('メッセージの送信に失敗しました')
-    newMessage.value = content // 復元
+    console.error("メッセージ送信に失敗:", err);
+    toast.error("メッセージの送信に失敗しました");
+    newMessage.value = content; // 復元
   } finally {
-    isSending.value = false
+    isSending.value = false;
   }
-}
+};
 
 // 会話を完了
 const handleCloseConversation = async () => {
-  if (!confirm('この会話を完了にしますか？')) return
+  if (!(await confirmDialog.confirm("この会話を完了にしますか？"))) return;
 
   try {
-    await closeConversation(conversationId)
+    await closeConversation(conversationId);
     if (conversation.value) {
-      conversation.value.status = 'closed'
+      conversation.value.status = "closed";
     }
+    toast.success("会話を完了にしました");
   } catch (err) {
-    console.error('会話のクローズに失敗:', err)
-    alert('操作に失敗しました')
+    console.error("会話のクローズに失敗:", err);
+    toast.error("操作に失敗しました");
   }
-}
+};
 
 // 会話を再開
 const handleReopenConversation = async () => {
   try {
-    await reopenConversation(conversationId)
+    await reopenConversation(conversationId);
     if (conversation.value) {
-      conversation.value.status = 'open'
+      conversation.value.status = "open";
     }
+    toast.success("会話を再開しました");
   } catch (err) {
-    console.error('会話の再開に失敗:', err)
-    alert('操作に失敗しました')
+    console.error("会話の再開に失敗:", err);
+    toast.error("操作に失敗しました");
   }
-}
+};
 
 onMounted(() => {
-  loadConversation()
-})
+  loadConversation();
+});
 
 onUnmounted(() => {
   if (unsubscribe) {
-    unsubscribe()
+    unsubscribe();
   }
-})
+});
 
 useHead({
-  title: 'メッセージ詳細 | 管理ダッシュボード',
-  meta: [{ name: 'robots', content: 'noindex' }]
-})
+  title: "メッセージ詳細 | 管理ダッシュボード",
+  meta: [{ name: "robots", content: "noindex" }],
+});
 </script>
 
 <style scoped>

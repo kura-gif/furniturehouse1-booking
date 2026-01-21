@@ -1,9 +1,9 @@
-import { getAuthAdmin } from '~/server/utils/firebase-admin'
-import { z } from 'zod'
+import { getAuthAdmin } from "~/server/utils/firebase-admin";
+import { z } from "zod";
 
 const checkEmailSchema = z.object({
-  email: z.string().email('有効なメールアドレスを入力してください')
-})
+  email: z.string().email("有効なメールアドレスを入力してください"),
+});
 
 /**
  * メールアドレスが既に登録されているかチェックするAPI
@@ -11,54 +11,55 @@ const checkEmailSchema = z.object({
  */
 export default defineEventHandler(async (event) => {
   try {
-    const body = await readBody(event)
+    const body = await readBody(event);
 
-    const result = checkEmailSchema.safeParse(body)
+    const result = checkEmailSchema.safeParse(body);
     if (!result.success) {
       throw createError({
         statusCode: 400,
-        message: result.error.issues[0]?.message || '無効なメールアドレスです'
-      })
+        message: result.error.issues[0]?.message || "無効なメールアドレスです",
+      });
     }
 
-    const { email } = result.data
+    const { email } = result.data;
 
-    const auth = getAuthAdmin()
+    const auth = getAuthAdmin();
 
     try {
       // Firebase Authでメールアドレスが登録されているかチェック
-      await auth.getUserByEmail(email)
+      await auth.getUserByEmail(email);
 
       // ユーザーが見つかった場合、既に登録済み
       return {
         exists: true,
-        message: 'このメールアドレスは既に登録されています。ログインしてください。'
-      }
+        message:
+          "このメールアドレスは既に登録されています。ログインしてください。",
+      };
     } catch (error: unknown) {
-      const firebaseError = error as { code?: string }
-      if (firebaseError.code === 'auth/user-not-found') {
+      const firebaseError = error as { code?: string };
+      if (firebaseError.code === "auth/user-not-found") {
         return {
           exists: false,
-          message: ''
-        }
+          message: "",
+        };
       }
 
       // その他のエラー
-      console.error('[API /auth/check-email] Error:', error)
+      console.error("[API /auth/check-email] Error:", error);
       throw createError({
         statusCode: 500,
-        message: 'メールアドレスの確認中にエラーが発生しました'
-      })
+        message: "メールアドレスの確認中にエラーが発生しました",
+      });
     }
   } catch (error: unknown) {
-    if (error && typeof error === 'object' && 'statusCode' in error) {
-      throw error
+    if (error && typeof error === "object" && "statusCode" in error) {
+      throw error;
     }
 
-    console.error('[API /auth/check-email] Unexpected error:', error)
+    console.error("[API /auth/check-email] Unexpected error:", error);
     throw createError({
       statusCode: 500,
-      message: 'サーバーエラーが発生しました'
-    })
+      message: "サーバーエラーが発生しました",
+    });
   }
-})
+});

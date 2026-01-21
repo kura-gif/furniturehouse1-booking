@@ -1,9 +1,24 @@
+import { DocumentData, Timestamp } from 'firebase-admin/firestore'
+
+/** Firestore Timestamp またはシリアライズされた形式 */
+type FirestoreDate = Timestamp | Date | { _seconds: number; _nanoseconds?: number } | null | undefined
+
+/** Timestamp型かどうかを判定するタイプガード */
+function isTimestamp(date: FirestoreDate): date is Timestamp {
+  return date !== null && date !== undefined && typeof (date as Timestamp).toDate === 'function'
+}
+
+/** シリアライズされたTimestampかどうかを判定するタイプガード */
+function isSerializedTimestamp(date: FirestoreDate): date is { _seconds: number; _nanoseconds?: number } {
+  return date !== null && date !== undefined && typeof (date as { _seconds: number })._seconds === 'number'
+}
+
 /**
  * テンプレート内の変数を置換
  */
 export function replaceTemplateVariables(
   template: string,
-  variables: Record<string, any>
+  variables: Record<string, string | number | boolean>
 ): string {
   return template.replace(/\{\{(\w+)\}\}/g, (match, key) => {
     return variables[key] !== undefined ? String(variables[key]) : match
@@ -13,7 +28,7 @@ export function replaceTemplateVariables(
 /**
  * 予約情報からテンプレート変数を生成
  */
-export function getTemplateVariables(booking: any): Record<string, string> {
+export function getTemplateVariables(booking: DocumentData): Record<string, string> {
   const checkInDate = formatDate(booking.checkInDate)
   const checkOutDate = formatDate(booking.checkOutDate)
   const daysUntilCheckIn = calculateDaysUntil(booking.checkInDate)
@@ -35,16 +50,16 @@ export function getTemplateVariables(booking: any): Record<string, string> {
 /**
  * Firestore Timestamp を日本語形式の日付文字列に変換
  */
-export function formatDate(date: any): string {
+export function formatDate(date: FirestoreDate): string {
   let jsDate: Date
 
   // Firestore Timestamp の場合
-  if (date && typeof date.toDate === 'function') {
+  if (isTimestamp(date)) {
     jsDate = date.toDate()
   } else if (date instanceof Date) {
     jsDate = date
-  } else if (date && date._seconds) {
-    // Firestore Timestampオブジェクト
+  } else if (isSerializedTimestamp(date)) {
+    // シリアライズされたTimestampオブジェクト
     jsDate = new Date(date._seconds * 1000)
   } else {
     return ''
@@ -62,15 +77,15 @@ export function formatDate(date: any): string {
 /**
  * チェックインまでの日数を計算
  */
-export function calculateDaysUntil(checkInDate: any): number {
+export function calculateDaysUntil(checkInDate: FirestoreDate): number {
   let jsDate: Date
 
   // Firestore Timestamp の場合
-  if (checkInDate && typeof checkInDate.toDate === 'function') {
+  if (isTimestamp(checkInDate)) {
     jsDate = checkInDate.toDate()
   } else if (checkInDate instanceof Date) {
     jsDate = checkInDate
-  } else if (checkInDate && checkInDate._seconds) {
+  } else if (isSerializedTimestamp(checkInDate)) {
     jsDate = new Date(checkInDate._seconds * 1000)
   } else {
     return 0

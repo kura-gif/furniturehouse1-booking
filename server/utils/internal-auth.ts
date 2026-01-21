@@ -3,11 +3,11 @@
  * 内部API呼び出しとCronジョブの認証を一元管理
  */
 
-import type { H3Event } from 'h3'
+import type { H3Event } from "h3";
 
 interface InternalAuthConfig {
-  internalApiSecret: string
-  cronSecret?: string
+  internalApiSecret: string;
+  cronSecret?: string;
 }
 
 /**
@@ -18,15 +18,15 @@ interface InternalAuthConfig {
  */
 export function requireInternalAuth(
   event: H3Event,
-  config: InternalAuthConfig
+  config: InternalAuthConfig,
 ): void {
-  const secret = getHeader(event, 'x-internal-secret')
+  const secret = getHeader(event, "x-internal-secret");
 
   if (!secret || secret !== config.internalApiSecret) {
     throw createError({
       statusCode: 401,
-      message: 'Unauthorized - Invalid internal secret',
-    })
+      message: "Unauthorized - Invalid internal secret",
+    });
   }
 }
 
@@ -38,31 +38,35 @@ export function requireInternalAuth(
  */
 export function requireInternalOrCronAuth(
   event: H3Event,
-  config: InternalAuthConfig
+  config: InternalAuthConfig,
 ): void {
   // 1. 内部API認証をチェック
-  const internalSecret = getHeader(event, 'x-internal-secret')
+  const internalSecret = getHeader(event, "x-internal-secret");
   if (internalSecret === config.internalApiSecret) {
-    return // 認証成功
+    return; // 認証成功
   }
 
   // 2. Vercel Cron認証をチェック
-  const vercelAuth = getHeader(event, 'authorization')
+  const vercelAuth = getHeader(event, "authorization");
   if (config.cronSecret && vercelAuth === `Bearer ${config.cronSecret}`) {
-    return // 認証成功
+    return; // 認証成功
   }
 
   // 3. カスタムCron secret認証をチェック
-  const cronSecret = getHeader(event, 'x-cron-secret')
-  if (cronSecret && (cronSecret === config.cronSecret || cronSecret === config.internalApiSecret)) {
-    return // 認証成功
+  const cronSecret = getHeader(event, "x-cron-secret");
+  if (
+    cronSecret &&
+    (cronSecret === config.cronSecret ||
+      cronSecret === config.internalApiSecret)
+  ) {
+    return; // 認証成功
   }
 
   // すべての認証に失敗
   throw createError({
     statusCode: 403,
-    message: 'このAPIは内部呼び出し専用です',
-  })
+    message: "このAPIは内部呼び出し専用です",
+  });
 }
 
 /**
@@ -70,12 +74,12 @@ export function requireInternalOrCronAuth(
  */
 export function isInternalRequest(
   event: H3Event,
-  config: InternalAuthConfig
+  config: InternalAuthConfig,
 ): boolean {
   try {
-    requireInternalAuth(event, config)
-    return true
+    requireInternalAuth(event, config);
+    return true;
   } catch {
-    return false
+    return false;
   }
 }

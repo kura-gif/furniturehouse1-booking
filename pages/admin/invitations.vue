@@ -13,7 +13,9 @@
           <span v-if="appUser" class="text-sm text-gray-600">
             {{ appUser.displayName }}さん
           </span>
-          <button @click="handleLogout" class="btn-secondary text-sm">ログアウト</button>
+          <button @click="handleLogout" class="btn-secondary text-sm">
+            ログアウト
+          </button>
         </div>
       </div>
     </header>
@@ -37,20 +39,22 @@
             />
           </div>
 
-          <div v-if="errorMessage" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+          <div
+            v-if="errorMessage"
+            class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg"
+          >
             {{ errorMessage }}
           </div>
 
-          <div v-if="successMessage" class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+          <div
+            v-if="successMessage"
+            class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg"
+          >
             {{ successMessage }}
           </div>
 
-          <button
-            type="submit"
-            :disabled="sending"
-            class="btn-primary w-full"
-          >
-            {{ sending ? '送信中...' : '招待を送信' }}
+          <button type="submit" :disabled="sending" class="btn-primary w-full">
+            {{ sending ? "送信中..." : "招待を送信" }}
           </button>
         </form>
       </div>
@@ -59,7 +63,10 @@
       <div class="card">
         <div class="flex items-center justify-between mb-6">
           <h2 class="text-xl font-bold">招待一覧</h2>
-          <button @click="loadInvitations" class="text-sm text-purple-600 hover:text-purple-800">
+          <button
+            @click="loadInvitations"
+            class="text-sm text-purple-600 hover:text-purple-800"
+          >
             🔄 更新
           </button>
         </div>
@@ -85,7 +92,7 @@
                   <span
                     :class="[
                       'px-2 py-1 rounded text-xs font-medium',
-                      getStatusClass(invitation.status)
+                      getStatusClass(invitation.status),
                     ]"
                   >
                     {{ getStatusLabel(invitation.status) }}
@@ -127,177 +134,200 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import type { AdminInvitation } from '~/types'
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { Timestamp } from "firebase/firestore";
+import type { AdminInvitation } from "~/types";
 
 definePageMeta({
-  middleware: 'admin'
-})
+  middleware: "admin",
+});
 
-const router = useRouter()
-const { user, appUser, logout } = useAuth()
+const router = useRouter();
+const { user, appUser, logout } = useAuth();
+const toast = useToast();
+const confirmDialog = useConfirmDialog();
 
-const invitationEmail = ref('')
-const sending = ref(false)
-const loading = ref(false)
-const errorMessage = ref('')
-const successMessage = ref('')
-const invitations = ref<AdminInvitation[]>([])
+const invitationEmail = ref("");
+const sending = ref(false);
+const loading = ref(false);
+const errorMessage = ref("");
+const successMessage = ref("");
+const invitations = ref<AdminInvitation[]>([]);
 
 const loadInvitations = async () => {
-  loading.value = true
-  errorMessage.value = ''
+  loading.value = true;
+  errorMessage.value = "";
 
   try {
-    const token = await user.value?.getIdToken()
-    const response = await fetch('/api/admin/invitations', {
+    const token = await user.value?.getIdToken();
+    const response = await fetch("/api/admin/invitations", {
       headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    })
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
     if (!response.ok) {
-      throw new Error('招待一覧の取得に失敗しました')
+      throw new Error("招待一覧の取得に失敗しました");
     }
 
-    const data = await response.json()
-    invitations.value = data.invitations
-  } catch (error: any) {
-    console.error('招待一覧取得エラー:', error)
-    errorMessage.value = error.message
+    const data = await response.json();
+    invitations.value = data.invitations;
+  } catch (error: unknown) {
+    console.error("招待一覧取得エラー:", error);
+    errorMessage.value =
+      error instanceof Error ? error.message : "招待一覧の取得に失敗しました";
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 const sendInvitation = async () => {
-  sending.value = true
-  errorMessage.value = ''
-  successMessage.value = ''
+  sending.value = true;
+  errorMessage.value = "";
+  successMessage.value = "";
 
   try {
-    const token = await user.value?.getIdToken()
-    const response = await fetch('/api/admin/invite', {
-      method: 'POST',
+    const token = await user.value?.getIdToken();
+    const response = await fetch("/api/admin/invite", {
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ email: invitationEmail.value })
-    })
+      body: JSON.stringify({ email: invitationEmail.value }),
+    });
 
-    const data = await response.json()
+    const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.message || '招待の送信に失敗しました')
+      throw new Error(data.message || "招待の送信に失敗しました");
     }
 
-    successMessage.value = `${invitationEmail.value} に招待を送信しました`
-    invitationEmail.value = ''
+    successMessage.value = `${invitationEmail.value} に招待を送信しました`;
+    invitationEmail.value = "";
 
     // 招待一覧を更新
-    await loadInvitations()
-  } catch (error: any) {
-    console.error('招待送信エラー:', error)
-    errorMessage.value = error.message
+    await loadInvitations();
+  } catch (error: unknown) {
+    console.error("招待送信エラー:", error);
+    errorMessage.value =
+      error instanceof Error ? error.message : "招待の送信に失敗しました";
   } finally {
-    sending.value = false
+    sending.value = false;
   }
-}
+};
 
 const resendInvitation = async (invitationId: string) => {
-  if (!confirm('この招待を再送信しますか？')) return
+  if (!(await confirmDialog.confirm("この招待を再送信しますか？"))) return;
 
   try {
-    const token = await user.value?.getIdToken()
-    const response = await fetch(`/api/admin/invitations/${invitationId}/resend`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    })
+    const token = await user.value?.getIdToken();
+    const response = await fetch(
+      `/api/admin/invitations/${invitationId}/resend`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
 
     if (!response.ok) {
-      throw new Error('再送信に失敗しました')
+      throw new Error("再送信に失敗しました");
     }
 
-    successMessage.value = '招待を再送信しました'
-    await loadInvitations()
-  } catch (error: any) {
-    console.error('再送信エラー:', error)
-    errorMessage.value = error.message
+    successMessage.value = "招待を再送信しました";
+    await loadInvitations();
+  } catch (error: unknown) {
+    console.error("再送信エラー:", error);
+    errorMessage.value =
+      error instanceof Error ? error.message : "再送信に失敗しました";
   }
-}
+};
 
 const revokeInvitation = async (invitationId: string) => {
-  if (!confirm('この招待を取り消しますか？')) return
+  if (
+    !(await confirmDialog.confirm({
+      title: "確認",
+      message: "この招待を取り消しますか？",
+      type: "danger",
+    }))
+  )
+    return;
 
   try {
-    const token = await user.value?.getIdToken()
-    const response = await fetch(`/api/admin/invitations/${invitationId}/revoke`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    })
+    const token = await user.value?.getIdToken();
+    const response = await fetch(
+      `/api/admin/invitations/${invitationId}/revoke`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
 
     if (!response.ok) {
-      throw new Error('取り消しに失敗しました')
+      throw new Error("取り消しに失敗しました");
     }
 
-    successMessage.value = '招待を取り消しました'
-    await loadInvitations()
-  } catch (error: any) {
-    console.error('取り消しエラー:', error)
-    errorMessage.value = error.message
+    successMessage.value = "招待を取り消しました";
+    await loadInvitations();
+  } catch (error: unknown) {
+    console.error("取り消しエラー:", error);
+    errorMessage.value =
+      error instanceof Error ? error.message : "取り消しに失敗しました";
   }
-}
+};
 
 const getStatusClass = (status: string) => {
   switch (status) {
-    case 'pending':
-      return 'bg-yellow-100 text-yellow-800'
-    case 'accepted':
-      return 'bg-green-100 text-green-800'
-    case 'expired':
-      return 'bg-gray-100 text-gray-800'
+    case "pending":
+      return "bg-yellow-100 text-yellow-800";
+    case "accepted":
+      return "bg-green-100 text-green-800";
+    case "expired":
+      return "bg-gray-100 text-gray-800";
     default:
-      return 'bg-gray-100 text-gray-800'
+      return "bg-gray-100 text-gray-800";
   }
-}
+};
 
 const getStatusLabel = (status: string) => {
   switch (status) {
-    case 'pending':
-      return '保留中'
-    case 'accepted':
-      return '承認済み'
-    case 'expired':
-      return '期限切れ'
+    case "pending":
+      return "保留中";
+    case "accepted":
+      return "承認済み";
+    case "expired":
+      return "期限切れ";
     default:
-      return status
+      return status;
   }
-}
+};
 
-const formatDate = (timestamp: any) => {
-  if (!timestamp) return ''
-  const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp)
-  return date.toLocaleDateString('ja-JP', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
+const formatDate = (
+  timestamp: Timestamp | Date | string | null | undefined,
+) => {
+  if (!timestamp) return "";
+  const date =
+    timestamp instanceof Timestamp ? timestamp.toDate() : new Date(timestamp);
+  return date.toLocaleDateString("ja-JP", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
 
 const handleLogout = async () => {
-  await logout()
-  router.push('/admin/login')
-}
+  await logout();
+  router.push("/admin/login");
+};
 
 onMounted(() => {
-  loadInvitations()
-})
+  loadInvitations();
+});
 </script>

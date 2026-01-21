@@ -1,5 +1,5 @@
-import nodemailer from 'nodemailer'
-import { getFacilitySettings } from '~/server/utils/facility-settings'
+import nodemailer from "nodemailer";
+import { getFacilitySettings } from "~/server/utils/facility-settings";
 
 /**
  * チェックイン前リマインダーメール送信API
@@ -8,20 +8,20 @@ import { getFacilitySettings } from '~/server/utils/facility-settings'
  * ⚠️ セキュリティ: このAPIは内部呼び出し専用です
  */
 export default defineEventHandler(async (event) => {
-  const config = useRuntimeConfig()
+  const config = useRuntimeConfig();
 
   // 内部呼び出し認証チェック
-  const authHeader = getHeader(event, 'x-internal-secret')
-  const internalSecret = config.internalApiSecret
+  const authHeader = getHeader(event, "x-internal-secret");
+  const internalSecret = config.internalApiSecret;
 
   if (!authHeader || authHeader !== internalSecret) {
     throw createError({
       statusCode: 403,
-      statusMessage: 'このAPIは内部呼び出し専用です'
-    })
+      statusMessage: "このAPIは内部呼び出し専用です",
+    });
   }
 
-  const body = await readBody(event)
+  const body = await readBody(event);
   const {
     to,
     bookingReference,
@@ -30,11 +30,11 @@ export default defineEventHandler(async (event) => {
     checkInDate,
     checkOutDate,
     guestCount,
-    daysUntilCheckIn
-  } = body
+    daysUntilCheckIn,
+  } = body;
 
   // 施設設定を取得
-  const facilitySettings = await getFacilitySettings() as {
+  const facilitySettings = (await getFacilitySettings()) as {
     checkInTime: string;
     checkOutTime: string;
     maxGuests: number;
@@ -42,40 +42,46 @@ export default defineEventHandler(async (event) => {
     wifiPassword?: string;
     parkingInfo?: string;
     ownerPhone?: string;
-  }
+  };
 
   // メール送信設定（Gmail）
   const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    service: "gmail",
     auth: {
-      user: config.emailUser || process.env.EMAIL_USER || '',
-      pass: config.emailPassword || process.env.EMAIL_PASSWORD || ''
-    }
-  })
+      user: config.emailUser || process.env.EMAIL_USER || "",
+      pass: config.emailPassword || process.env.EMAIL_PASSWORD || "",
+    },
+  });
 
   // 送信元はグループメール（furniturehouse1@）を表示
-  const fromEmail = config.emailFrom || config.emailReplyTo || config.emailUser || 'noreply@furniturehouse1.com'
-  const replyToEmail = config.emailReplyTo || config.emailFrom || config.emailUser
-  const siteUrl = config.public.siteUrl || 'http://localhost:3000'
-  const viewUrl = `${siteUrl}/booking/view?token=${bookingToken}`
+  const fromEmail =
+    config.emailFrom ||
+    config.emailReplyTo ||
+    config.emailUser ||
+    "noreply@furniturehouse1.com";
+  const replyToEmail =
+    config.emailReplyTo || config.emailFrom || config.emailUser;
+  const siteUrl = config.public.siteUrl || "http://localhost:3000";
+  const viewUrl = `${siteUrl}/booking/view?token=${bookingToken}`;
 
   // 日数に応じたメッセージ
-  let timingMessage = ''
+  let timingMessage = "";
   if (daysUntilCheckIn === 0) {
-    timingMessage = '本日がチェックイン日です！'
+    timingMessage = "本日がチェックイン日です！";
   } else if (daysUntilCheckIn === 1) {
-    timingMessage = 'いよいよ明日がチェックイン日です！'
+    timingMessage = "いよいよ明日がチェックイン日です！";
   } else {
-    timingMessage = `チェックインまであと${daysUntilCheckIn}日となりました。`
+    timingMessage = `チェックインまであと${daysUntilCheckIn}日となりました。`;
   }
 
   const mailOptions = {
     from: `"家具の家 No.1" <${fromEmail}>`,
     to,
     replyTo: replyToEmail,
-    subject: daysUntilCheckIn === 0
-      ? `【本日チェックイン】ご宿泊のご案内 - ${bookingReference}`
-      : `【リマインダー】ご宿泊まであと${daysUntilCheckIn}日 - ${bookingReference}`,
+    subject:
+      daysUntilCheckIn === 0
+        ? `【本日チェックイン】ご宿泊のご案内 - ${bookingReference}`
+        : `【リマインダー】ご宿泊まであと${daysUntilCheckIn}日 - ${bookingReference}`,
     html: `
       <!DOCTYPE html>
       <html>
@@ -160,7 +166,7 @@ export default defineEventHandler(async (event) => {
       </head>
       <body>
         <div class="header">
-          <div style="font-size: 40px; margin-bottom: 10px;">${daysUntilCheckIn === 0 ? '🏠' : '📅'}</div>
+          <div style="font-size: 40px; margin-bottom: 10px;">${daysUntilCheckIn === 0 ? "🏠" : "📅"}</div>
           <h1 style="margin: 0;">${timingMessage}</h1>
         </div>
 
@@ -178,11 +184,11 @@ export default defineEventHandler(async (event) => {
             </div>
             <div class="info-row">
               <span class="label">チェックイン</span>
-              <span class="value"><strong>${checkInDate}</strong> ${facilitySettings.checkInTime || '14:00'}以降</span>
+              <span class="value"><strong>${checkInDate}</strong> ${facilitySettings.checkInTime || "14:00"}以降</span>
             </div>
             <div class="info-row">
               <span class="label">チェックアウト</span>
-              <span class="value">${checkOutDate} ${facilitySettings.checkOutTime || '11:00'}まで</span>
+              <span class="value">${checkOutDate} ${facilitySettings.checkOutTime || "11:00"}まで</span>
             </div>
             <div class="info-row">
               <span class="label">宿泊人数</span>
@@ -193,15 +199,15 @@ export default defineEventHandler(async (event) => {
           <div class="checkin-box">
             <h4 style="margin-top: 0; color: #065f46;">🔑 チェックイン方法</h4>
             <p style="margin: 0;">
-              ${facilitySettings.keyInfo || 'チェックイン方法の詳細は予約詳細ページでご確認ください。'}
+              ${facilitySettings.keyInfo || "チェックイン方法の詳細は予約詳細ページでご確認ください。"}
             </p>
           </div>
 
           <div class="facility-box">
             <h4 style="margin-top: 0; color: #0369a1;">📍 施設情報</h4>
             <ul style="margin: 0; padding-left: 20px;">
-              ${facilitySettings.wifiPassword ? `<li>Wi-Fiパスワード: <strong>${facilitySettings.wifiPassword}</strong></li>` : ''}
-              ${facilitySettings.parkingInfo ? `<li>駐車場: ${facilitySettings.parkingInfo}</li>` : ''}
+              ${facilitySettings.wifiPassword ? `<li>Wi-Fiパスワード: <strong>${facilitySettings.wifiPassword}</strong></li>` : ""}
+              ${facilitySettings.parkingInfo ? `<li>駐車場: ${facilitySettings.parkingInfo}</li>` : ""}
               <li>最大収容人数: ${facilitySettings.maxGuests || 6}名</li>
             </ul>
           </div>
@@ -222,23 +228,23 @@ export default defineEventHandler(async (event) => {
         </div>
       </body>
       </html>
-    `
-  }
+    `,
+  };
 
   try {
-    const info = await transporter.sendMail(mailOptions)
-    console.log('✅ Check-in reminder email sent to:', to)
+    const info = await transporter.sendMail(mailOptions);
+    console.log("✅ Check-in reminder email sent to:", to);
 
     return {
       success: true,
-      messageId: info.messageId
-    }
+      messageId: info.messageId,
+    };
   } catch (error: unknown) {
-    console.error('❌ Check-in reminder email error:', error)
+    console.error("❌ Check-in reminder email error:", error);
     throw createError({
       statusCode: 500,
-      statusMessage: 'リマインダーメールの送信に失敗しました',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    })
+      statusMessage: "リマインダーメールの送信に失敗しました",
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
   }
-})
+});

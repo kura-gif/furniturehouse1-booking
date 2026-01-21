@@ -1,28 +1,41 @@
-import nodemailer from 'nodemailer'
+import nodemailer from "nodemailer";
 
 /**
  * サポーターへのタスク割り当て通知メール送信API
  */
 export default defineEventHandler(async (event) => {
-  const config = useRuntimeConfig()
+  const config = useRuntimeConfig();
 
-  const body = await readBody(event)
-  const { to, supporterName, taskType, scheduledDate, bookingReference, estimatedDuration } = body
+  const body = await readBody(event);
+  const {
+    to,
+    supporterName,
+    taskType,
+    scheduledDate,
+    bookingReference,
+    estimatedDuration,
+  } = body;
 
   // メール送信設定（Gmail）
   const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    service: "gmail",
     auth: {
-      user: config.emailUser || process.env.EMAIL_USER || '',
-      pass: config.emailPassword || process.env.EMAIL_PASSWORD || ''
-    }
-  })
+      user: config.emailUser || process.env.EMAIL_USER || "",
+      pass: config.emailPassword || process.env.EMAIL_PASSWORD || "",
+    },
+  });
 
   // 送信元はグループメール（furniturehouse1@）を表示
-  const fromEmail = config.emailFrom || config.emailReplyTo || config.emailUser || 'noreply@furniturehouse1.com'
-  const replyToEmail = config.emailReplyTo || config.emailFrom || config.emailUser
+  const fromEmail =
+    config.emailFrom ||
+    config.emailReplyTo ||
+    config.emailUser ||
+    "noreply@furniturehouse1.com";
+  const replyToEmail =
+    config.emailReplyTo || config.emailFrom || config.emailUser;
 
-  const taskTypeLabel = taskType === 'pre_checkin' ? 'チェックイン前清掃' : 'チェックアウト後清掃'
+  const taskTypeLabel =
+    taskType === "pre_checkin" ? "チェックイン前清掃" : "チェックアウト後清掃";
 
   const mailOptions = {
     from: `"家具の家 No.1" <${fromEmail}>`,
@@ -130,7 +143,7 @@ export default defineEventHandler(async (event) => {
           </div>
 
           <div style="text-align: center;">
-            <a href="${config.public.siteUrl || 'http://localhost:3000'}/supporter"
+            <a href="${config.public.siteUrl || "http://localhost:3000"}/supporter"
                class="button">
               ダッシュボードで確認
             </a>
@@ -148,22 +161,22 @@ export default defineEventHandler(async (event) => {
         </div>
       </body>
       </html>
-    `
-  }
+    `,
+  };
 
   try {
-    const info = await transporter.sendMail(mailOptions)
+    const info = await transporter.sendMail(mailOptions);
 
     return {
       success: true,
-      messageId: info.messageId
-    }
+      messageId: info.messageId,
+    };
   } catch (error: unknown) {
-    console.error('タスク割り当てメール送信エラー:', error)
+    console.error("タスク割り当てメール送信エラー:", error);
     throw createError({
       statusCode: 500,
-      statusMessage: 'メール送信に失敗しました',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    })
+      statusMessage: "メール送信に失敗しました",
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
   }
-})
+});

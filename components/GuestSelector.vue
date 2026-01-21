@@ -6,118 +6,227 @@
         <p class="font-medium text-gray-900">大人</p>
         <p class="text-sm text-gray-500">16歳以上</p>
       </div>
-      <div class="flex items-center gap-3" role="group" aria-labelledby="adults-label">
+      <div
+        class="flex items-center gap-3"
+        role="group"
+        aria-labelledby="adults-label"
+      >
         <button
           @click="decrementAdults"
           :disabled="adults <= 1"
           :aria-disabled="adults <= 1"
           aria-label="大人の人数を減らす"
           class="w-8 h-8 rounded-full border-2 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
-          :class="adults <= 1
-            ? 'border-gray-200 text-gray-300 cursor-not-allowed'
-            : 'border-gray-300 text-gray-700 hover:border-gray-400'"
+          :class="
+            adults <= 1
+              ? 'border-gray-200 text-gray-300 cursor-not-allowed'
+              : 'border-gray-300 text-gray-700 hover:border-gray-400'
+          "
           type="button"
         >
-          <svg class="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+          <svg
+            class="w-4 h-4 mx-auto"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M20 12H4"
+            />
           </svg>
         </button>
-        <span class="w-8 text-center font-medium text-gray-900" aria-live="polite" aria-atomic="true">{{ adults }}</span>
+        <span
+          class="w-8 text-center font-medium text-gray-900"
+          aria-live="polite"
+          aria-atomic="true"
+          >{{ adults }}</span
+        >
         <button
           @click="incrementAdults"
           :disabled="totalGuests >= maxGuests"
           :aria-disabled="totalGuests >= maxGuests"
           aria-label="大人の人数を増やす"
           class="w-8 h-8 rounded-full border-2 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
-          :class="totalGuests >= maxGuests
-            ? 'border-gray-200 text-gray-300 cursor-not-allowed'
-            : 'border-gray-300 text-gray-700 hover:border-gray-400'"
+          :class="
+            totalGuests >= maxGuests
+              ? 'border-gray-200 text-gray-300 cursor-not-allowed'
+              : 'border-gray-300 text-gray-700 hover:border-gray-400'
+          "
           type="button"
         >
-          <svg class="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          <svg
+            class="w-4 h-4 mx-auto"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 4v16m8-8H4"
+            />
           </svg>
         </button>
       </div>
     </div>
 
     <!-- 子ども（7〜15歳） -->
-    <div class="flex items-center justify-between py-3 border-t border-gray-200">
+    <div
+      class="flex items-center justify-between py-3 border-t border-gray-200"
+    >
       <div id="children-label">
         <p class="font-medium text-gray-900">子ども</p>
         <p class="text-sm text-gray-500">7〜15歳（大人料金の50%）</p>
       </div>
-      <div class="flex items-center gap-3" role="group" aria-labelledby="children-label">
+      <div
+        class="flex items-center gap-3"
+        role="group"
+        aria-labelledby="children-label"
+      >
         <button
           @click="decrementChildren"
           :disabled="children <= 0"
           :aria-disabled="children <= 0"
           aria-label="子どもの人数を減らす"
           class="w-8 h-8 rounded-full border-2 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
-          :class="children <= 0
-            ? 'border-gray-200 text-gray-300 cursor-not-allowed'
-            : 'border-gray-300 text-gray-700 hover:border-gray-400'"
+          :class="
+            children <= 0
+              ? 'border-gray-200 text-gray-300 cursor-not-allowed'
+              : 'border-gray-300 text-gray-700 hover:border-gray-400'
+          "
           type="button"
         >
-          <svg class="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+          <svg
+            class="w-4 h-4 mx-auto"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M20 12H4"
+            />
           </svg>
         </button>
-        <span class="w-8 text-center font-medium text-gray-900" aria-live="polite" aria-atomic="true">{{ children }}</span>
+        <span
+          class="w-8 text-center font-medium text-gray-900"
+          aria-live="polite"
+          aria-atomic="true"
+          >{{ children }}</span
+        >
         <button
           @click="incrementChildren"
           :disabled="totalGuests >= maxGuests"
           :aria-disabled="totalGuests >= maxGuests"
           aria-label="子どもの人数を増やす"
           class="w-8 h-8 rounded-full border-2 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
-          :class="totalGuests >= maxGuests
-            ? 'border-gray-200 text-gray-300 cursor-not-allowed'
-            : 'border-gray-300 text-gray-700 hover:border-gray-400'"
+          :class="
+            totalGuests >= maxGuests
+              ? 'border-gray-200 text-gray-300 cursor-not-allowed'
+              : 'border-gray-300 text-gray-700 hover:border-gray-400'
+          "
           type="button"
         >
-          <svg class="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          <svg
+            class="w-4 h-4 mx-auto"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 4v16m8-8H4"
+            />
           </svg>
         </button>
       </div>
     </div>
 
     <!-- 乳幼児（0〜6歳） -->
-    <div class="flex items-center justify-between py-3 border-t border-gray-200">
+    <div
+      class="flex items-center justify-between py-3 border-t border-gray-200"
+    >
       <div id="infants-label">
         <p class="font-medium text-gray-900">乳幼児</p>
         <p class="text-sm text-gray-500">0〜6歳（無料）</p>
       </div>
-      <div class="flex items-center gap-3" role="group" aria-labelledby="infants-label">
+      <div
+        class="flex items-center gap-3"
+        role="group"
+        aria-labelledby="infants-label"
+      >
         <button
           @click="decrementInfants"
           :disabled="infants <= 0"
           :aria-disabled="infants <= 0"
           aria-label="乳幼児の人数を減らす"
           class="w-8 h-8 rounded-full border-2 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
-          :class="infants <= 0
-            ? 'border-gray-200 text-gray-300 cursor-not-allowed'
-            : 'border-gray-300 text-gray-700 hover:border-gray-400'"
+          :class="
+            infants <= 0
+              ? 'border-gray-200 text-gray-300 cursor-not-allowed'
+              : 'border-gray-300 text-gray-700 hover:border-gray-400'
+          "
           type="button"
         >
-          <svg class="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+          <svg
+            class="w-4 h-4 mx-auto"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M20 12H4"
+            />
           </svg>
         </button>
-        <span class="w-8 text-center font-medium text-gray-900" aria-live="polite" aria-atomic="true">{{ infants }}</span>
+        <span
+          class="w-8 text-center font-medium text-gray-900"
+          aria-live="polite"
+          aria-atomic="true"
+          >{{ infants }}</span
+        >
         <button
           @click="incrementInfants"
           :disabled="totalGuests >= maxGuests"
           :aria-disabled="totalGuests >= maxGuests"
           aria-label="乳幼児の人数を増やす"
           class="w-8 h-8 rounded-full border-2 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
-          :class="totalGuests >= maxGuests
-            ? 'border-gray-200 text-gray-300 cursor-not-allowed'
-            : 'border-gray-300 text-gray-700 hover:border-gray-400'"
+          :class="
+            totalGuests >= maxGuests
+              ? 'border-gray-200 text-gray-300 cursor-not-allowed'
+              : 'border-gray-300 text-gray-700 hover:border-gray-400'
+          "
           type="button"
         >
-          <svg class="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          <svg
+            class="w-4 h-4 mx-auto"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 4v16m8-8H4"
+            />
           </svg>
         </button>
       </div>
@@ -137,69 +246,79 @@
 </template>
 
 <script setup lang="ts">
-const props = withDefaults(defineProps<{
-  modelValue: { adults: number; children: number; infants: number }
-  maxGuests?: number
-  showTotal?: boolean
-}>(), {
-  maxGuests: 4,
-  showTotal: true
-})
+const props = withDefaults(
+  defineProps<{
+    modelValue: { adults: number; children: number; infants: number };
+    maxGuests?: number;
+    showTotal?: boolean;
+  }>(),
+  {
+    maxGuests: 4,
+    showTotal: true,
+  },
+);
 
 const emit = defineEmits<{
-  'update:modelValue': [value: { adults: number; children: number; infants: number }]
-}>()
+  "update:modelValue": [
+    value: { adults: number; children: number; infants: number },
+  ];
+}>();
 
 const adults = computed({
   get: () => props.modelValue.adults,
-  set: (value) => emit('update:modelValue', { ...props.modelValue, adults: value })
-})
+  set: (value) =>
+    emit("update:modelValue", { ...props.modelValue, adults: value }),
+});
 
 const children = computed({
   get: () => props.modelValue.children,
-  set: (value) => emit('update:modelValue', { ...props.modelValue, children: value })
-})
+  set: (value) =>
+    emit("update:modelValue", { ...props.modelValue, children: value }),
+});
 
 const infants = computed({
   get: () => props.modelValue.infants || 0,
-  set: (value) => emit('update:modelValue', { ...props.modelValue, infants: value })
-})
+  set: (value) =>
+    emit("update:modelValue", { ...props.modelValue, infants: value }),
+});
 
-const totalGuests = computed(() => adults.value + children.value + infants.value)
+const totalGuests = computed(
+  () => adults.value + children.value + infants.value,
+);
 
 const incrementAdults = () => {
   if (totalGuests.value < props.maxGuests) {
-    adults.value++
+    adults.value++;
   }
-}
+};
 
 const decrementAdults = () => {
   if (adults.value > 1) {
-    adults.value--
+    adults.value--;
   }
-}
+};
 
 const incrementChildren = () => {
   if (totalGuests.value < props.maxGuests) {
-    children.value++
+    children.value++;
   }
-}
+};
 
 const decrementChildren = () => {
   if (children.value > 0) {
-    children.value--
+    children.value--;
   }
-}
+};
 
 const incrementInfants = () => {
   if (totalGuests.value < props.maxGuests) {
-    infants.value++
+    infants.value++;
   }
-}
+};
 
 const decrementInfants = () => {
   if (infants.value > 0) {
-    infants.value--
+    infants.value--;
   }
-}
+};
 </script>

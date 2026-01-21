@@ -5,31 +5,34 @@
  * ⚠️ 本番環境では無効化
  */
 
-import Stripe from 'stripe'
-import { calculateBookingAmount, DEFAULT_PRICING } from '~/server/utils/pricing'
+import Stripe from "stripe";
+import {
+  calculateBookingAmount,
+  DEFAULT_PRICING,
+} from "~/server/utils/pricing";
 
 export default defineEventHandler(async (event) => {
   // 本番環境では無効化
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === "production") {
     throw createError({
       statusCode: 404,
-      message: 'Not Found'
-    })
+      message: "Not Found",
+    });
   }
 
-  const config = useRuntimeConfig()
-  const stripe = new Stripe(config.stripeSecretKey)
+  const config = useRuntimeConfig();
+  const stripe = new Stripe(config.stripeSecretKey);
 
   try {
-    const body = await readBody(event)
-    const { checkInDate, checkOutDate, guestCount, couponDiscount = 0 } = body
+    const body = await readBody(event);
+    const { checkInDate, checkOutDate, guestCount, couponDiscount = 0 } = body;
 
     // 入力検証
     if (!checkInDate || !checkOutDate || !guestCount) {
       throw createError({
         statusCode: 400,
-        message: 'checkInDate, checkOutDate, guestCount are required',
-      })
+        message: "checkInDate, checkOutDate, guestCount are required",
+      });
     }
 
     // サーバーサイドで金額を計算
@@ -38,15 +41,15 @@ export default defineEventHandler(async (event) => {
       new Date(checkOutDate),
       guestCount,
       DEFAULT_PRICING,
-      couponDiscount
-    )
+      couponDiscount,
+    );
 
-    console.log('💰 Calculated amount:', calculatedAmount)
+    console.log("💰 Calculated amount:", calculatedAmount);
 
     // Payment Intentを作成
     const paymentIntent = await stripe.paymentIntents.create({
       amount: calculatedAmount,
-      currency: 'jpy',
+      currency: "jpy",
       automatic_payment_methods: {
         enabled: true,
       },
@@ -55,32 +58,35 @@ export default defineEventHandler(async (event) => {
         checkOutDate,
         guestCount: guestCount.toString(),
         calculatedAmount: calculatedAmount.toString(),
-        test: 'true',
+        test: "true",
       },
-    })
+    });
 
-    console.log('✅ Payment Intent created:', paymentIntent.id)
+    console.log("✅ Payment Intent created:", paymentIntent.id);
 
     return {
       clientSecret: paymentIntent.client_secret,
       paymentIntentId: paymentIntent.id,
       amount: calculatedAmount,
       breakdown: {
-        baseAmount: calculatedAmount + couponDiscount - DEFAULT_PRICING.cleaningFee,
+        baseAmount:
+          calculatedAmount + couponDiscount - DEFAULT_PRICING.cleaningFee,
         cleaningFee: DEFAULT_PRICING.cleaningFee,
         couponDiscount,
         total: calculatedAmount,
       },
-    }
+    };
   } catch (error: unknown) {
-    console.error('❌ Payment Intent creation error:', error)
+    console.error("❌ Payment Intent creation error:", error);
 
-    const statusCode = error && typeof error === 'object' && 'statusCode' in error
-      ? (error as { statusCode: number }).statusCode
-      : 500
+    const statusCode =
+      error && typeof error === "object" && "statusCode" in error
+        ? (error as { statusCode: number }).statusCode
+        : 500;
     throw createError({
       statusCode,
-      message: error instanceof Error ? error.message : '決済の準備に失敗しました',
-    })
+      message:
+        error instanceof Error ? error.message : "決済の準備に失敗しました",
+    });
   }
-})
+});

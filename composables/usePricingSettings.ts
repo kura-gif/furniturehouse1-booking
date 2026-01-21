@@ -1,21 +1,21 @@
-import { ref } from 'vue'
-import type { DetailedPricingSetting } from '~/types'
-import { createDemoPricingSetting } from './usePricing'
+import { ref } from "vue";
+import type { DetailedPricingSetting } from "~/types";
+import { createDemoPricingSetting } from "./usePricing";
 
 /**
  * 料金設定の管理用Composable
  */
 export const usePricingSettings = () => {
-  const pricingSettings = ref<DetailedPricingSetting | null>(null)
-  const isLoading = ref(false)
-  const error = ref<string | null>(null)
+  const pricingSettings = ref<DetailedPricingSetting | null>(null);
+  const isLoading = ref(false);
+  const error = ref<string | null>(null);
 
   /**
    * Firestoreから料金設定を読み込む
    */
   async function loadPricingSettings(): Promise<void> {
-    isLoading.value = true
-    error.value = null
+    isLoading.value = true;
+    error.value = null;
 
     try {
       // TODO: Firestoreから読み込む実装
@@ -31,28 +31,30 @@ export const usePricingSettings = () => {
       // }
 
       // デモ用: ローカルストレージから読み込み
-      const stored = localStorage.getItem('pricingSettings')
+      const stored = localStorage.getItem("pricingSettings");
       if (stored) {
-        pricingSettings.value = JSON.parse(stored)
+        pricingSettings.value = JSON.parse(stored);
       } else {
-        pricingSettings.value = createDemoPricingSetting()
+        pricingSettings.value = createDemoPricingSetting();
       }
     } catch (e) {
-      console.error('料金設定の読み込みエラー:', e)
-      error.value = '料金設定の読み込みに失敗しました'
+      console.error("料金設定の読み込みエラー:", e);
+      error.value = "料金設定の読み込みに失敗しました";
       // エラー時はデフォルト設定を使用
-      pricingSettings.value = createDemoPricingSetting()
+      pricingSettings.value = createDemoPricingSetting();
     } finally {
-      isLoading.value = false
+      isLoading.value = false;
     }
   }
 
   /**
    * Firestoreに料金設定を保存する
    */
-  async function savePricingSettings(settings: DetailedPricingSetting): Promise<void> {
-    isLoading.value = true
-    error.value = null
+  async function savePricingSettings(
+    settings: DetailedPricingSetting,
+  ): Promise<void> {
+    isLoading.value = true;
+    error.value = null;
 
     try {
       // TODO: Firestoreに保存する実装
@@ -64,14 +66,14 @@ export const usePricingSettings = () => {
       // })
 
       // デモ用: ローカルストレージに保存
-      localStorage.setItem('pricingSettings', JSON.stringify(settings))
-      pricingSettings.value = settings
+      localStorage.setItem("pricingSettings", JSON.stringify(settings));
+      pricingSettings.value = settings;
     } catch (e) {
-      console.error('料金設定の保存エラー:', e)
-      error.value = '料金設定の保存に失敗しました'
-      throw e
+      console.error("料金設定の保存エラー:", e);
+      error.value = "料金設定の保存に失敗しました";
+      throw e;
     } finally {
-      isLoading.value = false
+      isLoading.value = false;
     }
   }
 
@@ -79,8 +81,8 @@ export const usePricingSettings = () => {
    * デフォルト設定にリセット
    */
   async function resetToDefault(): Promise<void> {
-    const defaultSettings = createDemoPricingSetting()
-    await savePricingSettings(defaultSettings)
+    const defaultSettings = createDemoPricingSetting();
+    await savePricingSettings(defaultSettings);
   }
 
   return {
@@ -89,6 +91,6 @@ export const usePricingSettings = () => {
     error,
     loadPricingSettings,
     savePricingSettings,
-    resetToDefault
-  }
-}
+    resetToDefault,
+  };
+};

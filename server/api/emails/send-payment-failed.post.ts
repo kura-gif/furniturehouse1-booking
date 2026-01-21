@@ -3,22 +3,22 @@
  * ゲストにカード決済が失敗したことを通知し、再試行を促す
  */
 
-import nodemailer from 'nodemailer'
+import nodemailer from "nodemailer";
 
 export default defineEventHandler(async (event) => {
-  const config = useRuntimeConfig()
+  const config = useRuntimeConfig();
 
   // 内部呼び出し認証
-  const internalSecret = getHeader(event, 'x-internal-secret')
+  const internalSecret = getHeader(event, "x-internal-secret");
   if (internalSecret !== config.internalApiSecret) {
     throw createError({
       statusCode: 401,
-      message: 'Unauthorized',
-    })
+      message: "Unauthorized",
+    });
   }
 
   try {
-    const body = await readBody(event)
+    const body = await readBody(event);
     const {
       to,
       bookingReference,
@@ -27,36 +27,38 @@ export default defineEventHandler(async (event) => {
       checkOutDate,
       totalAmount,
       errorMessage,
-      retryUrl
-    } = body
+      retryUrl,
+    } = body;
 
     if (!to || !bookingReference || !guestName) {
       throw createError({
         statusCode: 400,
-        message: '必須パラメータが不足しています',
-      })
+        message: "必須パラメータが不足しています",
+      });
     }
 
     // メール送信設定
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
+      service: "gmail",
       auth: {
         user: config.emailUser,
         pass: config.emailPassword,
       },
-    })
+    });
 
-    const siteUrl = config.public.siteUrl || 'http://localhost:3000'
-    const bookingUrl = retryUrl || `${siteUrl}/booking`
+    const siteUrl = config.public.siteUrl || "http://localhost:3000";
+    const bookingUrl = retryUrl || `${siteUrl}/booking`;
 
     // 送信元はグループメール（furniturehouse1@）を表示
-    const fromEmail = config.emailFrom || config.emailReplyTo || config.emailUser
-    const replyToEmail = config.emailReplyTo || config.emailFrom || config.emailUser
+    const fromEmail =
+      config.emailFrom || config.emailReplyTo || config.emailUser;
+    const replyToEmail =
+      config.emailReplyTo || config.emailFrom || config.emailUser;
 
     // 金額フォーマット
     const formattedAmount = totalAmount
       ? `¥${totalAmount.toLocaleString()}`
-      : '確認中'
+      : "確認中";
 
     const htmlContent = `
 <!DOCTYPE html>
@@ -101,18 +103,26 @@ export default defineEventHandler(async (event) => {
                         <td style="color: #666; font-size: 14px; width: 120px;">予約番号</td>
                         <td style="color: #333; font-size: 14px; font-weight: 600;">${bookingReference}</td>
                       </tr>
-                      ${checkInDate ? `
+                      ${
+                        checkInDate
+                          ? `
                       <tr>
                         <td style="color: #666; font-size: 14px;">チェックイン</td>
                         <td style="color: #333; font-size: 14px;">${checkInDate}</td>
                       </tr>
-                      ` : ''}
-                      ${checkOutDate ? `
+                      `
+                          : ""
+                      }
+                      ${
+                        checkOutDate
+                          ? `
                       <tr>
                         <td style="color: #666; font-size: 14px;">チェックアウト</td>
                         <td style="color: #333; font-size: 14px;">${checkOutDate}</td>
                       </tr>
-                      ` : ''}
+                      `
+                          : ""
+                      }
                       <tr>
                         <td style="color: #666; font-size: 14px;">ご利用金額</td>
                         <td style="color: #333; font-size: 14px; font-weight: 600;">${formattedAmount}</td>
@@ -128,7 +138,7 @@ export default defineEventHandler(async (event) => {
                   エラー内容
                 </p>
                 <p style="margin: 0; color: #7f1d1d; font-size: 14px; line-height: 1.8;">
-                  ${errorMessage || 'カード決済処理中にエラーが発生しました。'}
+                  ${errorMessage || "カード決済処理中にエラーが発生しました。"}
                 </p>
               </div>
 
@@ -184,7 +194,7 @@ export default defineEventHandler(async (event) => {
   </table>
 </body>
 </html>
-`
+`;
 
     await transporter.sendMail({
       from: `"家具の家 No.1" <${fromEmail}>`,
@@ -192,16 +202,17 @@ export default defineEventHandler(async (event) => {
       replyTo: replyToEmail,
       subject: `【重要】お支払いエラーのお知らせ - ${bookingReference}`,
       html: htmlContent,
-    })
+    });
 
-    console.log('✅ Payment failed email sent to:', to)
+    console.log("✅ Payment failed email sent to:", to);
 
-    return { success: true }
+    return { success: true };
   } catch (error: unknown) {
-    console.error('❌ Failed to send payment failed email:', error)
+    console.error("❌ Failed to send payment failed email:", error);
     throw createError({
       statusCode: 500,
-      message: error instanceof Error ? error.message : 'メール送信に失敗しました',
-    })
+      message:
+        error instanceof Error ? error.message : "メール送信に失敗しました",
+    });
   }
-})
+});

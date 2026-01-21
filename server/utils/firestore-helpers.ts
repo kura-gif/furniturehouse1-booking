@@ -3,8 +3,12 @@
  * よく使うFirestore操作を一元管理
  */
 
-import { FieldValue } from 'firebase-admin/firestore'
-import type { Firestore, DocumentSnapshot, DocumentReference } from 'firebase-admin/firestore'
+import { FieldValue } from "firebase-admin/firestore";
+import type {
+  Firestore,
+  DocumentSnapshot,
+  DocumentReference,
+} from "firebase-admin/firestore";
 
 /**
  * ドキュメントを取得し、存在しない場合は404エラーをスロー
@@ -20,27 +24,27 @@ export async function getDocOrThrow<T extends Record<string, unknown>>(
   db: Firestore,
   collection: string,
   docId: string,
-  resourceName: string = 'リソース'
+  resourceName: string = "リソース",
 ): Promise<{
-  ref: DocumentReference
-  doc: DocumentSnapshot
-  data: T
+  ref: DocumentReference;
+  doc: DocumentSnapshot;
+  data: T;
 }> {
-  const ref = db.collection(collection).doc(docId)
-  const doc = await ref.get()
+  const ref = db.collection(collection).doc(docId);
+  const doc = await ref.get();
 
   if (!doc.exists) {
     throw createError({
       statusCode: 404,
       message: `${resourceName}が見つかりません`,
-    })
+    });
   }
 
   return {
     ref,
     doc,
     data: doc.data() as T,
-  }
+  };
 }
 
 /**
@@ -56,27 +60,28 @@ export async function findFirstByField<T extends Record<string, unknown>>(
   db: Firestore,
   collection: string,
   field: string,
-  value: unknown
+  value: unknown,
 ): Promise<{
-  ref: DocumentReference
-  doc: DocumentSnapshot
-  data: T
+  ref: DocumentReference;
+  doc: DocumentSnapshot;
+  data: T;
 } | null> {
-  const snapshot = await db.collection(collection)
-    .where(field, '==', value)
+  const snapshot = await db
+    .collection(collection)
+    .where(field, "==", value)
     .limit(1)
-    .get()
+    .get();
 
   if (snapshot.empty) {
-    return null
+    return null;
   }
 
-  const doc = snapshot.docs[0]
+  const doc = snapshot.docs[0];
   return {
     ref: doc.ref,
     doc,
     data: doc.data() as T,
-  }
+  };
 }
 
 /**
@@ -91,33 +96,33 @@ export async function findFirstByConditions<T extends Record<string, unknown>>(
   db: Firestore,
   collection: string,
   conditions: Array<{
-    field: string
-    operator: FirebaseFirestore.WhereFilterOp
-    value: unknown
-  }>
+    field: string;
+    operator: FirebaseFirestore.WhereFilterOp;
+    value: unknown;
+  }>,
 ): Promise<{
-  ref: DocumentReference
-  doc: DocumentSnapshot
-  data: T
+  ref: DocumentReference;
+  doc: DocumentSnapshot;
+  data: T;
 } | null> {
-  let query: FirebaseFirestore.Query = db.collection(collection)
+  let query: FirebaseFirestore.Query = db.collection(collection);
 
   for (const { field, operator, value } of conditions) {
-    query = query.where(field, operator, value)
+    query = query.where(field, operator, value);
   }
 
-  const snapshot = await query.limit(1).get()
+  const snapshot = await query.limit(1).get();
 
   if (snapshot.empty) {
-    return null
+    return null;
   }
 
-  const doc = snapshot.docs[0]
+  const doc = snapshot.docs[0];
   return {
     ref: doc.ref,
     doc,
     data: doc.data() as T,
-  }
+  };
 }
 
 /**
@@ -130,13 +135,13 @@ export async function findFirstByConditions<T extends Record<string, unknown>>(
 export async function updateWithTimestamp(
   ref: DocumentReference,
   data: Record<string, unknown>,
-  options: { includeUpdatedAt?: boolean } = { includeUpdatedAt: true }
+  options: { includeUpdatedAt?: boolean } = { includeUpdatedAt: true },
 ): Promise<void> {
   const updateData = options.includeUpdatedAt
     ? { ...data, updatedAt: FieldValue.serverTimestamp() }
-    : data
+    : data;
 
-  await ref.update(updateData)
+  await ref.update(updateData);
 }
 
 /**
@@ -146,13 +151,13 @@ export async function updateWithTimestamp(
  * @returns タイムスタンプ付きデータ
  */
 export function withCreatedTimestamps<T extends Record<string, unknown>>(
-  data: T
+  data: T,
 ): T & { createdAt: FieldValue; updatedAt: FieldValue } {
   return {
     ...data,
     createdAt: FieldValue.serverTimestamp(),
     updatedAt: FieldValue.serverTimestamp(),
-  }
+  };
 }
 
 /**
@@ -162,10 +167,10 @@ export function withCreatedTimestamps<T extends Record<string, unknown>>(
  * @returns タイムスタンプ付きデータ
  */
 export function withUpdatedTimestamp<T extends Record<string, unknown>>(
-  data: T
+  data: T,
 ): T & { updatedAt: FieldValue } {
   return {
     ...data,
     updatedAt: FieldValue.serverTimestamp(),
-  }
+  };
 }

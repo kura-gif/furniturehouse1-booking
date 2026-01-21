@@ -115,37 +115,56 @@
           <div class="font-medium mb-2">
             【{{ night.nightNumber }}泊目】{{ night.date }}
             <span class="text-xs text-gray-500">
-              {{ getSeasonLabel(night.seasonType) }}・{{ getDayTypeLabel(night.dayType) }}
+              {{ getSeasonLabel(night.seasonType) }}・{{
+                getDayTypeLabel(night.dayType)
+              }}
             </span>
           </div>
 
           <div class="space-y-1 text-xs text-gray-600">
-            <div>基本(1〜2人) ¥{{ (night.basePriceAfterAdjustments ?? 0).toLocaleString() }}</div>
+            <div>
+              基本(1〜2人) ¥{{
+                (night.basePriceAfterAdjustments ?? 0).toLocaleString()
+              }}
+            </div>
 
             <div v-if="night.guestCountCharges?.guest3rd">
-              + 3人目 ¥{{ (night.guestCountCharges?.guest3rd ?? 0).toLocaleString() }}
+              + 3人目 ¥{{
+                (night.guestCountCharges?.guest3rd ?? 0).toLocaleString()
+              }}
             </div>
             <div v-if="night.guestCountCharges?.guest4th">
-              + 4人目 ¥{{ (night.guestCountCharges?.guest4th ?? 0).toLocaleString() }}
+              + 4人目 ¥{{
+                (night.guestCountCharges?.guest4th ?? 0).toLocaleString()
+              }}
             </div>
             <div v-if="night.guestCountCharges?.guest5th">
-              + 5人目 ¥{{ (night.guestCountCharges?.guest5th ?? 0).toLocaleString() }}
+              + 5人目 ¥{{
+                (night.guestCountCharges?.guest5th ?? 0).toLocaleString()
+              }}
             </div>
             <div v-if="night.guestCountCharges?.guest6th">
-              + 6人目 ¥{{ (night.guestCountCharges?.guest6th ?? 0).toLocaleString() }}
+              + 6人目 ¥{{
+                (night.guestCountCharges?.guest6th ?? 0).toLocaleString()
+              }}
             </div>
 
             <div v-if="(night.childCharges?.total ?? 0) > 0">
-              + 子供料金 ¥{{ (night.childCharges?.total ?? 0).toLocaleString() }}
+              + 子供料金 ¥{{
+                (night.childCharges?.total ?? 0).toLocaleString()
+              }}
               <span class="text-gray-500">
                 ({{ night.childCharges?.discountedChildren ?? 0 }}名)
               </span>
             </div>
 
             <div class="pt-1 border-t font-medium text-gray-700">
-              小計: ¥{{ (night.subtotalBeforeNightRate ?? 0).toLocaleString() }}
-              × {{ Math.round((night.nightRate ?? 1) * 100) }}%
-              = ¥{{ (night.nightTotal ?? 0).toLocaleString() }}
+              小計: ¥{{
+                (night.subtotalBeforeNightRate ?? 0).toLocaleString()
+              }}
+              × {{ Math.round((night.nightRate ?? 1) * 100) }}% = ¥{{
+                (night.nightTotal ?? 0).toLocaleString()
+              }}
             </div>
           </div>
         </div>
@@ -154,12 +173,19 @@
         <div class="border-t pt-3 space-y-2">
           <div class="flex justify-between text-sm">
             <span>合計</span>
-            <span class="font-medium">¥{{ (calculation.subtotal ?? 0).toLocaleString() }}</span>
+            <span class="font-medium"
+              >¥{{ (calculation.subtotal ?? 0).toLocaleString() }}</span
+            >
           </div>
 
-          <div v-if="(calculation.couponDiscount ?? 0) > 0" class="flex justify-between text-sm text-green-600">
+          <div
+            v-if="(calculation.couponDiscount ?? 0) > 0"
+            class="flex justify-between text-sm text-green-600"
+          >
             <span>クーポン -{{ couponDiscountPercent }}%</span>
-            <span>-¥{{ (calculation.couponDiscount ?? 0).toLocaleString() }}</span>
+            <span
+              >-¥{{ (calculation.couponDiscount ?? 0).toLocaleString() }}</span
+            >
           </div>
 
           <div class="border-t pt-2">
@@ -172,8 +198,20 @@
           </div>
 
           <div class="grid grid-cols-2 gap-2 text-xs text-gray-600 pt-2">
-            <div>1泊あたり平均: ¥{{ (calculation.summary?.averagePricePerNight ?? 0).toLocaleString() }}</div>
-            <div>1人あたり平均: ¥{{ (calculation.summary?.averagePricePerPerson ?? 0).toLocaleString() }}</div>
+            <div>
+              1泊あたり平均: ¥{{
+                (
+                  calculation.summary?.averagePricePerNight ?? 0
+                ).toLocaleString()
+              }}
+            </div>
+            <div>
+              1人あたり平均: ¥{{
+                (
+                  calculation.summary?.averagePricePerPerson ?? 0
+                ).toLocaleString()
+              }}
+            </div>
           </div>
         </div>
       </div>
@@ -186,33 +224,33 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useEnhancedPricing } from '~/composables/useEnhancedPricing'
-import type { SeasonType, DayType } from '~/types'
+import { ref, computed } from "vue";
+import { useEnhancedPricing } from "~/composables/useEnhancedPricing";
+import type { SeasonType, DayType } from "~/types";
 
-const { calculatePrice } = useEnhancedPricing()
+const { calculatePrice } = useEnhancedPricing();
 
 // フォーム入力
-const checkInDate = ref('')
-const checkOutDate = ref('')
-const adultCount = ref(2)
-const childrenAges = ref<number[]>([])
-const couponDiscountPercent = ref(0)
+const checkInDate = ref("");
+const checkOutDate = ref("");
+const adultCount = ref(2);
+const childrenAges = ref<number[]>([]);
+const couponDiscountPercent = ref(0);
 
 // 泊数計算
 const numberOfNights = computed(() => {
-  if (!checkInDate.value || !checkOutDate.value) return 0
+  if (!checkInDate.value || !checkOutDate.value) return 0;
 
-  const start = new Date(checkInDate.value)
-  const end = new Date(checkOutDate.value)
-  const diff = end.getTime() - start.getTime()
-  return Math.ceil(diff / (1000 * 60 * 60 * 24))
-})
+  const start = new Date(checkInDate.value);
+  const end = new Date(checkOutDate.value);
+  const diff = end.getTime() - start.getTime();
+  return Math.ceil(diff / (1000 * 60 * 60 * 24));
+});
 
 // 料金計算
 const calculation = computed(() => {
   if (!checkInDate.value || !checkOutDate.value || numberOfNights.value <= 0) {
-    return null
+    return null;
   }
 
   try {
@@ -221,44 +259,44 @@ const calculation = computed(() => {
       new Date(checkOutDate.value),
       adultCount.value,
       childrenAges.value,
-      couponDiscountPercent.value / 100
-    )
+      couponDiscountPercent.value / 100,
+    );
   } catch (e) {
-    console.error('料金計算エラー:', e)
-    return null
+    console.error("料金計算エラー:", e);
+    return null;
   }
-})
+});
 
 // 子供を追加
 function addChild() {
-  childrenAges.value.push(10)
+  childrenAges.value.push(10);
 }
 
 // 子供を削除
 function removeChild(index: number) {
-  childrenAges.value.splice(index, 1)
+  childrenAges.value.splice(index, 1);
 }
 
 // ラベル取得
 function getSeasonLabel(seasonType: SeasonType): string {
   const labels = {
-    off: 'オフ',
-    regular: 'レギュラー',
-    high: 'ハイ'
-  }
-  return labels[seasonType]
+    off: "オフ",
+    regular: "レギュラー",
+    high: "ハイ",
+  };
+  return labels[seasonType];
 }
 
 function getDayTypeLabel(dayType: DayType): string {
-  return dayType === 'weekday' ? '平日' : '休日前日'
+  return dayType === "weekday" ? "平日" : "休日前日";
 }
 
 // デフォルト日付を設定
-const tomorrow = new Date()
-tomorrow.setDate(tomorrow.getDate() + 1)
-const dayAfterTomorrow = new Date()
-dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 3)
+const tomorrow = new Date();
+tomorrow.setDate(tomorrow.getDate() + 1);
+const dayAfterTomorrow = new Date();
+dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 3);
 
-checkInDate.value = tomorrow.toISOString().split('T')[0]
-checkOutDate.value = dayAfterTomorrow.toISOString().split('T')[0]
+checkInDate.value = tomorrow.toISOString().split("T")[0];
+checkOutDate.value = dayAfterTomorrow.toISOString().split("T")[0];
 </script>

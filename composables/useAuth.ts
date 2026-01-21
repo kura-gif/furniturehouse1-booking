@@ -6,283 +6,338 @@ import {
   sendPasswordResetEmail,
   signInWithPopup,
   GoogleAuthProvider,
-  type User
-} from 'firebase/auth'
-import { doc, setDoc, Timestamp } from 'firebase/firestore'
-import type { User as AppUser } from '~/types'
+  type User,
+} from "firebase/auth";
+import { doc, setDoc, Timestamp } from "firebase/firestore";
+import type { User as AppUser } from "~/types";
 
 export const useAuth = () => {
-  const { $auth, $db } = useNuxtApp()
-  const user = useState<User | null>('auth-user', () => null)
-  const appUser = useState<AppUser | null>('app-user', () => null)
-  const loading = useState('auth-loading', () => true)
-  const initialized = useState('auth-initialized', () => false)
+  const { $auth, $db } = useNuxtApp();
+  const user = useState<User | null>("auth-user", () => null);
+  const appUser = useState<AppUser | null>("app-user", () => null);
+  const loading = useState("auth-loading", () => true);
+  const initialized = useState("auth-initialized", () => false);
 
   // 認証状態の監視
   const initAuth = () => {
     // 既に初期化済みの場合はスキップ
     if (initialized.value) {
-      console.log('[Auth] Already initialized, skipping')
-      return
+      console.log("[Auth] Already initialized, skipping");
+      return;
     }
 
-    console.log('[Auth] initAuth called. Has $auth:', !!$auth)
+    console.log("[Auth] initAuth called. Has $auth:", !!$auth);
 
     if (!$auth) {
-      console.warn('[Auth] Firebase Auth is not initialized')
-      loading.value = false
-      user.value = null
-      appUser.value = null
-      return
+      console.warn("[Auth] Firebase Auth is not initialized");
+      loading.value = false;
+      user.value = null;
+      appUser.value = null;
+      return;
     }
 
-    initialized.value = true
+    initialized.value = true;
 
     // タイムアウト設定（10秒後に強制的にloading = false）
     const timeout = setTimeout(() => {
       if (loading.value) {
-        console.warn('[Auth] Auth initialization timeout - forcing loading = false')
-        loading.value = false
+        console.warn(
+          "[Auth] Auth initialization timeout - forcing loading = false",
+        );
+        loading.value = false;
       }
-    }, 10000)
+    }, 10000);
 
     onAuthStateChanged($auth, async (firebaseUser) => {
-      clearTimeout(timeout) // 正常に完了したらタイムアウトをクリア
-      console.log('[Auth] onAuthStateChanged:', firebaseUser?.email || 'no user')
-      user.value = firebaseUser
+      clearTimeout(timeout); // 正常に完了したらタイムアウトをクリア
+      console.log(
+        "[Auth] onAuthStateChanged:",
+        firebaseUser?.email || "no user",
+      );
+      user.value = firebaseUser;
 
       if (firebaseUser) {
-        console.log('[Auth] Starting user fetch for:', firebaseUser.uid)
+        console.log("[Auth] Starting user fetch for:", firebaseUser.uid);
         try {
           // サーバーAPIを使ってユーザー情報を取得（クライアントFirestoreの問題を回避）
-          const idToken = await firebaseUser.getIdToken()
-          console.log('[Auth] Got ID token, fetching user from API...')
+          const idToken = await firebaseUser.getIdToken();
+          console.log("[Auth] Got ID token, fetching user from API...");
 
-          const response = await fetch('/api/auth/user', {
+          const response = await fetch("/api/auth/user", {
             headers: {
-              'Authorization': `Bearer ${idToken}`
-            }
-          })
+              Authorization: `Bearer ${idToken}`,
+            },
+          });
 
           if (response.ok) {
-            const data = await response.json()
-            console.log('[Auth] API response:', data)
+            const data = await response.json();
+            console.log("[Auth] API response:", data);
             if (data.success && data.user) {
-              appUser.value = data.user as AppUser
-              console.log('[Auth] User loaded:', appUser.value.email, 'Role:', appUser.value.role)
+              appUser.value = data.user as AppUser;
+              console.log(
+                "[Auth] User loaded:",
+                appUser.value.email,
+                "Role:",
+                appUser.value.role,
+              );
             } else {
-              console.warn('[Auth] User not found in database')
-              appUser.value = null
+              console.warn("[Auth] User not found in database");
+              appUser.value = null;
             }
           } else {
-            const errorText = await response.text()
-            console.error('[Auth] API error:', response.status, response.statusText, errorText)
-            appUser.value = null
+            const errorText = await response.text();
+            console.error(
+              "[Auth] API error:",
+              response.status,
+              response.statusText,
+              errorText,
+            );
+            appUser.value = null;
           }
         } catch (error) {
-          console.error('[Auth] Failed to load user:', error)
-          appUser.value = null
+          console.error("[Auth] Failed to load user:", error);
+          appUser.value = null;
         }
       } else {
-        console.log('[Auth] No firebaseUser, skipping user fetch')
-        appUser.value = null
+        console.log("[Auth] No firebaseUser, skipping user fetch");
+        appUser.value = null;
       }
 
-      console.log('[Auth] Setting loading to false')
-      loading.value = false
-    })
-  }
+      console.log("[Auth] Setting loading to false");
+      loading.value = false;
+    });
+  };
 
   // ログイン
   const login = async (email: string, password: string) => {
-    if (!$auth) throw new Error('Firebase Auth is not initialized')
+    if (!$auth) throw new Error("Firebase Auth is not initialized");
 
     try {
-      const userCredential = await signInWithEmailAndPassword($auth, email, password)
-      return userCredential.user
+      const userCredential = await signInWithEmailAndPassword(
+        $auth,
+        email,
+        password,
+      );
+      return userCredential.user;
     } catch (error: unknown) {
-      console.error('Login error:', error)
-      const errorCode = error instanceof Error && 'code' in error ? (error as { code: string }).code : ''
-      throw new Error(getErrorMessage(errorCode))
+      console.error("Login error:", error);
+      const errorCode =
+        error instanceof Error && "code" in error
+          ? (error as { code: string }).code
+          : "";
+      throw new Error(getErrorMessage(errorCode));
     }
-  }
+  };
 
   // Google ログイン
   const loginWithGoogle = async () => {
-    if (!$auth || !$db) throw new Error('Firebase is not initialized')
+    if (!$auth || !$db) throw new Error("Firebase is not initialized");
 
     try {
-      console.log('[Auth] Starting Google login with popup...')
-      const provider = new GoogleAuthProvider()
-      provider.addScope('profile')
-      provider.addScope('email')
+      console.log("[Auth] Starting Google login with popup...");
+      const provider = new GoogleAuthProvider();
+      provider.addScope("profile");
+      provider.addScope("email");
       // 毎回アカウント選択画面を表示する（ログアウト後に別アカウントでログインできるようにする）
-      provider.setCustomParameters({ prompt: 'select_account' })
-      console.log('[Auth] Provider configured, calling signInWithPopup...')
+      provider.setCustomParameters({ prompt: "select_account" });
+      console.log("[Auth] Provider configured, calling signInWithPopup...");
 
-      const userCredential = await signInWithPopup($auth, provider)
-      console.log('[Auth] signInWithPopup succeeded')
-      const firebaseUser = userCredential.user
+      const userCredential = await signInWithPopup($auth, provider);
+      console.log("[Auth] signInWithPopup succeeded");
+      const firebaseUser = userCredential.user;
 
       // Firestore にユーザーが存在するか確認
-      const idToken = await firebaseUser.getIdToken()
-      const response = await fetch('/api/auth/user', {
+      const idToken = await firebaseUser.getIdToken();
+      const response = await fetch("/api/auth/user", {
         headers: {
-          'Authorization': `Bearer ${idToken}`
-        }
-      })
+          Authorization: `Bearer ${idToken}`,
+        },
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       // ユーザーが存在しない場合は新規作成
       if (!data.success || !data.user) {
-        const now = Timestamp.now()
-        const userData: Omit<AppUser, 'id'> = {
+        const now = Timestamp.now();
+        const userData: Omit<AppUser, "id"> = {
           email: firebaseUser.email!,
-          displayName: firebaseUser.displayName || firebaseUser.email!.split('@')[0],
-          role: 'user',
+          displayName:
+            firebaseUser.displayName || firebaseUser.email!.split("@")[0],
+          role: "user",
           createdAt: now,
-          updatedAt: now
-        }
+          updatedAt: now,
+        };
 
-        await setDoc(doc($db, 'users', firebaseUser.uid), userData)
-        console.log('[Auth] Created new user from Google login:', firebaseUser.email)
+        await setDoc(doc($db, "users", firebaseUser.uid), userData);
+        console.log(
+          "[Auth] Created new user from Google login:",
+          firebaseUser.email,
+        );
       }
 
-      return firebaseUser
+      return firebaseUser;
     } catch (error: unknown) {
-      console.error('[Auth] Google login error:', error)
-      const firebaseError = error as { code?: string; message?: string; customData?: unknown }
-      console.error('[Auth] Error code:', firebaseError.code)
-      console.error('[Auth] Error message:', firebaseError.message)
-      console.error('[Auth] Error customData:', firebaseError.customData)
+      console.error("[Auth] Google login error:", error);
+      const firebaseError = error as {
+        code?: string;
+        message?: string;
+        customData?: unknown;
+      };
+      console.error("[Auth] Error code:", firebaseError.code);
+      console.error("[Auth] Error message:", firebaseError.message);
+      console.error("[Auth] Error customData:", firebaseError.customData);
       // ポップアップがブロックされた場合やキャンセルされた場合のエラー処理
-      if (firebaseError.code === 'auth/popup-closed-by-user') {
-        throw new Error('ログインがキャンセルされました')
+      if (firebaseError.code === "auth/popup-closed-by-user") {
+        throw new Error("ログインがキャンセルされました");
       }
-      if (firebaseError.code === 'auth/popup-blocked') {
-        throw new Error('ポップアップがブロックされました。ポップアップを許可してください')
+      if (firebaseError.code === "auth/popup-blocked") {
+        throw new Error(
+          "ポップアップがブロックされました。ポップアップを許可してください",
+        );
       }
       // エラーコードも含めて表示
-      const errorMsg = getErrorMessage(firebaseError.code || '')
-      const errorDetail = firebaseError.code || firebaseError.message || JSON.stringify(error)
-      throw new Error(`${errorMsg} (${errorDetail})`)
+      const errorMsg = getErrorMessage(firebaseError.code || "");
+      const errorDetail =
+        firebaseError.code || firebaseError.message || JSON.stringify(error);
+      throw new Error(`${errorMsg} (${errorDetail})`);
     }
-  }
+  };
 
   // サインアップ
-  const signup = async (email: string, password: string, displayName: string, role: 'user' | 'admin' = 'user') => {
-    if (!$auth || !$db) throw new Error('Firebase is not initialized')
+  const signup = async (
+    email: string,
+    password: string,
+    displayName: string,
+    role: "user" | "admin" = "user",
+  ) => {
+    if (!$auth || !$db) throw new Error("Firebase is not initialized");
 
     try {
-      const userCredential = await createUserWithEmailAndPassword($auth, email, password)
-      const user = userCredential.user
+      const userCredential = await createUserWithEmailAndPassword(
+        $auth,
+        email,
+        password,
+      );
+      const user = userCredential.user;
 
       // Firestoreにユーザー情報を保存
-      const now = Timestamp.now()
-      const userData: Omit<AppUser, 'id'> = {
+      const now = Timestamp.now();
+      const userData: Omit<AppUser, "id"> = {
         email: user.email!,
         displayName,
         role,
         createdAt: now,
-        updatedAt: now
-      }
+        updatedAt: now,
+      };
 
-      await setDoc(doc($db, 'users', user.uid), userData)
+      await setDoc(doc($db, "users", user.uid), userData);
 
-      return user
+      return user;
     } catch (error: unknown) {
-      console.error('Signup error:', error)
-      const errorCode = error instanceof Error && 'code' in error ? (error as { code: string }).code : ''
-      throw new Error(getErrorMessage(errorCode))
+      console.error("Signup error:", error);
+      const errorCode =
+        error instanceof Error && "code" in error
+          ? (error as { code: string }).code
+          : "";
+      throw new Error(getErrorMessage(errorCode));
     }
-  }
+  };
 
   // ログアウト
   const logout = async () => {
-    if (!$auth) throw new Error('Firebase Auth is not initialized')
+    if (!$auth) throw new Error("Firebase Auth is not initialized");
 
     try {
-      await signOut($auth)
-      user.value = null
-      appUser.value = null
-      navigateTo('/')
+      await signOut($auth);
+      user.value = null;
+      appUser.value = null;
+      navigateTo("/");
     } catch (error: unknown) {
-      console.error('Logout error:', error)
-      throw new Error('ログアウトに失敗しました')
+      console.error("Logout error:", error);
+      throw new Error("ログアウトに失敗しました");
     }
-  }
+  };
 
   // パスワードリセット
   const resetPassword = async (email: string) => {
-    if (!$auth) throw new Error('Firebase Auth is not initialized')
+    if (!$auth) throw new Error("Firebase Auth is not initialized");
 
     try {
-      await sendPasswordResetEmail($auth, email)
+      await sendPasswordResetEmail($auth, email);
     } catch (error: unknown) {
-      console.error('Password reset error:', error)
-      const errorCode = error instanceof Error && 'code' in error ? (error as { code: string }).code : ''
-      throw new Error(getErrorMessage(errorCode))
+      console.error("Password reset error:", error);
+      const errorCode =
+        error instanceof Error && "code" in error
+          ? (error as { code: string }).code
+          : "";
+      throw new Error(getErrorMessage(errorCode));
     }
-  }
+  };
 
   // エラーメッセージの日本語化
   const getErrorMessage = (errorCode: string): string => {
     const messages: Record<string, string> = {
-      'auth/email-already-in-use': 'このメールアドレスは既に使用されています',
-      'auth/invalid-email': 'メールアドレスの形式が正しくありません',
-      'auth/operation-not-allowed': 'この操作は許可されていません',
-      'auth/weak-password': 'パスワードは6文字以上で設定してください',
-      'auth/user-disabled': 'このアカウントは無効化されています',
-      'auth/user-not-found': 'メールアドレスまたはパスワードが間違っています',
-      'auth/wrong-password': 'メールアドレスまたはパスワードが間違っています',
-      'auth/invalid-credential': 'メールアドレスまたはパスワードが間違っています',
-      'auth/too-many-requests': 'ログイン試行回数が多すぎます。しばらく待ってから再試行してください',
-      'auth/missing-email': 'メールアドレスを入力してください'
-    }
-    return messages[errorCode] || 'エラーが発生しました'
-  }
+      "auth/email-already-in-use": "このメールアドレスは既に使用されています",
+      "auth/invalid-email": "メールアドレスの形式が正しくありません",
+      "auth/operation-not-allowed": "この操作は許可されていません",
+      "auth/weak-password": "パスワードは6文字以上で設定してください",
+      "auth/user-disabled": "このアカウントは無効化されています",
+      "auth/user-not-found": "メールアドレスまたはパスワードが間違っています",
+      "auth/wrong-password": "メールアドレスまたはパスワードが間違っています",
+      "auth/invalid-credential":
+        "メールアドレスまたはパスワードが間違っています",
+      "auth/too-many-requests":
+        "ログイン試行回数が多すぎます。しばらく待ってから再試行してください",
+      "auth/missing-email": "メールアドレスを入力してください",
+    };
+    return messages[errorCode] || "エラーが発生しました";
+  };
 
   // 管理者かどうかをチェック
-  const isAdmin = computed(() => appUser.value?.role === 'admin')
+  const isAdmin = computed(() => appUser.value?.role === "admin");
 
   // サポーターかどうかをチェック
-  const isSupporter = computed(() => appUser.value?.role === 'supporter')
+  const isSupporter = computed(() => appUser.value?.role === "supporter");
 
   // IDトークンを取得
   const getIdToken = async (): Promise<string | null> => {
-    if (!user.value) return null
+    if (!user.value) return null;
     try {
-      return await user.value.getIdToken()
+      return await user.value.getIdToken();
     } catch (error) {
-      console.error('[Auth] Failed to get ID token:', error)
-      return null
+      console.error("[Auth] Failed to get ID token:", error);
+      return null;
     }
-  }
+  };
 
   // 認証付きfetch
-  const fetchWithAuth = async <T>(url: string, options: RequestInit = {}): Promise<T> => {
-    const token = await getIdToken()
+  const fetchWithAuth = async <T>(
+    url: string,
+    options: RequestInit = {},
+  ): Promise<T> => {
+    const token = await getIdToken();
     if (!token) {
-      throw new Error('認証が必要です')
+      throw new Error("認証が必要です");
     }
 
     const response = await fetch(url, {
       ...options,
       headers: {
         ...options.headers,
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    })
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: response.statusText }))
-      throw new Error(errorData.message || `HTTP error ${response.status}`)
+      const errorData = await response
+        .json()
+        .catch(() => ({ message: response.statusText }));
+      throw new Error(errorData.message || `HTTP error ${response.status}`);
     }
 
-    return response.json()
-  }
+    return response.json();
+  };
 
   return {
     user,
@@ -297,6 +352,6 @@ export const useAuth = () => {
     logout,
     resetPassword,
     getIdToken,
-    fetchWithAuth
-  }
-}
+    fetchWithAuth,
+  };
+};

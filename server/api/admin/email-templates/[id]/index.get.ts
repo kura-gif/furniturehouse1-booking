@@ -1,32 +1,35 @@
-import { getFirestoreAdmin } from '~/server/utils/firebase-admin'
-import { requireAdmin } from '~/server/utils/auth'
+import { getFirestoreAdmin } from "~/server/utils/firebase-admin";
+import { requireAdmin } from "~/server/utils/auth";
 
 /**
  * メールテンプレート取得API
  */
 export default defineEventHandler(async (event) => {
   // 管理者認証チェック
-  await requireAdmin(event)
+  await requireAdmin(event);
 
-  const templateId = getRouterParam(event, 'id')
+  const templateId = getRouterParam(event, "id");
   if (!templateId) {
     throw createError({
       statusCode: 400,
-      message: 'テンプレートIDが必要です'
-    })
+      message: "テンプレートIDが必要です",
+    });
   }
 
-  const db = getFirestoreAdmin()
-  const templateDoc = await db.collection('emailTemplates').doc(templateId).get()
+  const db = getFirestoreAdmin();
+  const templateDoc = await db
+    .collection("emailTemplates")
+    .doc(templateId)
+    .get();
 
   if (!templateDoc.exists) {
     throw createError({
       statusCode: 404,
-      message: 'テンプレートが見つかりません'
-    })
+      message: "テンプレートが見つかりません",
+    });
   }
 
-  const data = templateDoc.data()
+  const data = templateDoc.data();
   return {
     success: true,
     template: {
@@ -38,7 +41,7 @@ export default defineEventHandler(async (event) => {
       variables: data?.variables || [],
       createdAt: data?.createdAt?.toDate?.() || null,
       updatedAt: data?.updatedAt?.toDate?.() || null,
-      createdBy: data?.createdBy
-    }
-  }
-})
+      createdBy: data?.createdBy,
+    },
+  };
+});

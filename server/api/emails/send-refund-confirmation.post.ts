@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer'
+import nodemailer from "nodemailer";
 
 /**
  * 返金確認メール送信API
@@ -6,40 +6,45 @@ import nodemailer from 'nodemailer'
  * ⚠️ セキュリティ: このAPIは内部呼び出し専用です
  */
 export default defineEventHandler(async (event) => {
-  const config = useRuntimeConfig()
+  const config = useRuntimeConfig();
 
   // 内部呼び出し認証チェック
-  const authHeader = getHeader(event, 'x-internal-secret')
-  const internalSecret = config.internalApiSecret
+  const authHeader = getHeader(event, "x-internal-secret");
+  const internalSecret = config.internalApiSecret;
 
   if (!authHeader || authHeader !== internalSecret) {
     throw createError({
       statusCode: 403,
-      statusMessage: 'このAPIは内部呼び出し専用です'
-    })
+      statusMessage: "このAPIは内部呼び出し専用です",
+    });
   }
 
-  const body = await readBody(event)
-  const { to, bookingReference, guestName, refundAmount } = body
+  const body = await readBody(event);
+  const { to, bookingReference, guestName, refundAmount } = body;
 
   // メール送信設定（Gmail）
   const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    service: "gmail",
     auth: {
-      user: config.emailUser || process.env.EMAIL_USER || '',
-      pass: config.emailPassword || process.env.EMAIL_PASSWORD || ''
-    }
-  })
+      user: config.emailUser || process.env.EMAIL_USER || "",
+      pass: config.emailPassword || process.env.EMAIL_PASSWORD || "",
+    },
+  });
 
   // 送信元はグループメール（furniturehouse1@）を表示
-  const fromEmail = config.emailFrom || config.emailReplyTo || config.emailUser || 'noreply@furniturehouse1.com'
-  const replyToEmail = config.emailReplyTo || config.emailFrom || config.emailUser
+  const fromEmail =
+    config.emailFrom ||
+    config.emailReplyTo ||
+    config.emailUser ||
+    "noreply@furniturehouse1.com";
+  const replyToEmail =
+    config.emailReplyTo || config.emailFrom || config.emailUser;
 
   const mailOptions = {
     from: `"家具の家 No.1" <${fromEmail}>`,
     to,
     replyTo: replyToEmail,
-    subject: '【家具の家 No.1】ご返金完了のお知らせ',
+    subject: "【家具の家 No.1】ご返金完了のお知らせ",
     html: `
       <!DOCTYPE html>
       <html>
@@ -143,22 +148,22 @@ export default defineEventHandler(async (event) => {
         </div>
       </body>
       </html>
-    `
-  }
+    `,
+  };
 
   try {
-    const info = await transporter.sendMail(mailOptions)
+    const info = await transporter.sendMail(mailOptions);
 
     return {
       success: true,
-      messageId: info.messageId
-    }
+      messageId: info.messageId,
+    };
   } catch (error: unknown) {
-    console.error('返金確認メール送信エラー:', error)
+    console.error("返金確認メール送信エラー:", error);
     throw createError({
       statusCode: 500,
-      statusMessage: '返金確認メールの送信に失敗しました',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    })
+      statusMessage: "返金確認メールの送信に失敗しました",
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
   }
-})
+});

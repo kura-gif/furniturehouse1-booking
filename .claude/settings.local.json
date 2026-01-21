@@ -122,7 +122,11 @@
       "Bash(gh pr create:*)",
       "Bash(gh pr merge:*)",
       "Bash(SITE_URL=http://localhost:3000 npx tsx:*)",
-      "Bash(claude --clear-cache:*)"
+      "Bash(claude --clear-cache:*)",
+      "Bash(gh run list:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(git fsck:*)",
+      "Bash(vm_stat:*)"
     ],
     "additionalDirectories": [
       "/Users/kurashimayouichi/Documents/furniturehouse1"

@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer'
+import nodemailer from "nodemailer";
 
 /**
  * 在庫不足通知メール送信API
@@ -6,32 +6,34 @@ import nodemailer from 'nodemailer'
  * 在庫が発注目安を下回った場合に管理者へ通知
  */
 export default defineEventHandler(async (event) => {
-  const config = useRuntimeConfig()
+  const config = useRuntimeConfig();
 
-  const body = await readBody(event)
-  const { itemName, currentStock, unit, threshold } = body
+  const body = await readBody(event);
+  const { itemName, currentStock, unit, threshold } = body;
 
   if (!itemName) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'アイテム名は必須です'
-    })
+      statusMessage: "アイテム名は必須です",
+    });
   }
 
   // メール送信設定（Gmail）
   const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    service: "gmail",
     auth: {
-      user: config.emailUser || process.env.EMAIL_USER || '',
-      pass: config.emailPassword || process.env.EMAIL_PASSWORD || ''
-    }
-  })
+      user: config.emailUser || process.env.EMAIL_USER || "",
+      pass: config.emailPassword || process.env.EMAIL_PASSWORD || "",
+    },
+  });
 
-  const senderEmail = config.emailUser || process.env.EMAIL_USER || 'noreply@furniturehouse1.com'
-  const adminEmail = config.emailReplyTo || process.env.EMAIL_REPLY_TO || senderEmail
+  const senderEmail =
+    config.emailUser || process.env.EMAIL_USER || "noreply@furniturehouse1.com";
+  const adminEmail =
+    config.emailReplyTo || process.env.EMAIL_REPLY_TO || senderEmail;
 
-  const subject = `【在庫不足】${itemName}の在庫が少なくなっています`
-  const headerColor = '#f59e0b' // amber/yellow
+  const subject = `【在庫不足】${itemName}の在庫が少なくなっています`;
+  const headerColor = "#f59e0b"; // amber/yellow
 
   const mailOptions = {
     from: `"家具の家 No.1" <${senderEmail}>`,
@@ -133,7 +135,7 @@ export default defineEventHandler(async (event) => {
           </div>
 
           <p style="margin-top: 20px;">
-            <a href="${config.public?.siteUrl || 'http://localhost:3000'}/admin?tab=inventory"
+            <a href="${config.public?.siteUrl || "http://localhost:3000"}/admin?tab=inventory"
                style="display: inline-block; background: ${headerColor}; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">
               備品管理画面を開く
             </a>
@@ -146,23 +148,23 @@ export default defineEventHandler(async (event) => {
         </div>
       </body>
       </html>
-    `
-  }
+    `,
+  };
 
   try {
-    const info = await transporter.sendMail(mailOptions)
-    console.log('✅ Low stock notification email sent:', info.messageId)
+    const info = await transporter.sendMail(mailOptions);
+    console.log("✅ Low stock notification email sent:", info.messageId);
 
     return {
       success: true,
-      messageId: info.messageId
-    }
+      messageId: info.messageId,
+    };
   } catch (error: unknown) {
-    console.error('❌ Low stock notification email error:', error)
+    console.error("❌ Low stock notification email error:", error);
     throw createError({
       statusCode: 500,
-      statusMessage: '在庫不足通知メールの送信に失敗しました',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    })
+      statusMessage: "在庫不足通知メールの送信に失敗しました",
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
   }
-})
+});

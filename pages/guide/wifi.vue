@@ -2,9 +2,7 @@
   <div class="guide-page guide-organic-bg">
     <!-- タイトル -->
     <header class="text-center pt-6 pb-4 px-4">
-      <h1 class="guide-title text-xl sm:text-2xl">
-        Wi-Fiのご案内
-      </h1>
+      <h1 class="guide-title text-xl sm:text-2xl">Wi-Fiのご案内</h1>
     </header>
 
     <div class="px-4 sm:px-6 pb-8">
@@ -13,9 +11,13 @@
         <section class="mb-6">
           <p class="text-xs text-organic-text-light mb-1.5">ネットワーク名</p>
           <div class="divider-line"></div>
-          <p class="py-3 text-lg font-medium text-organic-text tracking-wide">Furniture-a</p>
+          <p class="py-3 text-lg font-medium text-organic-text tracking-wide">
+            Furniture-a
+          </p>
           <div class="divider-line"></div>
-          <p class="py-3 text-lg font-medium text-organic-text tracking-wide">Furniture-b</p>
+          <p class="py-3 text-lg font-medium text-organic-text tracking-wide">
+            Furniture-b
+          </p>
           <div class="divider-line"></div>
         </section>
 
@@ -24,12 +26,14 @@
           <p class="text-xs text-organic-text-light mb-1.5">パスワード</p>
           <div class="divider-line"></div>
           <div class="py-3 flex items-center justify-between">
-            <p class="text-lg font-medium text-organic-text tracking-wide">House-01</p>
+            <p class="text-lg font-medium text-organic-text tracking-wide">
+              House-01
+            </p>
             <button
               @click="copyPassword"
               class="px-3 py-1.5 text-xs border border-organic-button text-organic-button hover:bg-organic-button hover:text-white transition-colors"
             >
-              {{ copied ? 'コピー済み' : 'コピー' }}
+              {{ copied ? "コピー済み" : "コピー" }}
             </button>
           </div>
           <div class="divider-line"></div>
@@ -39,8 +43,14 @@
         <section class="mb-8">
           <h2 class="guide-title text-base mb-4">接続方法</h2>
           <ol class="space-y-3">
-            <li v-for="(step, index) in steps" :key="index" class="flex items-start gap-3">
-              <span class="w-6 h-6 flex-shrink-0 flex items-center justify-center text-xs font-medium text-organic-accent border border-organic-accent">
+            <li
+              v-for="(step, index) in steps"
+              :key="index"
+              class="flex items-start gap-3"
+            >
+              <span
+                class="w-6 h-6 flex-shrink-0 flex items-center justify-center text-xs font-medium text-organic-accent border border-organic-accent"
+              >
                 {{ index + 1 }}
               </span>
               <span class="text-sm text-organic-text pt-0.5">{{ step }}</span>
@@ -62,7 +72,15 @@
 
         <!-- 線画イラスト -->
         <div class="text-center opacity-60">
-          <svg class="w-40 h-24 mx-auto" viewBox="0 0 160 60" fill="none" stroke="#8B7355" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round">
+          <svg
+            class="w-40 h-24 mx-auto"
+            viewBox="0 0 160 60"
+            fill="none"
+            stroke="#8B7355"
+            stroke-width="0.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <!-- 観葉植物 -->
             <path d="M25 55 L25 38" />
             <path d="M25 42 C21 38, 17 34, 19 28" />
@@ -88,31 +106,33 @@
 
 <script setup lang="ts">
 definePageMeta({
-  layout: 'guide',
-  middleware: ['guest-guide']
-})
+  layout: "guide",
+  middleware: ["guest-guide"],
+});
 
-const { t } = useI18n()
-const copied = ref(false)
+const { t } = useI18n();
+const copied = ref(false);
 
 const steps = [
-  'スマートフォンやPCの設定画面を開く',
-  'Wi-Fi設定から「Furniture-a」または「Furniture-b」を選択',
-  'パスワード「House-01」を入力',
-  '接続完了'
-]
+  "スマートフォンやPCの設定画面を開く",
+  "Wi-Fi設定から「Furniture-a」または「Furniture-b」を選択",
+  "パスワード「House-01」を入力",
+  "接続完了",
+];
 
 const copyPassword = async () => {
   try {
-    await navigator.clipboard.writeText('House-01')
-    copied.value = true
-    setTimeout(() => { copied.value = false }, 2000)
+    await navigator.clipboard.writeText("House-01");
+    copied.value = true;
+    setTimeout(() => {
+      copied.value = false;
+    }, 2000);
   } catch (e) {
-    console.error('Failed to copy:', e)
+    console.error("Failed to copy:", e);
   }
-}
+};
 
-useHead({ title: 'Wi-Fi | ガイドブック' })
+useHead({ title: "Wi-Fi | ガイドブック" });
 </script>
 
 <style scoped>
@@ -122,6 +142,6 @@ useHead({ title: 'Wi-Fi | ガイドブック' })
 }
 
 .divider-line {
-  border-top: 1px solid #E8E2D9;
+  border-top: 1px solid #e8e2d9;
 }
 </style>

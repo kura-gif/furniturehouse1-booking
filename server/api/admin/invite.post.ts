@@ -1,8 +1,11 @@
-import { FieldValue } from 'firebase-admin/firestore'
-import { getFirestoreAdmin } from '~/server/utils/firebase-admin'
-import { requireAdmin } from '~/server/utils/auth'
-import { generateInvitationToken, getInvitationExpiry } from '~/server/utils/invitation'
-import nodemailer from 'nodemailer'
+import { FieldValue } from "firebase-admin/firestore";
+import { getFirestoreAdmin } from "~/server/utils/firebase-admin";
+import { requireAdmin } from "~/server/utils/auth";
+import {
+  generateInvitationToken,
+  getInvitationExpiry,
+} from "~/server/utils/invitation";
+import nodemailer from "nodemailer";
 
 /**
  * 管理者招待API
@@ -11,105 +14,105 @@ import nodemailer from 'nodemailer'
  */
 export default defineEventHandler(async (event) => {
   // 1. 管理者認証チェック
-  const admin = await requireAdmin(event)
+  const admin = await requireAdmin(event);
 
   // 2. リクエストボディ検証
-  const body = await readBody(event)
-  const { email } = body
+  const body = await readBody(event);
+  const { email } = body;
 
-  if (!email || typeof email !== 'string') {
+  if (!email || typeof email !== "string") {
     throw createError({
       statusCode: 400,
-      message: 'メールアドレスが必要です'
-    })
+      message: "メールアドレスが必要です",
+    });
   }
 
   // メールアドレスの形式チェック
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
     throw createError({
       statusCode: 400,
-      message: '無効なメールアドレス形式です'
-    })
+      message: "無効なメールアドレス形式です",
+    });
   }
 
-  const db = getFirestoreAdmin()
+  const db = getFirestoreAdmin();
 
   // 3. 既存の管理者かチェック
   const existingUsersSnapshot = await db
-    .collection('users')
-    .where('email', '==', email)
-    .where('role', '==', 'admin')
+    .collection("users")
+    .where("email", "==", email)
+    .where("role", "==", "admin")
     .limit(1)
-    .get()
+    .get();
 
   if (!existingUsersSnapshot.empty) {
     throw createError({
       statusCode: 400,
-      message: 'このメールアドレスは既に管理者として登録されています'
-    })
+      message: "このメールアドレスは既に管理者として登録されています",
+    });
   }
 
   // 4. 未処理の招待が既にあるかチェック
   const existingInvitationsSnapshot = await db
-    .collection('adminInvitations')
-    .where('email', '==', email)
-    .where('status', '==', 'pending')
+    .collection("adminInvitations")
+    .where("email", "==", email)
+    .where("status", "==", "pending")
     .limit(1)
-    .get()
+    .get();
 
   if (!existingInvitationsSnapshot.empty) {
     throw createError({
       statusCode: 400,
-      message: 'このメールアドレスには既に招待が送信されています'
-    })
+      message: "このメールアドレスには既に招待が送信されています",
+    });
   }
 
   // 5. 招待トークン生成
-  const token = generateInvitationToken()
-  const expiresAt = getInvitationExpiry()
+  const token = generateInvitationToken();
+  const expiresAt = getInvitationExpiry();
 
   // 6. adminInvitationsコレクションに保存
-  const invitationRef = db.collection('adminInvitations').doc()
+  const invitationRef = db.collection("adminInvitations").doc();
   const invitationData = {
     email,
     token,
     invitedBy: admin.uid,
     invitedByName: admin.displayName || admin.email,
-    status: 'pending',
+    status: "pending",
     createdAt: FieldValue.serverTimestamp(),
-    expiresAt: FieldValue.serverTimestamp() // Firestoreではサーバータイムスタンプを使用
-  }
+    expiresAt: FieldValue.serverTimestamp(), // Firestoreではサーバータイムスタンプを使用
+  };
 
   // expiresAtを正しく設定（7日後）
   await invitationRef.set({
     ...invitationData,
-    expiresAt: new Date(expiresAt)
-  })
+    expiresAt: new Date(expiresAt),
+  });
 
   // 7. 招待メール送信
   try {
-    const config = useRuntimeConfig()
-    const siteUrl = config.public.siteUrl || 'http://localhost:3000'
-    const invitationUrl = `${siteUrl}/accept-invitation?token=${token}`
+    const config = useRuntimeConfig();
+    const siteUrl = config.public.siteUrl || "http://localhost:3000";
+    const invitationUrl = `${siteUrl}/accept-invitation?token=${token}`;
 
     // メール送信設定
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
+      service: "gmail",
       auth: {
         user: config.emailUser,
-        pass: config.emailPassword
-      }
-    })
+        pass: config.emailPassword,
+      },
+    });
 
-    const senderEmail = config.emailUser || 'noreply@furniturehouse1.com'
-    const replyToEmail = config.emailReplyTo || senderEmail
+    const senderEmail = config.emailUser || "noreply@furniturehouse1.com";
+    const replyToEmail = config.emailReplyTo || senderEmail;
 
     await transporter.sendMail({
       from: `"家具の家 No.1" <${senderEmail}>`,
       to: email,
       replyTo: replyToEmail,
-      subject: '【家具の家 No.1】管理者招待のお知らせ',
+      subject: "【家具の家 No.1】管理者招待のお知らせ",
       html: `
         <!DOCTYPE html>
         <html>
@@ -188,18 +191,18 @@ export default defineEventHandler(async (event) => {
           </div>
         </body>
         </html>
-      `
-    })
+      `,
+    });
 
-    console.log('✅ 招待メール送信成功:', email)
+    console.log("✅ 招待メール送信成功:", email);
   } catch (error: unknown) {
-    console.error('❌ 招待メール送信エラー:', error)
+    console.error("❌ 招待メール送信エラー:", error);
     // メール送信失敗でも招待データは保存されているため、手動で再送信可能
   }
 
   return {
     success: true,
     invitationId: invitationRef.id,
-    message: '招待メールを送信しました'
-  }
-})
+    message: "招待メールを送信しました",
+  };
+});

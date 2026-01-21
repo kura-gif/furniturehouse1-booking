@@ -3,7 +3,7 @@
  * TypeScript strict mode対応のエラー処理ヘルパー
  */
 
-import type { H3Event } from 'h3'
+import type { H3Event } from "h3";
 
 /**
  * エラーオブジェクトから安全にメッセージを取得
@@ -11,12 +11,12 @@ import type { H3Event } from 'h3'
  */
 export function getErrorMessage(error: unknown): string {
   if (error instanceof Error) {
-    return error.message
+    return error.message;
   }
-  if (typeof error === 'string') {
-    return error
+  if (typeof error === "string") {
+    return error;
   }
-  return 'Unknown error occurred'
+  return "Unknown error occurred";
 }
 
 /**
@@ -27,42 +27,54 @@ export function getErrorMessage(error: unknown): string {
  * @param fallbackMessage - フォールバックメッセージ（ユーザー向けの安全なメッセージ）
  * @returns 安全なエラーメッセージ
  */
-export function getSafeErrorMessage(error: unknown, fallbackMessage: string): string {
+export function getSafeErrorMessage(
+  error: unknown,
+  fallbackMessage: string,
+): string {
   // createError で作成されたエラーはそのまま返す（意図的なユーザー向けメッセージ）
-  if (error && typeof error === 'object' && 'statusCode' in error) {
-    const httpError = error as { statusCode: number; message?: string; statusMessage?: string }
+  if (error && typeof error === "object" && "statusCode" in error) {
+    const httpError = error as {
+      statusCode: number;
+      message?: string;
+      statusMessage?: string;
+    };
     // 4xx エラーはユーザー向けメッセージなのでそのまま返す
     if (httpError.statusCode >= 400 && httpError.statusCode < 500) {
-      return httpError.message || httpError.statusMessage || fallbackMessage
+      return httpError.message || httpError.statusMessage || fallbackMessage;
     }
   }
 
   // 5xx エラーや内部エラーはフォールバックメッセージを返す
   // 詳細はログに記録されているので、クライアントには安全なメッセージのみ
-  return fallbackMessage
+  return fallbackMessage;
 }
 
 /**
  * エラーオブジェクトから安全にステータスコードを取得
  */
-export function getErrorStatusCode(error: unknown, defaultCode: number = 500): number {
-  if (error && typeof error === 'object') {
-    const err = error as { statusCode?: number; status?: number }
-    return err.statusCode || err.status || defaultCode
+export function getErrorStatusCode(
+  error: unknown,
+  defaultCode: number = 500,
+): number {
+  if (error && typeof error === "object") {
+    const err = error as { statusCode?: number; status?: number };
+    return err.statusCode || err.status || defaultCode;
   }
-  return defaultCode
+  return defaultCode;
 }
 
 /**
  * Stripeエラーかどうかを判定
  */
-export function isStripeError(error: unknown): error is { code?: string; message: string } {
+export function isStripeError(
+  error: unknown,
+): error is { code?: string; message: string } {
   return (
     error !== null &&
-    typeof error === 'object' &&
-    'message' in error &&
-    typeof (error as { message: unknown }).message === 'string'
-  )
+    typeof error === "object" &&
+    "message" in error &&
+    typeof (error as { message: unknown }).message === "string"
+  );
 }
 
 /**
@@ -70,70 +82,71 @@ export function isStripeError(error: unknown): error is { code?: string; message
  */
 export function getStripeErrorCode(error: unknown): string | undefined {
   if (isStripeError(error)) {
-    return (error as { code?: string }).code
+    return (error as { code?: string }).code;
   }
-  return undefined
+  return undefined;
 }
 
 /**
  * Firestore Timestampかどうかを判定
  */
 export interface FirestoreTimestamp {
-  toDate: () => Date
+  toDate: () => Date;
 }
 
-export function isFirestoreTimestamp(value: unknown): value is FirestoreTimestamp {
+export function isFirestoreTimestamp(
+  value: unknown,
+): value is FirestoreTimestamp {
   return (
     value !== null &&
-    typeof value === 'object' &&
-    'toDate' in value &&
-    typeof (value as { toDate: unknown }).toDate === 'function'
-  )
+    typeof value === "object" &&
+    "toDate" in value &&
+    typeof (value as { toDate: unknown }).toDate === "function"
+  );
 }
-
 
 /**
  * クライアントIPアドレスを取得
  */
 export function getClientIP(event: H3Event): string {
   // Vercelの場合
-  const forwardedFor = getHeader(event, 'x-forwarded-for')
+  const forwardedFor = getHeader(event, "x-forwarded-for");
   if (forwardedFor) {
-    return forwardedFor.split(',')[0].trim()
+    return forwardedFor.split(",")[0].trim();
   }
 
   // Cloudflareの場合
-  const cfConnectingIp = getHeader(event, 'cf-connecting-ip')
+  const cfConnectingIp = getHeader(event, "cf-connecting-ip");
   if (cfConnectingIp) {
-    return cfConnectingIp
+    return cfConnectingIp;
   }
 
   // 実IPアドレス
-  const realIp = getHeader(event, 'x-real-ip')
+  const realIp = getHeader(event, "x-real-ip");
   if (realIp) {
-    return realIp
+    return realIp;
   }
 
   // フォールバック
-  return event.node.req.socket.remoteAddress || 'unknown'
+  return event.node.req.socket.remoteAddress || "unknown";
 }
 
 /**
  * RuntimeConfigの型定義（使用する部分のみ）
  */
 export interface AppRuntimeConfig {
-  stripeSecretKey: string
-  stripeWebhookSecret: string
-  internalApiSecret: string
-  smtpHost: string
-  smtpPort: number
-  smtpUser: string
-  smtpPass: string
+  stripeSecretKey: string;
+  stripeWebhookSecret: string;
+  internalApiSecret: string;
+  smtpHost: string;
+  smtpPort: number;
+  smtpUser: string;
+  smtpPass: string;
   public: {
-    siteUrl: string
-    firebaseProjectId: string
-    firebaseStorageBucket?: string
-  }
+    siteUrl: string;
+    firebaseProjectId: string;
+    firebaseStorageBucket?: string;
+  };
 }
 
 /**
@@ -145,10 +158,10 @@ export interface AppRuntimeConfig {
  */
 export function captureException(
   error: unknown,
-  context?: Record<string, unknown>
+  context?: Record<string, unknown>,
 ): void {
   // Sentry一時的に無効化
-  console.error('[Error captured]', error, context)
+  console.error("[Error captured]", error, context);
 }
 
 /**
@@ -159,8 +172,8 @@ export function captureException(
  */
 export function captureMessage(
   message: string,
-  level: 'info' | 'warning' | 'error' = 'info'
+  level: "info" | "warning" | "error" = "info",
 ): void {
   // Sentry一時的に無効化
-  console.log(`[${level}] ${message}`)
+  console.log(`[${level}] ${message}`);
 }

@@ -4,72 +4,73 @@
  */
 
 export interface ConfirmDialogOptions {
-  title?: string
-  message: string
-  confirmText?: string
-  cancelText?: string
-  type?: 'info' | 'warning' | 'danger'
+  title?: string;
+  message: string;
+  confirmText?: string;
+  cancelText?: string;
+  type?: "info" | "warning" | "danger";
 }
 
 interface ConfirmDialogState {
-  isOpen: boolean
-  options: ConfirmDialogOptions
-  resolve: ((value: boolean) => void) | null
+  isOpen: boolean;
+  options: ConfirmDialogOptions;
+  resolve: ((value: boolean) => void) | null;
 }
 
 const state = ref<ConfirmDialogState>({
   isOpen: false,
-  options: { message: '' },
-  resolve: null
-})
+  options: { message: "" },
+  resolve: null,
+});
 
 export const useConfirmDialog = () => {
-  const confirm = (options: ConfirmDialogOptions | string): Promise<boolean> => {
-    const opts: ConfirmDialogOptions = typeof options === 'string'
-      ? { message: options }
-      : options
+  const confirm = (
+    options: ConfirmDialogOptions | string,
+  ): Promise<boolean> => {
+    const opts: ConfirmDialogOptions =
+      typeof options === "string" ? { message: options } : options;
 
     return new Promise((resolve) => {
       state.value = {
         isOpen: true,
         options: {
-          title: opts.title ?? '確認',
+          title: opts.title ?? "確認",
           message: opts.message,
-          confirmText: opts.confirmText ?? 'はい',
-          cancelText: opts.cancelText ?? 'キャンセル',
-          type: opts.type ?? 'info'
+          confirmText: opts.confirmText ?? "はい",
+          cancelText: opts.cancelText ?? "キャンセル",
+          type: opts.type ?? "info",
         },
-        resolve
-      }
-    })
-  }
+        resolve,
+      };
+    });
+  };
 
   const handleConfirm = () => {
     if (state.value.resolve) {
-      state.value.resolve(true)
+      state.value.resolve(true);
     }
-    close()
-  }
+    close();
+  };
 
   const handleCancel = () => {
     if (state.value.resolve) {
-      state.value.resolve(false)
+      state.value.resolve(false);
     }
-    close()
-  }
+    close();
+  };
 
   const close = () => {
     state.value = {
       isOpen: false,
-      options: { message: '' },
-      resolve: null
-    }
-  }
+      options: { message: "" },
+      resolve: null,
+    };
+  };
 
   return {
     state: readonly(state),
     confirm,
     handleConfirm,
-    handleCancel
-  }
-}
+    handleCancel,
+  };
+};

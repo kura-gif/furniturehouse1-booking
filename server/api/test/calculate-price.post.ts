@@ -5,27 +5,37 @@
  * ⚠️ 本番環境では無効化
  */
 
-import { calculateBookingAmount, DEFAULT_PRICING, validateAmount } from '~/server/utils/pricing'
+import {
+  calculateBookingAmount,
+  DEFAULT_PRICING,
+  validateAmount,
+} from "~/server/utils/pricing";
 
 export default defineEventHandler(async (event) => {
   // 本番環境では無効化
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === "production") {
     throw createError({
       statusCode: 404,
-      message: 'Not Found'
-    })
+      message: "Not Found",
+    });
   }
 
   try {
-    const body = await readBody(event)
-    const { checkInDate, checkOutDate, guestCount, couponDiscount = 0, clientAmount } = body
+    const body = await readBody(event);
+    const {
+      checkInDate,
+      checkOutDate,
+      guestCount,
+      couponDiscount = 0,
+      clientAmount,
+    } = body;
 
     // 入力検証
     if (!checkInDate || !checkOutDate || !guestCount) {
       throw createError({
         statusCode: 400,
-        message: 'checkInDate, checkOutDate, guestCount are required',
-      })
+        message: "checkInDate, checkOutDate, guestCount are required",
+      });
     }
 
     // 料金計算
@@ -34,19 +44,20 @@ export default defineEventHandler(async (event) => {
       new Date(checkOutDate),
       guestCount,
       DEFAULT_PRICING,
-      couponDiscount
-    )
+      couponDiscount,
+    );
 
     // クライアント金額が提供されている場合は検証
-    let amountValid = null
+    let amountValid = null;
     if (clientAmount !== undefined) {
-      amountValid = validateAmount(calculatedAmount, clientAmount)
+      amountValid = validateAmount(calculatedAmount, clientAmount);
     }
 
     // 宿泊数を計算
     const nights = Math.ceil(
-      (new Date(checkOutDate).getTime() - new Date(checkInDate).getTime()) / (1000 * 60 * 60 * 24)
-    )
+      (new Date(checkOutDate).getTime() - new Date(checkInDate).getTime()) /
+        (1000 * 60 * 60 * 24),
+    );
 
     return {
       success: true,
@@ -61,20 +72,28 @@ export default defineEventHandler(async (event) => {
         guestCount,
         couponDiscount,
       },
-      validation: amountValid !== null ? {
-        clientAmount,
-        calculatedAmount,
-        isValid: amountValid,
-        difference: clientAmount !== undefined ? Math.abs(calculatedAmount - clientAmount) : null,
-      } : null,
-    }
+      validation:
+        amountValid !== null
+          ? {
+              clientAmount,
+              calculatedAmount,
+              isValid: amountValid,
+              difference:
+                clientAmount !== undefined
+                  ? Math.abs(calculatedAmount - clientAmount)
+                  : null,
+            }
+          : null,
+    };
   } catch (error: unknown) {
-    const statusCode = error && typeof error === 'object' && 'statusCode' in error
-      ? (error as { statusCode: number }).statusCode
-      : 500
+    const statusCode =
+      error && typeof error === "object" && "statusCode" in error
+        ? (error as { statusCode: number }).statusCode
+        : 500;
     throw createError({
       statusCode,
-      message: error instanceof Error ? error.message : '料金計算に失敗しました',
-    })
+      message:
+        error instanceof Error ? error.message : "料金計算に失敗しました",
+    });
   }
-})
+});

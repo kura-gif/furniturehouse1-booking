@@ -3,44 +3,46 @@
  * 確認ダイアログコンポーネント
  * app.vueまたはdefault.vueに配置して使用
  */
-import { useConfirmDialog } from '~/composables/useConfirmDialog'
+import { useConfirmDialog } from "~/composables/useConfirmDialog";
 
-const { state, handleConfirm, handleCancel } = useConfirmDialog()
+const { state, handleConfirm, handleCancel } = useConfirmDialog();
 
 const typeConfig = {
   info: {
-    iconBg: 'bg-blue-100',
-    iconColor: 'text-blue-600',
-    confirmBtnClass: 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'
+    iconBg: "bg-blue-100",
+    iconColor: "text-blue-600",
+    confirmBtnClass: "bg-blue-600 hover:bg-blue-700 focus:ring-blue-500",
   },
   warning: {
-    iconBg: 'bg-yellow-100',
-    iconColor: 'text-yellow-600',
-    confirmBtnClass: 'bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500'
+    iconBg: "bg-yellow-100",
+    iconColor: "text-yellow-600",
+    confirmBtnClass: "bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500",
   },
   danger: {
-    iconBg: 'bg-red-100',
-    iconColor: 'text-red-600',
-    confirmBtnClass: 'bg-red-600 hover:bg-red-700 focus:ring-red-500'
-  }
-}
+    iconBg: "bg-red-100",
+    iconColor: "text-red-600",
+    confirmBtnClass: "bg-red-600 hover:bg-red-700 focus:ring-red-500",
+  },
+};
 
-const currentConfig = computed(() => typeConfig[state.value.options.type || 'info'])
+const currentConfig = computed(
+  () => typeConfig[state.value.options.type || "info"],
+);
 
 // ESCキーでキャンセル
 const handleKeydown = (e: KeyboardEvent) => {
-  if (e.key === 'Escape' && state.value.isOpen) {
-    handleCancel()
+  if (e.key === "Escape" && state.value.isOpen) {
+    handleCancel();
   }
-}
+};
 
 onMounted(() => {
-  document.addEventListener('keydown', handleKeydown)
-})
+  document.addEventListener("keydown", handleKeydown);
+});
 
 onUnmounted(() => {
-  document.removeEventListener('keydown', handleKeydown)
-})
+  document.removeEventListener("keydown", handleKeydown);
+});
 </script>
 
 <template>
@@ -86,7 +88,7 @@ onUnmounted(() => {
                 <div
                   :class="[
                     'flex-shrink-0 flex items-center justify-center w-12 h-12 rounded-full',
-                    currentConfig.iconBg
+                    currentConfig.iconBg,
                   ]"
                 >
                   <!-- 情報アイコン -->
@@ -98,7 +100,12 @@ onUnmounted(() => {
                     viewBox="0 0 24 24"
                     aria-hidden="true"
                   >
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
                   </svg>
                   <!-- 警告アイコン -->
                   <svg
@@ -109,7 +116,12 @@ onUnmounted(() => {
                     viewBox="0 0 24 24"
                     aria-hidden="true"
                   >
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                    />
                   </svg>
                   <!-- 危険アイコン -->
                   <svg
@@ -120,7 +132,12 @@ onUnmounted(() => {
                     viewBox="0 0 24 24"
                     aria-hidden="true"
                   >
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
                   </svg>
                 </div>
 
@@ -151,7 +168,7 @@ onUnmounted(() => {
                   type="button"
                   :class="[
                     'px-4 py-2 text-sm font-medium text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors',
-                    currentConfig.confirmBtnClass
+                    currentConfig.confirmBtnClass,
                   ]"
                   @click="handleConfirm"
                 >

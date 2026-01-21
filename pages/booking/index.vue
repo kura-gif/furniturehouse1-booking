@@ -11,7 +11,9 @@
       <!-- ヘッダー -->
       <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900 mb-2">宿泊日程を選択</h1>
-        <p class="text-gray-600">カレンダーから希望の日程と料金を確認できます</p>
+        <p class="text-gray-600">
+          カレンダーから希望の日程と料金を確認できます
+        </p>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -33,18 +35,41 @@
                     :disabled="adults <= 1"
                     class="w-10 h-10 rounded-full border-2 border-gray-300 hover:border-purple-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                   >
-                    <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                    <svg
+                      class="w-5 h-5 mx-auto"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M20 12H4"
+                      />
                     </svg>
                   </button>
-                  <span class="text-xl font-semibold min-w-[40px] text-center">{{ adults }}</span>
+                  <span
+                    class="text-xl font-semibold min-w-[40px] text-center"
+                    >{{ adults }}</span
+                  >
                   <button
                     @click="incrementAdults"
                     :disabled="totalGuests >= 6"
                     class="w-10 h-10 rounded-full border-2 border-gray-300 hover:border-purple-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                   >
-                    <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    <svg
+                      class="w-5 h-5 mx-auto"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 4v16m8-8H4"
+                      />
                     </svg>
                   </button>
                 </div>
@@ -62,18 +87,41 @@
                     :disabled="children <= 0"
                     class="w-10 h-10 rounded-full border-2 border-gray-300 hover:border-purple-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                   >
-                    <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                    <svg
+                      class="w-5 h-5 mx-auto"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M20 12H4"
+                      />
                     </svg>
                   </button>
-                  <span class="text-xl font-semibold min-w-[40px] text-center">{{ children }}</span>
+                  <span
+                    class="text-xl font-semibold min-w-[40px] text-center"
+                    >{{ children }}</span
+                  >
                   <button
                     @click="incrementChildren"
                     :disabled="totalGuests >= 6"
                     class="w-10 h-10 rounded-full border-2 border-gray-300 hover:border-purple-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                   >
-                    <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    <svg
+                      class="w-5 h-5 mx-auto"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 4v16m8-8H4"
+                      />
                     </svg>
                   </button>
                 </div>
@@ -91,24 +139,49 @@
                     :disabled="infants <= 0"
                     class="w-10 h-10 rounded-full border-2 border-gray-300 hover:border-purple-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                   >
-                    <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                    <svg
+                      class="w-5 h-5 mx-auto"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M20 12H4"
+                      />
                     </svg>
                   </button>
-                  <span class="text-xl font-semibold min-w-[40px] text-center">{{ infants }}</span>
+                  <span
+                    class="text-xl font-semibold min-w-[40px] text-center"
+                    >{{ infants }}</span
+                  >
                   <button
                     @click="incrementInfants"
                     :disabled="totalGuests >= 6"
                     class="w-10 h-10 rounded-full border-2 border-gray-300 hover:border-purple-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                   >
-                    <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    <svg
+                      class="w-5 h-5 mx-auto"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 4v16m8-8H4"
+                      />
                     </svg>
                   </button>
                 </div>
               </div>
             </div>
-            <p class="text-sm text-gray-500 mt-3">※ 最大6名様までご利用いただけます</p>
+            <p class="text-sm text-gray-500 mt-3">
+              ※ 最大6名様までご利用いただけます
+            </p>
           </div>
 
           <!-- カレンダー -->
@@ -126,8 +199,18 @@
           <!-- 注意事項 -->
           <div class="card p-6 bg-blue-50 border-blue-200">
             <div class="flex gap-3">
-              <svg class="w-6 h-6 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg
+                class="w-6 h-6 text-blue-600 flex-shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
               <div class="text-sm text-gray-700">
                 <p class="font-semibold mb-1">料金について</p>
@@ -151,11 +234,15 @@
               <div class="pb-4 border-b border-gray-200">
                 <div class="flex items-center justify-between mb-2">
                   <span class="text-sm text-gray-600">チェックイン</span>
-                  <span class="font-semibold">{{ checkInDate ? formatDisplayDate(checkInDate) : '未選択' }}</span>
+                  <span class="font-semibold">{{
+                    checkInDate ? formatDisplayDate(checkInDate) : "未選択"
+                  }}</span>
                 </div>
                 <div class="flex items-center justify-between">
                   <span class="text-sm text-gray-600">チェックアウト</span>
-                  <span class="font-semibold">{{ checkOutDate ? formatDisplayDate(checkOutDate) : '未選択' }}</span>
+                  <span class="font-semibold">{{
+                    checkOutDate ? formatDisplayDate(checkOutDate) : "未選択"
+                  }}</span>
                 </div>
                 <div v-if="nights > 0" class="mt-2 text-sm text-gray-600">
                   {{ nights }}泊{{ nights + 1 }}日
@@ -176,9 +263,13 @@
 
               <!-- 料金 -->
               <div v-if="totalPrice > 0" class="pb-4 border-b border-gray-200">
-                <div class="flex items-center justify-between text-lg font-bold">
+                <div
+                  class="flex items-center justify-between text-lg font-bold"
+                >
                   <span>合計</span>
-                  <span class="text-purple-600">¥{{ formatPrice(totalPrice) }}</span>
+                  <span class="text-purple-600"
+                    >¥{{ formatPrice(totalPrice) }}</span
+                  >
                 </div>
                 <p class="text-xs text-gray-500 mt-1">税込価格</p>
               </div>
@@ -200,13 +291,33 @@
             <!-- キャンセルポリシー -->
             <div class="mt-6 pt-6 border-t border-gray-200">
               <div class="flex items-center gap-2 mb-3">
-                <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                <svg
+                  class="w-5 h-5 text-gray-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                  />
                 </svg>
-                <h3 class="text-sm font-semibold text-gray-700">キャンセルポリシー</h3>
+                <h3 class="text-sm font-semibold text-gray-700">
+                  キャンセルポリシー
+                </h3>
               </div>
-              <div v-if="cancellationPolicyDescription" class="text-xs text-gray-600 space-y-1">
-                <p v-for="(line, index) in cancellationPolicyDescription.split('\n')" :key="index">
+              <div
+                v-if="cancellationPolicyDescription"
+                class="text-xs text-gray-600 space-y-1"
+              >
+                <p
+                  v-for="(line, index) in cancellationPolicyDescription.split(
+                    '\n',
+                  )"
+                  :key="index"
+                >
                   {{ line }}
                 </p>
               </div>
@@ -226,148 +337,161 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from "vue";
 
 definePageMeta({
-  layout: false
-})
+  layout: false,
+});
 
-const router = useRouter()
-const route = useRoute()
-const { getActivePolicy, generatePolicyDescription } = useCancellationPolicy()
+const router = useRouter();
+const route = useRoute();
+const { getActivePolicy, generatePolicyDescription } = useCancellationPolicy();
 
 // パンくずリスト
 const breadcrumbItems = [
-  { label: '家具の家 No.1 予約サイト', path: '/' },
-  { label: '宿泊日程を選択' }
-]
+  { label: "家具の家 No.1 予約サイト", path: "/" },
+  { label: "宿泊日程を選択" },
+];
 
 // クエリパラメータから初期値を取得
-const adults = ref(parseInt(route.query.adults as string) || 1)
-const children = ref(parseInt(route.query.children as string) || 0)
-const infants = ref(parseInt(route.query.infants as string) || 0)
-const checkInDate = ref(route.query.checkIn as string || '')
-const checkOutDate = ref(route.query.checkOut as string || '')
+const adults = ref(parseInt(route.query.adults as string) || 1);
+const children = ref(parseInt(route.query.children as string) || 0);
+const infants = ref(parseInt(route.query.infants as string) || 0);
+const checkInDate = ref((route.query.checkIn as string) || "");
+const checkOutDate = ref((route.query.checkOut as string) || "");
 
 // キャンセルポリシー
-const cancellationPolicyDescription = ref('')
+const cancellationPolicyDescription = ref("");
 
 // 合計ゲスト数
-const totalGuests = computed(() => adults.value + children.value + infants.value)
+const totalGuests = computed(
+  () => adults.value + children.value + infants.value,
+);
 
 // 人数調整
 function incrementAdults() {
   if (totalGuests.value < 6) {
-    adults.value++
+    adults.value++;
   }
 }
 
 function decrementAdults() {
   if (adults.value > 1) {
-    adults.value--
+    adults.value--;
   }
 }
 
 function incrementChildren() {
   if (totalGuests.value < 6) {
-    children.value++
+    children.value++;
   }
 }
 
 function decrementChildren() {
   if (children.value > 0) {
-    children.value--
+    children.value--;
   }
 }
 
 function incrementInfants() {
   if (totalGuests.value < 6) {
-    infants.value++
+    infants.value++;
   }
 }
 
 function decrementInfants() {
   if (infants.value > 0) {
-    infants.value--
+    infants.value--;
   }
 }
 
 // 計算されたプロパティ
 const nights = computed(() => {
-  if (!checkInDate.value || !checkOutDate.value) return 0
-  const checkIn = new Date(checkInDate.value)
-  const checkOut = new Date(checkOutDate.value)
-  const diffTime = checkOut.getTime() - checkIn.getTime()
-  return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-})
+  if (!checkInDate.value || !checkOutDate.value) return 0;
+  const checkIn = new Date(checkInDate.value);
+  const checkOut = new Date(checkOutDate.value);
+  const diffTime = checkOut.getTime() - checkIn.getTime();
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+});
 
-const totalPrice = ref(0)
+const totalPrice = ref(0);
 
 const canProceed = computed(() => {
-  return checkInDate.value && checkOutDate.value && adults.value > 0
-})
+  return checkInDate.value && checkOutDate.value && adults.value > 0;
+});
 
 // 日付選択時のハンドラー
-function handleDatesSelected(checkIn: string, checkOut: string, nightsCount: number, price: number) {
-  totalPrice.value = price
+function handleDatesSelected(
+  checkIn: string,
+  checkOut: string,
+  nightsCount: number,
+  price: number,
+) {
+  totalPrice.value = price;
 }
 
 // 予約リクエストページへ進む
 function handleProceedToRequest() {
-  if (!canProceed.value) return
+  if (!canProceed.value) return;
 
   const query: Record<string, string> = {
     checkIn: checkInDate.value,
     checkOut: checkOutDate.value,
     adults: adults.value.toString(),
     children: children.value.toString(),
-    infants: infants.value.toString()
-  }
+    infants: infants.value.toString(),
+  };
 
   // promoパラメータがある場合は引き継ぐ
   if (route.query.promo) {
-    query.promo = route.query.promo as string
+    query.promo = route.query.promo as string;
   }
 
   router.push({
-    path: '/booking/request',
-    query
-  })
+    path: "/booking/request",
+    query,
+  });
 }
 
 // 日付フォーマット
 function formatDisplayDate(dateStr: string): string {
-  if (!dateStr) return ''
-  const date = new Date(dateStr)
-  return `${date.getMonth() + 1}月${date.getDate()}日`
+  if (!dateStr) return "";
+  const date = new Date(dateStr);
+  return `${date.getMonth() + 1}月${date.getDate()}日`;
 }
 
 function formatPrice(price: number): string {
-  return price.toLocaleString()
+  return price.toLocaleString();
 }
 
 // キャンセルポリシーをロード
 async function loadCancellationPolicy() {
   try {
-    const policy = await getActivePolicy()
+    const policy = await getActivePolicy();
     if (policy) {
-      cancellationPolicyDescription.value = generatePolicyDescription(policy.rules)
+      cancellationPolicyDescription.value = generatePolicyDescription(
+        policy.rules,
+      );
     }
   } catch (error) {
-    console.error('キャンセルポリシー取得エラー:', error)
+    console.error("キャンセルポリシー取得エラー:", error);
   }
 }
 
 onMounted(() => {
-  loadCancellationPolicy()
-})
+  loadCancellationPolicy();
+});
 
 // SEO設定
 useHead({
-  title: '宿泊日程を選択 | 家具の家 No.1',
+  title: "宿泊日程を選択 | 家具の家 No.1",
   meta: [
-    { name: 'description', content: 'カレンダーから宿泊日程と料金を確認して予約をリクエストできます。' },
-    { name: 'robots', content: 'noindex, nofollow' }
-  ]
-})
+    {
+      name: "description",
+      content:
+        "カレンダーから宿泊日程と料金を確認して予約をリクエストできます。",
+    },
+    { name: "robots", content: "noindex, nofollow" },
+  ],
+});
 </script>

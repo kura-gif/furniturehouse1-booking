@@ -1,14 +1,21 @@
 <template>
-  <div class="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+  <div
+    class="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8"
+  >
     <div class="max-w-md w-full">
       <!-- ロゴ・タイトル -->
       <div class="text-center mb-8">
         <h1 class="text-3xl font-bold text-gray-900 mb-2">家具の家 No.1</h1>
-        <p class="text-gray-600">{{ isSignup ? 'アカウント作成' : 'ログイン' }}</p>
+        <p class="text-gray-600">
+          {{ isSignup ? "アカウント作成" : "ログイン" }}
+        </p>
       </div>
 
       <!-- 予約フローからのリダイレクト時のメッセージ -->
-      <div v-if="isBookingRedirect" class="mb-4 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+      <div
+        v-if="isBookingRedirect"
+        class="mb-4 p-4 bg-purple-50 border border-purple-200 rounded-lg"
+      >
         <p class="text-sm text-purple-800">
           予約を続けるには、ログインまたはアカウント作成が必要です。
         </p>
@@ -35,13 +42,18 @@
       <!-- パスワードリセットフォーム -->
       <div v-if="showResetPassword" class="bg-white rounded-xl shadow-md p-8">
         <div v-if="!resetEmailSent">
-          <h2 class="text-lg font-semibold text-gray-900 mb-4">パスワードをリセット</h2>
+          <h2 class="text-lg font-semibold text-gray-900 mb-4">
+            パスワードをリセット
+          </h2>
           <p class="text-sm text-gray-600 mb-6">
             登録したメールアドレスを入力してください。パスワードリセット用のメールを送信します。
           </p>
           <form @submit.prevent="handleResetPassword" class="space-y-6">
             <div>
-              <label for="resetEmail" class="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                for="resetEmail"
+                class="block text-sm font-medium text-gray-700 mb-2"
+              >
                 メールアドレス
               </label>
               <input
@@ -66,9 +78,14 @@
         </div>
         <div v-else class="text-center">
           <div class="text-green-500 text-5xl mb-4">✉️</div>
-          <h2 class="text-lg font-semibold text-gray-900 mb-2">メールを送信しました</h2>
+          <h2 class="text-lg font-semibold text-gray-900 mb-2">
+            メールを送信しました
+          </h2>
           <p class="text-sm text-gray-600 mb-6">
-            {{ form.email }} にパスワードリセット用のメールを送信しました。<br>
+            {{
+              form.email
+            }}
+            にパスワードリセット用のメールを送信しました。<br />
             メールに記載されたリンクからパスワードを再設定してください。
           </p>
         </div>
@@ -91,21 +108,62 @@
             @click="handleGoogleLogin"
             :disabled="isLoading"
             :aria-busy="isLoading"
-            :aria-label="isSignup ? 'Googleアカウントで登録' : 'Googleアカウントでログイン'"
+            :aria-label="
+              isSignup ? 'Googleアカウントで登録' : 'Googleアカウントでログイン'
+            "
             class="w-full flex items-center justify-center gap-3 px-4 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <svg v-if="!isLoading" class="w-5 h-5" viewBox="0 0 24 24" aria-hidden="true">
-              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            <svg
+              v-if="!isLoading"
+              class="w-5 h-5"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                fill="#4285F4"
+                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+              />
+              <path
+                fill="#34A853"
+                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+              />
+              <path
+                fill="#FBBC05"
+                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+              />
+              <path
+                fill="#EA4335"
+                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+              />
             </svg>
-            <svg v-else class="animate-spin w-5 h-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            <svg
+              v-else
+              class="animate-spin w-5 h-5 text-gray-500"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
             </svg>
             <span class="text-gray-700 font-medium">
-              {{ isLoading ? '処理中...' : `Googleで${isSignup ? '登録' : 'ログイン'}` }}
+              {{
+                isLoading
+                  ? "処理中..."
+                  : `Googleで${isSignup ? "登録" : "ログイン"}`
+              }}
             </span>
           </button>
         </div>
@@ -123,7 +181,10 @@
         <form @submit.prevent="handleSubmit" class="space-y-6">
           <!-- 名前（サインアップ時のみ） -->
           <div v-if="isSignup">
-            <label for="displayName" class="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              for="displayName"
+              class="block text-sm font-medium text-gray-700 mb-2"
+            >
               お名前
             </label>
             <input
@@ -138,7 +199,10 @@
 
           <!-- メールアドレス -->
           <div>
-            <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              for="email"
+              class="block text-sm font-medium text-gray-700 mb-2"
+            >
               メールアドレス
             </label>
             <input
@@ -153,7 +217,10 @@
 
           <!-- パスワード -->
           <div>
-            <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              for="password"
+              class="block text-sm font-medium text-gray-700 mb-2"
+            >
               パスワード
             </label>
             <input
@@ -175,7 +242,7 @@
             loading-text="処理中..."
             :aria-label="isSignup ? 'アカウントを作成' : 'ログイン'"
           >
-            {{ isSignup ? 'アカウント作成' : 'ログイン' }}
+            {{ isSignup ? "アカウント作成" : "ログイン" }}
           </LoadingButton>
         </form>
 
@@ -195,25 +262,29 @@
             @click="toggleMode"
             class="text-sm text-purple-600 hover:text-purple-800"
           >
-            {{ isSignup ? 'すでにアカウントをお持ちの方はこちら' : '新規登録はこちら' }}
+            {{
+              isSignup
+                ? "すでにアカウントをお持ちの方はこちら"
+                : "新規登録はこちら"
+            }}
           </button>
         </div>
 
         <!-- ホームに戻る -->
         <div class="mt-4 text-center">
-          <NuxtLink
-            to="/"
-            class="text-sm text-gray-600 hover:text-gray-800"
-          >
+          <NuxtLink to="/" class="text-sm text-gray-600 hover:text-gray-800">
             ← ホームに戻る
           </NuxtLink>
         </div>
       </div>
 
       <!-- 開発モード用の注意書き -->
-      <div v-if="!$auth" class="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+      <div
+        v-if="!$auth"
+        class="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg"
+      >
         <p class="text-sm text-yellow-800">
-          <strong>開発モード:</strong> Firebaseが設定されていません。<br>
+          <strong>開発モード:</strong> Firebaseが設定されていません。<br />
           .envファイルにFirebase設定を追加してください。
         </p>
       </div>
@@ -222,128 +293,134 @@
 </template>
 
 <script setup lang="ts">
-const { $auth } = useNuxtApp()
-const { login, loginWithGoogle, signup, resetPassword } = useAuth()
-const router = useRouter()
-const route = useRoute()
+const { $auth } = useNuxtApp();
+const { login, loginWithGoogle, signup, resetPassword } = useAuth();
+const router = useRouter();
+const route = useRoute();
 
 definePageMeta({
-  layout: false
-})
+  layout: false,
+});
 
-const isSignup = ref(false)
-const isLoading = ref(false)
-const showResetPassword = ref(false)
-const resetEmailSent = ref(false)
-const error = ref('')
-const successMessage = ref('')
+const isSignup = ref(false);
+const isLoading = ref(false);
+const showResetPassword = ref(false);
+const resetEmailSent = ref(false);
+const error = ref("");
+const successMessage = ref("");
 
 // 予約フローからのリダイレクトかどうか
 const isBookingRedirect = computed(() => {
-  const redirect = route.query.redirect as string
-  return redirect?.startsWith('/booking/')
-})
+  const redirect = route.query.redirect as string;
+  return redirect?.startsWith("/booking/");
+});
 
 const form = reactive({
-  email: '',
-  password: '',
-  displayName: ''
-})
+  email: "",
+  password: "",
+  displayName: "",
+});
 
 const toggleMode = () => {
-  isSignup.value = !isSignup.value
-  showResetPassword.value = false
-  error.value = ''
-  successMessage.value = ''
-}
+  isSignup.value = !isSignup.value;
+  showResetPassword.value = false;
+  error.value = "";
+  successMessage.value = "";
+};
 
 const showResetForm = () => {
-  showResetPassword.value = true
-  resetEmailSent.value = false
-  error.value = ''
-  successMessage.value = ''
-}
+  showResetPassword.value = true;
+  resetEmailSent.value = false;
+  error.value = "";
+  successMessage.value = "";
+};
 
 const backToLogin = () => {
-  showResetPassword.value = false
-  resetEmailSent.value = false
-  error.value = ''
-  successMessage.value = ''
-}
+  showResetPassword.value = false;
+  resetEmailSent.value = false;
+  error.value = "";
+  successMessage.value = "";
+};
 
 const handleResetPassword = async () => {
   if (!$auth) {
-    error.value = 'Firebaseが設定されていません'
-    return
+    error.value = "Firebaseが設定されていません";
+    return;
   }
 
   if (!form.email) {
-    error.value = 'メールアドレスを入力してください'
-    return
+    error.value = "メールアドレスを入力してください";
+    return;
   }
 
-  isLoading.value = true
-  error.value = ''
+  isLoading.value = true;
+  error.value = "";
 
   try {
-    await resetPassword(form.email)
-    resetEmailSent.value = true
-    successMessage.value = 'パスワードリセットメールを送信しました。メールをご確認ください。'
-  } catch (e: any) {
-    error.value = e.message || 'エラーが発生しました'
+    await resetPassword(form.email);
+    resetEmailSent.value = true;
+    successMessage.value =
+      "パスワードリセットメールを送信しました。メールをご確認ください。";
+  } catch (e: unknown) {
+    error.value = e instanceof Error ? e.message : "エラーが発生しました";
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
-}
+};
 
 const handleGoogleLogin = async () => {
   if (!$auth) {
-    error.value = 'Firebaseが設定されていません'
-    return
+    error.value = "Firebaseが設定されていません";
+    return;
   }
 
-  isLoading.value = true
-  error.value = ''
+  isLoading.value = true;
+  error.value = "";
 
   try {
-    console.log('[Login] Starting Google login...')
-    await loginWithGoogle()
-    console.log('[Login] Google login successful')
+    console.log("[Login] Starting Google login...");
+    await loginWithGoogle();
+    console.log("[Login] Google login successful");
     // ログイン成功後、リダイレクトURLまたはトップページへ
-    const redirectUrl = (route.query.redirect as string) || '/'
-    router.push(redirectUrl)
-  } catch (e: any) {
+    const redirectUrl = (route.query.redirect as string) || "/";
+    router.push(redirectUrl);
+  } catch (e: unknown) {
     // エラー詳細を画面に表示（本番環境ではconsole.logが削除されるため）
-    const errorDetail = e.code || e.message || (typeof e === 'object' ? JSON.stringify(e) : String(e))
-    error.value = e.message || `エラーが発生しました: ${errorDetail}`
+    const firebaseError = e as { code?: string; message?: string };
+    const errorDetail =
+      firebaseError.code ||
+      firebaseError.message ||
+      (typeof e === "object" ? JSON.stringify(e) : String(e));
+    error.value =
+      firebaseError.message || `エラーが発生しました: ${errorDetail}`;
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
-}
+};
 
 const handleSubmit = async () => {
   if (!$auth) {
-    error.value = 'Firebaseが設定されていません'
-    return
+    error.value = "Firebaseが設定されていません";
+    return;
   }
 
-  isLoading.value = true
-  error.value = ''
+  isLoading.value = true;
+  error.value = "";
 
   try {
     if (isSignup.value) {
-      await signup(form.email, form.password, form.displayName)
+      await signup(form.email, form.password, form.displayName);
     } else {
-      await login(form.email, form.password)
+      await login(form.email, form.password);
     }
 
     // ログイン成功後、リダイレクトURLまたはトップページへ
-    const redirectUrl = (route.query.redirect as string) || '/'
-    router.push(redirectUrl)
-  } catch (e: any) {
-    error.value = e.message || 'エラーが発生しました'
+    const redirectUrl = (route.query.redirect as string) || "/";
+    router.push(redirectUrl);
+  } catch (e: unknown) {
+    error.value = e instanceof Error ? e.message : "エラーが発生しました";
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
-}
+};
 </script>
