@@ -116,6 +116,8 @@ export const useAuth = () => {
       const provider = new GoogleAuthProvider()
       provider.addScope('profile')
       provider.addScope('email')
+      // 毎回アカウント選択画面を表示する（ログアウト後に別アカウントでログインできるようにする）
+      provider.setCustomParameters({ prompt: 'select_account' })
       console.log('[Auth] Provider configured, calling signInWithPopup...')
 
       const userCredential = await signInWithPopup($auth, provider)
