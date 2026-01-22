@@ -65,7 +65,7 @@
                 placeholder="example@email.com"
               />
             </div>
-            <LoadingButton
+            <UiLoadingButton
               type="submit"
               :loading="isLoading"
               :full-width="true"
@@ -73,7 +73,7 @@
               aria-label="パスワードリセットメールを送信"
             >
               リセットメールを送信
-            </LoadingButton>
+            </UiLoadingButton>
           </form>
         </div>
         <div v-else class="text-center">
@@ -235,7 +235,7 @@
           </div>
 
           <!-- 送信ボタン -->
-          <LoadingButton
+          <UiLoadingButton
             type="submit"
             :loading="isLoading"
             :full-width="true"
@@ -243,7 +243,7 @@
             :aria-label="isSignup ? 'アカウントを作成' : 'ログイン'"
           >
             {{ isSignup ? "アカウント作成" : "ログイン" }}
-          </LoadingButton>
+          </UiLoadingButton>
         </form>
 
         <!-- パスワードを忘れた方（ログイン時のみ） -->
