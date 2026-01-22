@@ -5,7 +5,10 @@
  */
 
 import { Timestamp, FieldValue } from "firebase-admin/firestore";
-import { getFirestoreAdmin } from "~/server/utils/firebase-admin";
+import {
+  getFirestoreAdmin,
+  generateSecureToken,
+} from "~/server/utils/firebase-admin";
 
 interface CreateBookingBody {
   checkInDate: string;
@@ -20,6 +23,10 @@ interface CreateBookingBody {
   isForeignNational?: boolean; // 外国籍かどうか
   guestNationality?: string; // 国籍（外国籍の場合）
   guestPassportNumber?: string; // パスポート番号（外国籍の場合）
+  // 法人予約関連
+  isCorporate?: boolean;
+  companyName?: string;
+  invoiceRequired?: boolean;
   totalAmount: number;
   baseAmount: number;
   cleaningFee?: number;
@@ -45,10 +52,9 @@ function generateBookingReference(): string {
 }
 
 // 予約確認用トークンを生成（セキュアなランダム文字列）
+// crypto.randomBytes を使用した安全な実装に変更
 function generateBookingToken(): string {
-  return Array.from({ length: 32 }, () =>
-    Math.random().toString(36).charAt(2),
-  ).join("");
+  return generateSecureToken();
 }
 
 export default defineEventHandler(async (event) => {
@@ -111,6 +117,11 @@ export default defineEventHandler(async (event) => {
         body.guestPassportNumber && {
           guestPassportNumber: body.guestPassportNumber,
         }),
+      // 法人予約関連
+      isCorporate: body.isCorporate || false,
+      ...(body.isCorporate &&
+        body.companyName && { companyName: body.companyName }),
+      invoiceRequired: body.invoiceRequired || false,
       status: "pending" as const,
       paymentStatus: "pending" as const,
       totalAmount: body.totalAmount,

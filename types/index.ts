@@ -53,6 +53,10 @@ export interface Booking {
   isForeignNational?: boolean   // 外国籍かどうか
   guestNationality?: string     // 国籍（外国籍の場合）
   guestPassportNumber?: string  // パスポート番号（外国籍の場合）
+  // 法人予約関連
+  isCorporate?: boolean         // 法人予約かどうか
+  companyName?: string          // 会社名
+  invoiceRequired?: boolean     // 請求書発行要否
   status: BookingStatus
   paymentStatus: PaymentStatus
   totalAmount: number
@@ -268,6 +272,10 @@ export interface CreateBookingRequest {
   isForeignNational?: boolean   // 外国籍かどうか
   guestNationality?: string     // 国籍（外国籍の場合）
   guestPassportNumber?: string  // パスポート番号（外国籍の場合）
+  // 法人予約関連
+  isCorporate?: boolean         // 法人予約かどうか
+  companyName?: string          // 会社名
+  invoiceRequired?: boolean     // 請求書発行要否
   totalAmount: number
   baseAmount: number
   discountAmount: number

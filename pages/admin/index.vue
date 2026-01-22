@@ -2331,6 +2331,28 @@
             </div>
           </div>
 
+          <!-- 法人情報 -->
+          <div
+            v-if="selectedBooking.isCorporate"
+            class="bg-purple-50 border border-purple-200 rounded-lg p-4"
+          >
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-purple-600 font-semibold">法人予約</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <label class="text-gray-600">会社名</label>
+                <p class="font-semibold">{{ selectedBooking.companyName }}</p>
+              </div>
+              <div>
+                <label class="text-gray-600">請求書発行</label>
+                <p class="font-semibold">
+                  {{ selectedBooking.invoiceRequired ? '希望あり' : '希望なし' }}
+                </p>
+              </div>
+            </div>
+          </div>
+
           <!-- 日程 -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>

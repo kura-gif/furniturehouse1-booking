@@ -681,6 +681,45 @@
                 </select>
               </div>
 
+              <!-- 法人予約チェック -->
+              <div class="border-t border-gray-200 pt-4">
+                <label class="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    v-model="isCorporate"
+                    class="w-5 h-5 text-purple-600 focus:ring-purple-500 rounded"
+                  />
+                  <span class="text-sm text-gray-700">法人でのご予約</span>
+                </label>
+              </div>
+
+              <!-- 法人の場合の追加フィールド -->
+              <div
+                v-if="isCorporate"
+                class="space-y-4 bg-purple-50 border border-purple-200 rounded-lg p-4"
+              >
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    会社名 <span class="text-red-500">*</span>
+                  </label>
+                  <input
+                    v-model="companyName"
+                    type="text"
+                    placeholder="株式会社〇〇"
+                    required
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
+                  />
+                </div>
+                <label class="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    v-model="invoiceRequired"
+                    class="w-5 h-5 text-purple-600 focus:ring-purple-500 rounded"
+                  />
+                  <span class="text-sm text-gray-700">請求書の発行を希望する</span>
+                </label>
+              </div>
+
               <!-- 外国籍チェック -->
               <div class="border-t border-gray-200 pt-4">
                 <label class="flex items-center gap-3 cursor-pointer">
@@ -1306,6 +1345,11 @@ const guestNationality = ref("");
 const guestPassportNumber = ref("");
 const isSearchingAddress = ref(false);
 
+// 法人予約関連
+const isCorporate = ref(false);
+const companyName = ref("");
+const invoiceRequired = ref(false);
+
 // 郵便番号入力時の自動フォーマット
 const onPostalCodeInput = (event: Event) => {
   const input = event.target as HTMLInputElement;
@@ -1477,6 +1521,13 @@ const isFormValid = computed(() => {
     return false;
   }
 
+  // 法人の場合の追加チェック
+  if (isCorporate.value) {
+    if (!companyName.value.trim()) {
+      return false;
+    }
+  }
+
   // 外国籍の場合の追加チェック
   if (isForeignNational.value) {
     if (!guestNationality.value.trim() || !guestPassportNumber.value.trim()) {
@@ -1565,6 +1616,9 @@ const proceedToPayment = async () => {
         guestPassportNumber: isForeignNational.value
           ? guestPassportNumber.value
           : undefined,
+        isCorporate: isCorporate.value,
+        companyName: isCorporate.value ? companyName.value : undefined,
+        invoiceRequired: isCorporate.value ? invoiceRequired.value : false,
         totalAmount: finalTotalAmount.value,
         baseAmount: subtotal.value,
         cleaningFee: cleaningFee.value,
