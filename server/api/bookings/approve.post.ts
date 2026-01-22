@@ -2,6 +2,7 @@
  * 予約審査承認API
  * - 与信確保済みのPayment Intentをキャプチャ（決済確定）
  * - 予約ステータスをconfirmedに更新
+ * - 清掃タスクを自動生成
  * - ゲストに承認通知メールを送信
  *
  * POST /api/bookings/approve
@@ -10,7 +11,7 @@
  */
 
 import Stripe from "stripe";
-import { FieldValue } from "firebase-admin/firestore";
+import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { requireAdmin } from "~/server/utils/auth";
 import { sendEmailWithRetry } from "~/server/utils/email-retry";
 
@@ -100,7 +101,62 @@ export default defineEventHandler(async (event) => {
       createdAt: FieldValue.serverTimestamp(),
     });
 
-    // 6. 承認通知メールを送信（リトライ付き）
+    // 6. 清掃タスクを自動生成
+    try {
+      const defaultChecklist = [
+        { item: "ベッドシーツ交換", completed: false },
+        { item: "枕カバー交換", completed: false },
+        { item: "タオル交換", completed: false },
+        { item: "床掃除", completed: false },
+        { item: "トイレ掃除", completed: false },
+        { item: "キッチン掃除", completed: false },
+        { item: "ゴミ回収", completed: false },
+        { item: "備品チェック", completed: false },
+      ];
+
+      // チェックイン前タスク（pre_checkin）
+      const preCheckinTask = {
+        bookingId,
+        bookingReference: booking.bookingReference,
+        taskType: "pre_checkin",
+        status: "pending",
+        scheduledDate: booking.checkInDate,
+        estimatedDuration: 120, // 2時間
+        checklist: defaultChecklist,
+        suppliesUsed: [],
+        createdAt: Timestamp.now(),
+        updatedAt: Timestamp.now(),
+      };
+
+      // チェックアウト後タスク（post_checkout）
+      const postCheckoutTask = {
+        bookingId,
+        bookingReference: booking.bookingReference,
+        taskType: "post_checkout",
+        status: "pending",
+        scheduledDate: booking.checkOutDate,
+        estimatedDuration: 180, // 3時間
+        checklist: defaultChecklist,
+        suppliesUsed: [],
+        createdAt: Timestamp.now(),
+        updatedAt: Timestamp.now(),
+      };
+
+      await Promise.all([
+        db.collection("cleaningTasks").add(preCheckinTask),
+        db.collection("cleaningTasks").add(postCheckoutTask),
+      ]);
+
+      console.log(
+        "✅ 清掃タスク自動生成完了:",
+        booking.bookingReference,
+      );
+    } catch (taskError) {
+      // 清掃タスク生成失敗は承認処理自体には影響させない
+      console.error("⚠️ 清掃タスク生成に失敗:", taskError);
+    }
+
+    // 7. 承認通知メールを送信（リトライ付き）
     try {
       const baseUrl = config.public.siteUrl || "http://localhost:3000";
 
@@ -137,7 +193,7 @@ export default defineEventHandler(async (event) => {
       // メール送信失敗は承認処理自体には影響させない
     }
 
-    // 7. 管理者にも通知（リトライ付き）
+    // 8. 管理者にも通知（リトライ付き）
     try {
       const baseUrl = config.public.siteUrl || "http://localhost:3000";
       await sendEmailWithRetry(
