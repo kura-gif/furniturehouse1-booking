@@ -375,8 +375,7 @@
                 :key="review.id"
                 class="space-y-2"
               >
-                <div class="flex items-center justify-between">
-                  <p class="font-medium text-gray-900">{{ review.userName }}</p>
+                <div class="flex items-center justify-end">
                   <p class="text-sm text-gray-500">
                     {{ review.stayDate || formatReviewDate(review.createdAt) }}
                   </p>
@@ -408,6 +407,10 @@
             >
               すべてのレビューを表示
             </NuxtLink>
+
+            <p class="mt-6 text-sm text-gray-500">
+              レビューのお願い：体験談が他の方の参考になるようレビューのご協力をお願いします。投稿レビューは管理者の承認後、匿名で公開させていただきます。
+            </p>
           </section>
 
           <!-- 注意事項 -->
@@ -810,7 +813,7 @@
                 "
                 type="button"
               >
-                予約する
+                予約へ進む
               </button>
 
               <p class="text-center text-sm text-gray-500 mt-4">
