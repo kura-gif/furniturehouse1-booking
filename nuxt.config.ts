@@ -97,7 +97,7 @@ export default defineNuxtConfig({
     routeRules: {
       '/**': {
         headers: {
-          'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://m.stripe.com https://*.firebaseio.com https://apis.google.com https://accounts.google.com https://*.firebaseapp.com https://udify.app; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: blob:; connect-src 'self' https: wss: blob:; frame-src https://js.stripe.com https://hooks.stripe.com https://*.firebaseapp.com https://www.youtube.com https://youtube.com https://accounts.google.com https://apis.google.com https://udify.app; worker-src 'self' blob:;"
+          'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://m.stripe.com https://*.firebaseio.com https://apis.google.com https://accounts.google.com https://*.firebaseapp.com https://udify.app https://vercel.live; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: blob:; connect-src 'self' https: wss: blob:; frame-src https://js.stripe.com https://hooks.stripe.com https://*.firebaseapp.com https://www.youtube.com https://youtube.com https://accounts.google.com https://apis.google.com https://udify.app https://vercel.live; worker-src 'self' blob:;"
         }
       },
       // 静的アセットのキャッシュ（1年）
@@ -129,7 +129,7 @@ export default defineNuxtConfig({
     switchbotDeviceId: process.env.SWITCHBOT_DEVICE_ID || '',
 
     // OpenWeather API
-    openweatherApiKey: process.env.OPENWEATHER_API_KEY || '',
+    openweatherApiKey: process.env.NUXT_OPENWEATHER_API_KEY || process.env.OPENWEATHER_API_KEY || '',
 
     // Cron認証
     cronSecret: process.env.CRON_SECRET || '',
@@ -164,6 +164,12 @@ export default defineNuxtConfig({
   vite: {
     esbuild: {
       drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : []
+    },
+    server: {
+      watch: {
+        usePolling: true,
+        interval: 1000
+      }
     }
   }
 })
