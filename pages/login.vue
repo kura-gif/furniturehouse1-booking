@@ -65,15 +65,26 @@
                 placeholder="example@email.com"
               />
             </div>
-            <UiLoadingButton
+            <button
               type="submit"
-              :loading="isLoading"
-              :full-width="true"
-              loading-text="送信中..."
+              :disabled="isLoading"
+              :aria-busy="isLoading"
               aria-label="パスワードリセットメールを送信"
+              class="w-full px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center"
             >
-              リセットメールを送信
-            </UiLoadingButton>
+              <svg
+                v-if="isLoading"
+                class="animate-spin -ml-1 mr-2 h-4 w-4"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+              {{ isLoading ? "送信中..." : "リセットメールを送信" }}
+            </button>
           </form>
         </div>
         <div v-else class="text-center">
@@ -235,15 +246,26 @@
           </div>
 
           <!-- 送信ボタン -->
-          <UiLoadingButton
+          <button
             type="submit"
-            :loading="isLoading"
-            :full-width="true"
-            loading-text="処理中..."
+            :disabled="isLoading"
+            :aria-busy="isLoading"
             :aria-label="isSignup ? 'アカウントを作成' : 'ログイン'"
+            class="w-full px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center"
           >
-            {{ isSignup ? "アカウント作成" : "ログイン" }}
-          </UiLoadingButton>
+            <svg
+              v-if="isLoading"
+              class="animate-spin -ml-1 mr-2 h-4 w-4"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+            </svg>
+            {{ isLoading ? "処理中..." : (isSignup ? "アカウント作成" : "ログイン") }}
+          </button>
         </form>
 
         <!-- パスワードを忘れた方（ログイン時のみ） -->
