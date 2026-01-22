@@ -1365,83 +1365,73 @@
 
       <!-- レビュー管理タブ -->
       <div v-if="currentTab === 'reviews'" class="card">
-        <h2 class="text-2xl font-semibold mb-6">ゲストレビュー</h2>
-
-        <!-- レビュー統計 -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div class="text-center">
-            <p class="text-sm text-gray-600 mb-1">総合評価</p>
-            <p class="text-4xl font-bold text-purple-600">4.8</p>
-            <div class="flex items-center justify-center gap-1 mt-2">
-              <span class="text-yellow-400">★★★★★</span>
-            </div>
-          </div>
-          <div class="text-center">
-            <p class="text-sm text-gray-600 mb-1">レビュー数</p>
-            <p class="text-4xl font-bold text-gray-700">127</p>
-          </div>
-          <div class="text-center">
-            <p class="text-sm text-gray-600 mb-1">返信率</p>
-            <p class="text-4xl font-bold text-green-600">98%</p>
-          </div>
-          <div class="text-center">
-            <p class="text-sm text-gray-600 mb-1">未返信</p>
-            <p class="text-4xl font-bold text-orange-600">2</p>
-          </div>
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-2xl font-semibold">ゲストレビュー</h2>
+          <NuxtLink
+            to="/admin/reviews"
+            class="btn-primary flex items-center gap-2"
+          >
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+              />
+            </svg>
+            レビュー管理を開く
+          </NuxtLink>
         </div>
 
-        <!-- レビュー一覧 -->
-        <div class="space-y-4">
-          <div class="border rounded-lg p-4">
-            <div class="flex items-start justify-between mb-3">
-              <div>
-                <div class="flex items-center gap-3">
-                  <h3 class="font-semibold">山田太郎</h3>
-                  <span class="text-yellow-400">★★★★★</span>
-                  <span class="text-sm text-gray-500">5.0</span>
-                </div>
-                <p class="text-sm text-gray-600 mt-1">2025年1月20日</p>
-              </div>
-              <span
-                class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-semibold"
-              >
-                未返信
-              </span>
-            </div>
-            <p class="text-gray-700 mb-3">
-              とても素敵な宿でした！家具も素敵で、快適に過ごせました。また利用したいです。
-            </p>
-            <div class="flex gap-2">
-              <button class="btn-primary text-sm">返信する</button>
-            </div>
+        <div class="text-center py-12">
+          <div
+            class="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6"
+          >
+            <svg
+              class="w-10 h-10 text-yellow-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+              />
+            </svg>
           </div>
-
-          <div class="border rounded-lg p-4">
-            <div class="flex items-start justify-between mb-3">
-              <div>
-                <div class="flex items-center gap-3">
-                  <h3 class="font-semibold">田中花子</h3>
-                  <span class="text-yellow-400">★★★★☆</span>
-                  <span class="text-sm text-gray-500">4.0</span>
-                </div>
-                <p class="text-sm text-gray-600 mt-1">2025年1月15日</p>
-              </div>
-              <span
-                class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold"
-              >
-                返信済み
-              </span>
-            </div>
-            <p class="text-gray-700 mb-3">
-              清潔で快適でした。アクセスも良く便利な立地です。
-            </p>
-            <div class="bg-gray-50 p-3 rounded-lg mt-3">
-              <p class="text-sm text-gray-600 mb-1">オーナーからの返信</p>
-              <p class="text-sm">
-                ご利用ありがとうございました。またのお越しをお待ちしております。
-              </p>
-            </div>
-          </div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">
+            レビュー管理画面
+          </h3>
+          <p class="text-gray-600 mb-6">
+            ゲストからのレビューの承認・却下、返信の管理は<br />
+            専用の管理画面で行えます。
+          </p>
+          <NuxtLink
+            to="/admin/reviews"
+            class="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+          >
+            レビュー管理を開く
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </NuxtLink>
         </div>
       </div>
 
