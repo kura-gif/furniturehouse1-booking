@@ -1,7 +1,8 @@
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
 
-  const apiKey = config.openweatherApiKey;
+  // Vercel環境では process.env から直接読む必要がある場合がある
+  const apiKey = config.openweatherApiKey || process.env.OPENWEATHER_API_KEY || process.env.NUXT_OPENWEATHER_API_KEY;
 
   if (!apiKey) {
     throw createError({
