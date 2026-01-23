@@ -4,10 +4,11 @@ export default defineEventHandler((event) => {
     return
   }
 
-  // API・静的ファイルはスキップ
+  // API・静的ファイル・予約プロセスはスキップ
   const path = event.path || ''
   if (
     path.startsWith('/api/') ||
+    path.startsWith('/booking/') ||
     path.startsWith('/_nuxt/') ||
     path.startsWith('/favicon') ||
     path.match(/\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2)$/)
