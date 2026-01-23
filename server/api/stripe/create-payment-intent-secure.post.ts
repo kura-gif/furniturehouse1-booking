@@ -35,7 +35,16 @@ export default defineEventHandler(async (event) => {
         pricingRule = pricingDoc.data() as PricingRule;
       }
 
-      // 4. クーポン割引を計算
+      // 4. 基本金額を先に計算（割引なし）
+      const baseAmount = calculateBookingAmount(
+        new Date(validatedData.checkInDate),
+        new Date(validatedData.checkOutDate),
+        validatedData.guestCount,
+        pricingRule,
+        0, // 割引なしで計算
+      );
+
+      // 5. クーポン割引を計算
       if (validatedData.couponCode) {
         const couponSnapshot = await db
           .collection("coupons")
@@ -48,23 +57,49 @@ export default defineEventHandler(async (event) => {
           const coupon = couponSnapshot.docs[0].data();
           couponId = couponSnapshot.docs[0].id;
 
-          // クーポン有効期限チェック
-          if (coupon.expiresAt && coupon.expiresAt.toDate() < new Date()) {
+          // クーポン有効期限チェック（validUntilまたはexpiresAtをサポート）
+          const expiryDate = coupon.validUntil || coupon.expiresAt;
+          if (expiryDate && expiryDate.toDate() < new Date()) {
             throw createError({
               statusCode: 400,
               message: "クーポンの有効期限が切れています",
             });
           }
 
-          // 使用回数制限チェック
-          if (coupon.maxUses && coupon.usedCount >= coupon.maxUses) {
+          // 使用回数制限チェック（usageLimitまたはmaxUsesをサポート）
+          const maxUses = coupon.usageLimit || coupon.maxUses;
+          const usedCount = coupon.usageCount || coupon.usedCount || 0;
+          if (maxUses && usedCount >= maxUses) {
             throw createError({
               statusCode: 400,
               message: "クーポンの使用回数が上限に達しています",
             });
           }
 
-          couponDiscount = coupon.discountAmount || 0;
+          // 割引額を計算（discountTypeに基づく）
+          if (coupon.discountType === "percentage") {
+            // パーセンテージ割引
+            const discountRate = (coupon.discountValue || 0) / 100;
+            couponDiscount = Math.floor(baseAmount * discountRate);
+
+            // 最大割引額の制限
+            if (coupon.maxDiscount && couponDiscount > coupon.maxDiscount) {
+              couponDiscount = coupon.maxDiscount;
+            }
+          } else {
+            // 固定額割引（discountType === 'fixed' または未指定）
+            couponDiscount = Math.min(
+              coupon.discountValue || coupon.discountAmount || 0,
+              baseAmount,
+            );
+          }
+
+          stripeLogger.debug("Coupon applied", {
+            code: validatedData.couponCode,
+            discountType: coupon.discountType,
+            discountValue: coupon.discountValue,
+            calculatedDiscount: couponDiscount,
+          });
         } else {
           stripeLogger.warn("Invalid coupon code", {
             code: validatedData.couponCode,
@@ -80,7 +115,7 @@ export default defineEventHandler(async (event) => {
       );
     }
 
-    // 5. サーバーサイドで金額を計算
+    // 6. 最終金額を計算（基本金額 - クーポン割引）
     const calculatedAmount = calculateBookingAmount(
       new Date(validatedData.checkInDate),
       new Date(validatedData.checkOutDate),
