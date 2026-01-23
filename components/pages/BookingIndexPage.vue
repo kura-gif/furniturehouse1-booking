@@ -375,8 +375,7 @@
                 :key="review.id"
                 class="space-y-2"
               >
-                <div class="flex items-center justify-between">
-                  <p class="font-medium text-gray-900">{{ review.userName }}</p>
+                <div class="flex items-center justify-end">
                   <p class="text-sm text-gray-500">
                     {{ review.stayDate || formatReviewDate(review.createdAt) }}
                   </p>
@@ -810,7 +809,7 @@
                 "
                 type="button"
               >
-                予約する
+                予約へ進む
               </button>
 
               <p class="text-center text-sm text-gray-500 mt-4">
