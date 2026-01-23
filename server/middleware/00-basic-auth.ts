@@ -4,12 +4,10 @@ export default defineEventHandler((event) => {
     return
   }
 
-  // API・静的ファイル・webhookはスキップ
+  // API・静的ファイルはスキップ
   const path = event.path || ''
   if (
-    path.startsWith('/api/stripe/webhook') ||
-    path.startsWith('/api/cron/') ||
-    path.startsWith('/api/health') ||
+    path.startsWith('/api/') ||
     path.startsWith('/_nuxt/') ||
     path.startsWith('/favicon') ||
     path.match(/\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2)$/)
