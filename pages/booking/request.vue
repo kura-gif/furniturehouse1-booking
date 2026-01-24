@@ -1711,6 +1711,7 @@ const proceedToPayment = async () => {
     }>("/api/bookings/create-booking", {
       method: "POST",
       body: {
+        userId: user.value?.uid || "",
         checkInDate: checkInDate.value,
         checkOutDate: checkOutDate.value,
         guestCount: adults.value + children.value,

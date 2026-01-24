@@ -11,6 +11,7 @@ import {
 } from "~/server/utils/firebase-admin";
 
 interface CreateBookingBody {
+  userId?: string;
   checkInDate: string;
   checkOutDate: string;
   guestCount: number;
@@ -101,6 +102,8 @@ export default defineEventHandler(async (event) => {
       bookingReference,
       bookingToken,
       type: "stay" as const,
+      // ユーザーIDを保存（マイページで予約一覧を表示するため）
+      ...(body.userId && { userId: body.userId }),
       checkInDate,
       checkOutDate,
       startDate: checkInDate,
