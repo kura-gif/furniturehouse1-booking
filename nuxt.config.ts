@@ -160,10 +160,10 @@ export default defineNuxtConfig({
     typeCheck: 'build'
   },
 
-  // 本番ビルドでconsole.logを削除（デバッグのため一時的に無効化）
+  // 本番ビルドでconsole.logを削除
   vite: {
     esbuild: {
-      // drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : []
+      drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : []
     },
     server: {
       watch: {

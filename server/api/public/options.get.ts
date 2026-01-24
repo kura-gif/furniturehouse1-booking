@@ -5,15 +5,7 @@
 
 export default defineEventHandler(async (event) => {
   try {
-    console.log("🔍 options.get: Starting...");
-    let db;
-    try {
-      db = getFirestoreAdmin();
-      console.log("✅ options.get: Firestore initialized");
-    } catch (firestoreError) {
-      console.error("❌ options.get: Firestore initialization failed:", firestoreError);
-      throw firestoreError;
-    }
+    const db = getFirestoreAdmin();
 
     // インデックス不要: 全件取得してフィルタリング・ソート
     const snapshot = await db.collection("bookingOptions").get();
@@ -41,11 +33,7 @@ export default defineEventHandler(async (event) => {
       options,
     };
   } catch (error: unknown) {
-    console.error("❌ options.get error:", {
-      error,
-      message: error instanceof Error ? error.message : "Unknown error",
-      stack: error instanceof Error ? error.stack : undefined,
-    });
+    console.error("オプション取得エラー:", error);
     throw createError({
       statusCode: 500,
       message: "オプションの取得に失敗しました",

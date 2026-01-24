@@ -131,25 +131,13 @@ const getServiceAccountFromEnv = (
  * Firestoreインスタンスを取得
  */
 export const getFirestoreAdmin = () => {
-  console.log("🔍 getFirestoreAdmin: Checking adminApp:", !!adminApp);
   if (!adminApp) {
-    console.log("🔍 getFirestoreAdmin: Initializing Firebase Admin SDK...");
     const app = initializeFirebaseAdmin();
     if (!app) {
-      console.error("❌ getFirestoreAdmin: Firebase Admin SDK initialization returned null");
-      console.error("❌ Environment check:", {
-        hasFirebaseAdminKey: !!process.env.FIREBASE_ADMIN_KEY,
-        firebaseAdminKeyLength: process.env.FIREBASE_ADMIN_KEY?.length || 0,
-        hasPrivateKey: !!process.env.FIREBASE_PRIVATE_KEY,
-        hasClientEmail: !!process.env.FIREBASE_CLIENT_EMAIL,
-        hasGoogleCredentials: !!process.env.GOOGLE_APPLICATION_CREDENTIALS,
-        nodeEnv: process.env.NODE_ENV,
-      });
       throw new Error(
         "Firebase Admin SDK is not initialized. Please configure credentials.",
       );
     }
-    console.log("✅ getFirestoreAdmin: Firebase Admin SDK initialized successfully");
   }
   return getFirestore();
 };
