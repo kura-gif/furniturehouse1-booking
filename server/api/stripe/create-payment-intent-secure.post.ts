@@ -132,7 +132,28 @@ export default defineEventHandler(async (event) => {
       total: calculatedAmount,
     });
 
-    // 6. Payment Intentを作成（与信確保のみ、審査後にキャプチャ）
+    // 0円予約の場合（100%割引クーポン適用時など）
+    if (calculatedAmount <= 0) {
+      stripeLogger.event("zero_amount_booking", {
+        couponCode: validatedData.couponCode,
+        couponDiscount,
+      });
+
+      return {
+        clientSecret: null,
+        paymentIntentId: "",
+        amount: 0,
+        isZeroAmount: true,
+        breakdown: {
+          baseAmount: couponDiscount - pricingRule.cleaningFee,
+          cleaningFee: pricingRule.cleaningFee,
+          couponDiscount,
+          total: 0,
+        },
+      };
+    }
+
+    // 7. Payment Intentを作成（与信確保のみ、審査後にキャプチャ）
     // capture_method: 'manual' で与信枠を確保し、実際の請求は審査承認後に行う
     // idempotencyKey: リトライ時の二重課金を防止
     const idempotencyKey = `pi-${validatedData.checkInDate}-${validatedData.checkOutDate}-${validatedData.guestCount}-${calculatedAmount}-${Date.now()}`;
@@ -165,11 +186,12 @@ export default defineEventHandler(async (event) => {
       status: paymentIntent.status,
     });
 
-    // 7. レスポンス
+    // 8. レスポンス
     return {
       clientSecret: paymentIntent.client_secret,
       paymentIntentId: paymentIntent.id,
       amount: calculatedAmount,
+      isZeroAmount: false,
       breakdown: {
         baseAmount: calculatedAmount + couponDiscount - pricingRule.cleaningFee,
         cleaningFee: pricingRule.cleaningFee,
