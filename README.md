@@ -13,6 +13,7 @@
 ## 環境
 
 - **本番環境**: https://booking.furniturehouse1.com/
+- **ステージング環境**: https://staging.furniturehouse1.com/
 - **ブランドサイト**: https://furniturehouse1.com/
 - **管理者メール**: furniturehouse1@chladni.co.jp
 

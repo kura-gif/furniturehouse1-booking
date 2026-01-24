@@ -1,6 +1,7 @@
 import { getAuth } from "firebase-admin/auth";
 import { getFirestoreAdmin } from "~/server/utils/firebase-admin";
 import { FieldValue } from "firebase-admin/firestore";
+import { requireValidPassword } from "~/server/utils/validation";
 
 /**
  * 招待受け入れAPI（公開エンドポイント）
@@ -26,12 +27,15 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  if (!password || typeof password !== "string" || password.length < 8) {
+  if (!password || typeof password !== "string") {
     throw createError({
       statusCode: 400,
-      message: "パスワードは8文字以上で入力してください",
+      message: "パスワードが必要です",
     });
   }
+
+  // パスワード強度チェック
+  requireValidPassword(password);
 
   try {
     const db = getFirestoreAdmin();

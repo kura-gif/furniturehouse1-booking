@@ -275,9 +275,10 @@ service cloud.firestore {
                             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
                             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
 
-      // サポーター（認証済みでusersコレクションに存在しない＝supportersコレクションのユーザー）がアクセス可能
+      // サポーター（usersコレクションにrole='supporter'として存在するユーザー）がアクセス可能
       allow read, write: if request.auth != null &&
-                            !exists(/databases/$(database)/documents/users/$(request.auth.uid));
+                            exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'supporter';
     }
 
     // メンテナンス記録コレクション（管理者・サポーター共有）
@@ -287,9 +288,10 @@ service cloud.firestore {
                             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
                             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
 
-      // サポーター（認証済みでusersコレクションに存在しない＝supportersコレクションのユーザー）がアクセス可能
+      // サポーター（usersコレクションにrole='supporter'として存在するユーザー）がアクセス可能
       allow read, write: if request.auth != null &&
-                            !exists(/databases/$(database)/documents/users/$(request.auth.uid));
+                            exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'supporter';
     }
 
     // レビューコレクション（公開用）

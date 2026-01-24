@@ -125,3 +125,57 @@ export const validateInput = <T>(schema: z.ZodSchema<T>, data: unknown): T => {
     throw error;
   }
 };
+
+/**
+ * パスワード強度ポリシー
+ * - 最小8文字
+ * - 大文字を含む
+ * - 小文字を含む
+ * - 数字を含む
+ */
+export interface PasswordValidationResult {
+  isValid: boolean;
+  errors: string[];
+}
+
+export const validatePassword = (password: string): PasswordValidationResult => {
+  const errors: string[] = [];
+
+  if (!password || typeof password !== "string") {
+    return { isValid: false, errors: ["パスワードを入力してください"] };
+  }
+
+  if (password.length < 8) {
+    errors.push("パスワードは8文字以上で設定してください");
+  }
+
+  if (!/[A-Z]/.test(password)) {
+    errors.push("パスワードには大文字を含めてください");
+  }
+
+  if (!/[a-z]/.test(password)) {
+    errors.push("パスワードには小文字を含めてください");
+  }
+
+  if (!/[0-9]/.test(password)) {
+    errors.push("パスワードには数字を含めてください");
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+  };
+};
+
+/**
+ * パスワードバリデーションでエラーをスロー
+ */
+export const requireValidPassword = (password: string): void => {
+  const result = validatePassword(password);
+  if (!result.isValid) {
+    throw createError({
+      statusCode: 400,
+      message: result.errors.join("、"),
+    });
+  }
+};

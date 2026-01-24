@@ -934,7 +934,7 @@ URL: https://booking.furniturehouse1.com/api/health
 |------|----------|--------|
 | 2026/01/17 | 初版作成 | |
 | 2026/01/20 | Phase 3開始：Stripe本番設定完了、Vercel環境変数設定、Basic認証解除 | |
-| | | |
+| 2026/01/21 | 環境URL整理：本番 booking.furniturehouse1.com、ステージング staging.furniturehouse1.com | |
 
 ---
 
