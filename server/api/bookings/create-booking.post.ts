@@ -77,7 +77,9 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    if (!body.stripePaymentIntentId) {
+    // 0円予約（100%割引クーポン）の場合はPayment Intentが不要
+    const isZeroAmountBooking = body.totalAmount === 0;
+    if (!isZeroAmountBooking && !body.stripePaymentIntentId) {
       throw createError({
         statusCode: 400,
         message: "決済情報が不足しています",
@@ -123,7 +125,11 @@ export default defineEventHandler(async (event) => {
         body.companyName && { companyName: body.companyName }),
       invoiceRequired: body.invoiceRequired || false,
       status: "pending" as const,
-      paymentStatus: "pending" as const,
+      // 0円予約の場合は決済不要
+      paymentStatus: isZeroAmountBooking
+        ? ("not_required" as const)
+        : ("pending" as const),
+      isZeroAmountBooking,
       totalAmount: body.totalAmount,
       baseAmount: body.baseAmount,
       cleaningFee: body.cleaningFee || 0,
@@ -135,7 +141,10 @@ export default defineEventHandler(async (event) => {
           selectedOptions: body.selectedOptions,
           optionsTotalPrice: body.optionsTotalPrice || 0,
         }),
-      stripePaymentIntentId: body.stripePaymentIntentId,
+      // 0円予約の場合はPayment Intent IDは空
+      ...(body.stripePaymentIntentId && {
+        stripePaymentIntentId: body.stripePaymentIntentId,
+      }),
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
     };
