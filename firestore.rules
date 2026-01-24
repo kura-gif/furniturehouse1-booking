@@ -25,10 +25,15 @@ service cloud.firestore {
                        request.resource.data.bookingReference is string &&
                        request.resource.data.bookingToken is string;
 
-      // 認証済みユーザーは自分の予約を読み取り可能（userIdまたはguestEmailで照合）
+      // 認証済みユーザーは自分の予約を読み取り可能（userIdで照合）
+      // リストクエリ用: where("userId", "==", uid) のクエリに対応
       allow read: if request.auth != null &&
-                     (resource.data.userId == request.auth.uid ||
-                      resource.data.guestEmail == request.auth.token.email);
+                     resource.data.userId == request.auth.uid;
+
+      // 認証済みユーザーは自分の予約を読み取り可能（guestEmailで照合）
+      // リストクエリ用: where("guestEmail", "==", email) のクエリに対応
+      allow read: if request.auth != null &&
+                     resource.data.guestEmail == request.auth.token.email;
 
       // 認証済みユーザーは自分の予約をキャンセル可能（ステータス変更のみ）
       allow update: if request.auth != null &&
