@@ -18,10 +18,11 @@ export default defineEventHandler(
     try {
       const db = getFirestoreAdmin();
 
-      // pending_review（承認待ち）とconfirmed（確定）ステータスの予約を取得
+      // pending（申請中）、pending_review（承認待ち）、confirmed（確定）ステータスの予約を取得
+      // ダブルブッキング防止のため、pendingも含める
       const bookingsSnapshot = await db
         .collection("bookings")
-        .where("status", "in", ["pending_review", "confirmed"])
+        .where("status", "in", ["pending", "pending_review", "confirmed"])
         .get();
 
       const bookedDates: BookedDateRange[] = [];
