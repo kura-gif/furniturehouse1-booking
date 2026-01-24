@@ -29,10 +29,27 @@ export default defineEventHandler(async (event) => {
     try {
       const db = getFirestoreAdmin();
 
-      // 3. 料金設定を取得
-      const pricingDoc = await db.collection("pricing").doc("default").get();
-      if (pricingDoc.exists) {
-        pricingRule = pricingDoc.data() as PricingRule;
+      // 3. 料金設定を取得（enhancedPricingSettingsから読み込み）
+      const enhancedPricingDoc = await db
+        .collection("enhancedPricingSettings")
+        .doc("default")
+        .get();
+      if (enhancedPricingDoc.exists) {
+        const enhancedSettings = enhancedPricingDoc.data();
+        // 拡張設定から必要な値をマッピング
+        pricingRule = {
+          ...DEFAULT_PRICING,
+          basePrice: enhancedSettings?.basePrice ?? DEFAULT_PRICING.basePrice,
+          cleaningFee:
+            enhancedSettings?.cleaningFee ?? DEFAULT_PRICING.cleaningFee,
+          // 週末料金は倍率から計算（weekendMultiplier - 1）× basePrice
+          weekendSurcharge: enhancedSettings?.dayTypePricing?.weekendMultiplier
+            ? Math.round(
+                (enhancedSettings.dayTypePricing.weekendMultiplier - 1) *
+                  (enhancedSettings?.basePrice ?? DEFAULT_PRICING.basePrice),
+              )
+            : DEFAULT_PRICING.weekendSurcharge,
+        };
       }
 
       // 4. 基本金額を先に計算（割引なし）
