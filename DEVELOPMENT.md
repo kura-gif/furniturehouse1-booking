@@ -98,7 +98,7 @@ git push
 各ブランチは自動的に以下のようなURLでアクセスできます：
 
 - **main** → https://booking.furniturehouse1.com
-- **develop** → https://furniturehouse1-booking-git-develop-xxxxx.vercel.app
+- **develop** → https://staging.furniturehouse1.com
 - **feature/xxx** → https://furniturehouse1-booking-git-feature-xxx-xxxxx.vercel.app
 
 Vercelのダッシュボードで確認できます：

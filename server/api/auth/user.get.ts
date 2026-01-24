@@ -1,4 +1,5 @@
 import { getFirestoreAdmin, getAuthAdmin } from "~/server/utils/firebase-admin";
+import { authLogger } from "~/server/utils/logger";
 
 /**
  * 現在のユーザー情報を取得するAPI
@@ -18,20 +19,20 @@ export default defineEventHandler(async (event) => {
   const idToken = authHeader.split("Bearer ")[1];
 
   try {
-    console.log("[API /auth/user] Verifying token...");
+    authLogger.debug("Verifying token...");
     const auth = getAuthAdmin();
     const decodedToken = await auth.verifyIdToken(idToken);
     const uid = decodedToken.uid;
-    console.log("[API /auth/user] Token verified, uid:", uid);
+    authLogger.debug("Token verified", { uid });
 
     const db = getFirestoreAdmin();
-    console.log("[API /auth/user] Fetching user document...");
+    authLogger.debug("Fetching user document...");
     const userDoc = await db.collection("users").doc(uid).get();
-    console.log("[API /auth/user] User doc exists:", userDoc.exists);
+    authLogger.debug("User doc exists:", userDoc.exists);
 
     if (userDoc.exists) {
       const userData = userDoc.data();
-      console.log("[API /auth/user] User role:", userData?.role);
+      authLogger.debug("User role:", userData?.role);
       return {
         success: true,
         user: {
@@ -47,9 +48,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // usersコレクションにない場合、supportersコレクションを検索
-    console.log(
-      "[API /auth/user] User not found in users collection, checking supporters...",
-    );
+    authLogger.debug("User not found in users collection, checking supporters...");
     const supportersSnapshot = await db
       .collection("supporters")
       .where("uid", "==", uid)
@@ -59,7 +58,7 @@ export default defineEventHandler(async (event) => {
     if (!supportersSnapshot.empty) {
       const supporterDoc = supportersSnapshot.docs[0];
       const supporterData = supporterDoc.data();
-      console.log("[API /auth/user] Found supporter:", supporterData?.name);
+      authLogger.debug("Found supporter", { name: supporterData?.name });
       return {
         success: true,
         user: {
@@ -77,14 +76,14 @@ export default defineEventHandler(async (event) => {
       };
     }
 
-    console.log("[API /auth/user] User not found in any collection");
+    authLogger.debug("User not found in any collection");
     return {
       success: false,
       error: "User not found",
       user: null,
     };
   } catch (error: unknown) {
-    console.error("[API /auth/user] Error:", error);
+    authLogger.error("Auth error", error);
     throw createError({
       statusCode: 401,
       message: "認証に失敗しました",

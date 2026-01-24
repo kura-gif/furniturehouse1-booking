@@ -2,6 +2,7 @@ import { getAuth } from "firebase-admin/auth";
 import { FieldValue } from "firebase-admin/firestore";
 import { getFirestoreAdmin } from "~/server/utils/firebase-admin";
 import { isInvitationExpired } from "~/server/utils/invitation";
+import { requireValidPassword } from "~/server/utils/validation";
 
 /**
  * 管理者招待受諾API
@@ -20,12 +21,8 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  if (password.length < 6) {
-    throw createError({
-      statusCode: 400,
-      message: "パスワードは6文字以上にしてください",
-    });
-  }
+  // パスワード強度チェック
+  requireValidPassword(password);
 
   const db = getFirestoreAdmin();
 

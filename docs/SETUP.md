@@ -122,7 +122,7 @@
 4. **Vercelで確認**
    - https://vercel.com/yoichi-kurashimas-projects/furniturehouse1
    - 新しいデプロイが表示される
-   - 本番URL: https://furniturehouse1-booking.vercel.app/
+   - 本番URL: https://booking.furniturehouse1.com/
 
 ---
 
@@ -196,7 +196,7 @@ git push origin main
 - デプロイ履歴、ログ、パフォーマンスを確認
 
 ### 本番サイト
-- https://furniturehouse1-booking.vercel.app/
+- https://booking.furniturehouse1.com/
 
 ---
 

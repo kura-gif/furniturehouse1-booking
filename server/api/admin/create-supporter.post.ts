@@ -4,12 +4,17 @@ import {
   getFirestoreAdmin,
   initializeFirebaseAdmin,
 } from "~/server/utils/firebase-admin";
+import { requireAdmin } from "~/server/utils/auth";
+import { requireValidPassword } from "~/server/utils/validation";
 
 /**
  * サポーターを作成するAPI（管理者専用）
  * Firebase Admin SDKを使用してユーザーを作成するため、現在のセッションに影響しない
  */
 export default defineEventHandler(async (event) => {
+  // 管理者権限チェック
+  await requireAdmin(event);
+
   const body = await readBody(event);
   const {
     email,
@@ -29,12 +34,8 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  if (password.length < 6) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "パスワードは6文字以上である必要があります",
-    });
-  }
+  // パスワード強度チェック
+  requireValidPassword(password);
 
   try {
     // Firebase Admin SDKが初期化されていることを確認

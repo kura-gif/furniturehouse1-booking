@@ -773,8 +773,21 @@
               お支払い情報
             </h3>
 
+            <!-- 0円予約の場合 -->
+            <div v-if="isZeroAmountBooking" class="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div class="flex items-center gap-2 text-green-700">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                <span class="font-medium">お支払いは不要です</span>
+              </div>
+              <p class="text-sm text-green-600 mt-2">
+                クーポン適用により、今回のご予約は無料でご利用いただけます。
+              </p>
+            </div>
+
             <!-- Stripe Card Element -->
-            <div v-if="paymentReady" class="space-y-4">
+            <div v-else-if="paymentReady" class="space-y-4">
               <div
                 id="card-element"
                 class="p-4 border border-gray-200 rounded-lg bg-white"
@@ -1137,6 +1150,9 @@ const applyCoupon = async () => {
       appliedCoupon.value = result.coupon;
       couponDiscountAmount.value = result.discountAmount || 0;
       showCouponInput.value = false;
+
+      // クーポン適用後、Payment Intentを再作成
+      await recreatePaymentIntentWithCoupon();
     } else {
       couponError.value = result.error || "クーポンが無効です";
     }
@@ -1147,12 +1163,95 @@ const applyCoupon = async () => {
   }
 };
 
+// クーポン適用後にPayment Intentを再作成
+const recreatePaymentIntentWithCoupon = async () => {
+  try {
+    const guestCount = adults.value + children.value;
+    const result = await createPaymentIntent(
+      checkInDate.value,
+      checkOutDate.value,
+      guestCount,
+      appliedCoupon.value?.code || "",
+    );
+
+    // 0円予約の場合
+    if (result && result.isZeroAmount) {
+      isZeroAmountBooking.value = true;
+      clientSecret.value = "";
+      console.log("✅ 0円予約（100%割引）：決済スキップ");
+      return;
+    }
+
+    // 通常の予約の場合
+    if (result && result.clientSecret) {
+      isZeroAmountBooking.value = false;
+      clientSecret.value = result.clientSecret;
+      console.log(
+        "✅ クーポン適用後のPayment Intent再作成成功:",
+        `金額: ¥${result.amount}`,
+      );
+    }
+  } catch (error) {
+    console.error("Payment Intent再作成エラー:", error);
+    // エラーが発生してもクーポン適用状態は維持（決済時に再試行可能）
+  }
+};
+
 // クーポン取り消し
-const removeCoupon = () => {
+const removeCoupon = async () => {
+  const wasZeroAmount = isZeroAmountBooking.value;
+
   appliedCoupon.value = null;
   couponDiscountAmount.value = 0;
   couponCode.value = "";
   showCouponInput.value = false;
+  isZeroAmountBooking.value = false;
+
+  // クーポン取り消し後、Payment Intentを再作成（クーポンなし）
+  try {
+    const guestCount = adults.value + children.value;
+    const result = await createPaymentIntent(
+      checkInDate.value,
+      checkOutDate.value,
+      guestCount,
+    );
+
+    if (result && result.clientSecret) {
+      clientSecret.value = result.clientSecret;
+      console.log(
+        "✅ クーポン取り消し後のPayment Intent再作成成功:",
+        `金額: ¥${result.amount}`,
+      );
+
+      // 0円予約状態から戻った場合、Stripe Elementsを再初期化
+      if (wasZeroAmount) {
+        const elements = await initializeElements(result.clientSecret);
+        paymentReady.value = true;
+
+        await nextTick();
+
+        const cardElementContainer = document.getElementById("card-element");
+        if (cardElementContainer) {
+          cardElement = elements.create("card", {
+            hidePostalCode: true,
+            style: {
+              base: {
+                fontSize: "16px",
+                color: "#30313d",
+                fontFamily: "system-ui, sans-serif",
+                "::placeholder": { color: "#9ca3af" },
+              },
+              invalid: { color: "#df1b41" },
+            },
+          });
+          cardElement.mount("#card-element");
+          console.log("✅ カード入力フォームを再初期化");
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Payment Intent再作成エラー:", error);
+  }
 };
 
 // 最終合計金額（クーポン適用後）
@@ -1391,6 +1490,7 @@ const searchAddress = async () => {
 // 支払い関連（Stripe）
 const paymentReady = ref(false);
 const clientSecret = ref("");
+const isZeroAmountBooking = ref(false); // 0円予約フラグ（100%割引時）
 import type { StripeCardElement } from "@stripe/stripe-js";
 let cardElement: StripeCardElement | null = null;
 
@@ -1439,6 +1539,14 @@ onMounted(async () => {
     );
 
     console.log("📦 Payment Intent作成結果:", result);
+
+    // 0円予約の場合（100%割引クーポンが最初から適用されている場合など）
+    if (result && result.isZeroAmount) {
+      isZeroAmountBooking.value = true;
+      paymentReady.value = true; // UIを表示（0円メッセージ）
+      console.log("✅ 0円予約: 決済フォームは不要");
+      return;
+    }
 
     if (!result || !result.clientSecret) {
       console.error("❌ clientSecretが取得できませんでした:", result);
@@ -1535,8 +1643,8 @@ const isFormValid = computed(() => {
     }
   }
 
-  // 決済フォームの準備完了チェック
-  if (!paymentReady.value) {
+  // 決済フォームの準備完了チェック（0円予約の場合はスキップ）
+  if (!isZeroAmountBooking.value && !paymentReady.value) {
     return false;
   }
 
@@ -1564,33 +1672,36 @@ const proceedToPayment = async () => {
   isSubmitting.value = true;
 
   try {
-    // Payment Intentのmetadataを更新（最新のゲスト情報を含める）
-    const config = useRuntimeConfig();
+    let paymentIntentId = "";
 
-    await $fetch("/api/stripe/update-payment-intent", {
-      method: "POST",
-      body: {
-        paymentIntentId: clientSecret.value.split("_secret_")[0],
-        metadata: {
-          guestName: guestName.value,
-          guestEmail: guestEmail.value,
-          guestPhone: guestPhone.value,
-          checkIn: checkInDate.value,
-          checkOut: checkOutDate.value,
-          guests: `大人${adults.value}人${children.value > 0 ? `、子ども${children.value}人` : ""}${infants.value > 0 ? `、乳幼児${infants.value}人` : ""}`,
-          totalAmount: finalTotalAmount.value.toString(),
-          discount:
-            couponDiscountAmount.value > 0
-              ? `-¥${couponDiscountAmount.value}`
-              : "なし",
-          couponCode: appliedCoupon.value?.code || "なし",
-          options:
-            selectedOptions.value.map((o) => o.name).join("、") || "なし",
+    // 0円予約でない場合のみPayment Intentを更新
+    if (!isZeroAmountBooking.value && clientSecret.value) {
+      // Payment Intentのmetadataを更新（最新のゲスト情報を含める）
+      await $fetch("/api/stripe/update-payment-intent", {
+        method: "POST",
+        body: {
+          paymentIntentId: clientSecret.value.split("_secret_")[0],
+          metadata: {
+            guestName: guestName.value,
+            guestEmail: guestEmail.value,
+            guestPhone: guestPhone.value,
+            checkIn: checkInDate.value,
+            checkOut: checkOutDate.value,
+            guests: `大人${adults.value}人${children.value > 0 ? `、子ども${children.value}人` : ""}${infants.value > 0 ? `、乳幼児${infants.value}人` : ""}`,
+            totalAmount: finalTotalAmount.value.toString(),
+            discount:
+              couponDiscountAmount.value > 0
+                ? `-¥${couponDiscountAmount.value}`
+                : "なし",
+            couponCode: appliedCoupon.value?.code || "なし",
+            options:
+              selectedOptions.value.map((o) => o.name).join("、") || "なし",
+          },
         },
-      },
-    });
+      });
 
-    const paymentIntentId = clientSecret.value.split("_secret_")[0];
+      paymentIntentId = clientSecret.value.split("_secret_")[0];
+    }
 
     // サーバーサイドAPIで予約を作成（Firebase Admin SDK使用）
     const bookingResult = await $fetch<{
@@ -1644,6 +1755,20 @@ const proceedToPayment = async () => {
       console.log("✅ クーポン使用回数を更新:", appliedCoupon.value.code);
     }
 
+    // 0円予約の場合は決済スキップして完了ページへ
+    if (isZeroAmountBooking.value) {
+      console.log("✅ 0円予約: 決済をスキップして完了ページへ");
+      router.push({
+        path: "/booking/complete",
+        query: {
+          booking_id: bookingId,
+          email: guestEmail.value,
+          zero_amount: "true",
+        },
+      });
+      return;
+    }
+
     // Stripe決済を確定（Card Element用）
     // ローカル開発環境（HTTP）ではStripe決済が制限されるため、テスト環境では決済をスキップ
     const isLocalDev = window.location.hostname === "localhost";
@@ -1651,7 +1776,6 @@ const proceedToPayment = async () => {
     if (isLocalDev) {
       // ローカル開発: 決済スキップして完了ページへ
       console.log("🔧 ローカル開発環境: 決済をスキップします");
-      const paymentIntentId = clientSecret.value.split("_secret_")[0];
       router.push({
         path: "/booking/complete",
         query: {

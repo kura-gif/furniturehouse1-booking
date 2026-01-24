@@ -126,7 +126,18 @@
       "Bash(gh run list:*)",
       "Bash(npm uninstall:*)",
       "Bash(git fsck:*)",
-      "Bash(vm_stat:*)"
+      "Bash(vm_stat:*)",
+      "Bash(GIT_TRACE=1 git push:*)",
+      "Bash(npm run validate-env:prod:*)",
+      "Bash(npm view:*)",
+      "Bash(npm run:*)",
+      "Bash(ulimit:*)",
+      "Bash(CHOKIDAR_USEPOLLING=true npm run dev:*)",
+      "Bash(vercel --version:*)",
+      "Bash(/tmp/node_modules/.bin/vercel deploy:*)",
+      "Bash(/tmp/node_modules/.bin/vercel alias ls:*)",
+      "Bash(/tmp/node_modules/.bin/vercel alias set:*)",
+      "Bash(git cherry-pick:*)"
     ],
     "additionalDirectories": [
       "/Users/kurashimayouichi/Documents/furniturehouse1"

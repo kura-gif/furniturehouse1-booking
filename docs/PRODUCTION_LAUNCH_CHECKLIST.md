@@ -1247,8 +1247,8 @@ git pull
 npm run build
 npm run preview
 
-# プレビュー環境で最終確認
-# → https://furniturehouse1-booking-git-develop-xxxxx.vercel.app
+# ステージング環境で最終確認
+# → https://staging.furniturehouse1.com
 
 # 2. mainブランチにマージ
 git checkout main

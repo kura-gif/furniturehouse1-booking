@@ -140,7 +140,7 @@ Vercel Dashboard → Project Settings → Environment Variablesで以下を設�
 
 **その他**
 - `INTERNAL_API_SECRET`
-- `SITE_URL` (例: https://furniturehouse1-booking.vercel.app)
+- `SITE_URL` (例: https://booking.furniturehouse1.com)
 - `BRAND_SITE_URL` (例: https://furniturehouse1.com)
 
 #### カスタムドメイン設定
@@ -402,9 +402,9 @@ Firebaseを既に使用しているため、Firebase Hostingも選択肢です�
 
 デプロイ後、以下を確認:
 
-1. **トップページ**: https://furniturehouse1-booking.vercel.app/
-2. **予約ページ**: https://furniturehouse1-booking.vercel.app/booking/request
-3. **ヘルスチェック**: https://furniturehouse1-booking.vercel.app/api/health
+1. **トップページ**: https://booking.furniturehouse1.com/
+2. **予約ページ**: https://booking.furniturehouse1.com/booking/request
+3. **ヘルスチェック**: https://booking.furniturehouse1.com/api/health
    - `status: "healthy"` が返ることを確認
 4. **Stripe Webhook**: Stripeダッシュボードで成功ステータスを確認
 5. **Firebase**: Firestoreでデータが正しく保存されているか確認

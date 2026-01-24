@@ -6,6 +6,16 @@
 
 ---
 
+## 環境情報
+
+| 環境 | URL | 用途 |
+|------|-----|------|
+| **本番** | https://booking.furniturehouse1.com | ゲスト向け予約サイト |
+| **ステージング** | https://staging.furniturehouse1.com | テスト・検証用 |
+| **ブランドサイト** | https://furniturehouse1.com | 公式サイト |
+
+---
+
 ## エグゼクティブサマリー
 
 | 観点 | リスクレベル | 主要課題 |
@@ -690,6 +700,7 @@ const handleDelete = async () => {
 | 2026/01/21 | セキュリティ監査実施（npm audit fix、1件修正） | Claude Code |
 | 2026/01/21 | コード品質改善（Prettier適用、188ファイルフォーマット） | Claude Code |
 | 2026/01/21 | 未使用パッケージ削除（nuxt-csurf） | Claude Code |
+| 2026/01/21 | 環境情報セクション追加（本番・ステージング・ブランドサイトURL） | Claude Code |
 
 ---
 
