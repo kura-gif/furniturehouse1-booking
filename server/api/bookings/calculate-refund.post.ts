@@ -37,6 +37,8 @@ export default defineEventHandler(async (event) => {
     const body = await readBody(event);
     const { bookingId } = body;
 
+    console.log("🔍 calculate-refund: Starting calculation for bookingId:", bookingId);
+
     if (!bookingId) {
       throw createError({
         statusCode: 400,
@@ -44,9 +46,17 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    const db = getFirestoreAdmin();
+    let db;
+    try {
+      db = getFirestoreAdmin();
+      console.log("✅ calculate-refund: Firestore initialized successfully");
+    } catch (firestoreError) {
+      console.error("❌ calculate-refund: Firestore initialization failed:", firestoreError);
+      throw firestoreError;
+    }
 
     // 1. 予約情報を取得
+    console.log("🔍 calculate-refund: Fetching booking document...");
     const bookingDoc = await db.collection("bookings").doc(bookingId).get();
 
     if (!bookingDoc.exists) {
@@ -57,30 +67,53 @@ export default defineEventHandler(async (event) => {
     }
 
     const booking = bookingDoc.data()!;
+    console.log("✅ calculate-refund: Booking found:", {
+      bookingReference: booking.bookingReference,
+      status: booking.status,
+      startDate: booking.startDate,
+      checkInDate: booking.checkInDate,
+      totalAmount: booking.totalAmount,
+    });
 
     // 2. キャンセルポリシーを取得
+    console.log("🔍 calculate-refund: Fetching cancellation policy...");
     let policy = defaultPolicy;
-    const policiesSnapshot = await db
-      .collection("cancellationPolicies")
-      .where("isActive", "==", true)
-      .limit(1)
-      .get();
+    try {
+      const policiesSnapshot = await db
+        .collection("cancellationPolicies")
+        .where("isActive", "==", true)
+        .limit(1)
+        .get();
 
-    if (!policiesSnapshot.empty) {
-      const policyData = policiesSnapshot.docs[0].data() as CancellationPolicy;
-      policy = policyData;
+      if (!policiesSnapshot.empty) {
+        const policyData = policiesSnapshot.docs[0].data() as CancellationPolicy;
+        policy = policyData;
+      }
+      console.log("✅ calculate-refund: Using policy:", policy.name);
+    } catch (policyError) {
+      console.error("⚠️ calculate-refund: Policy fetch failed, using default:", policyError);
+      // デフォルトポリシーを使用して続行
     }
 
     // 3. チェックイン日までの日数を計算
+    console.log("🔍 calculate-refund: Parsing check-in date...");
     const now = new Date();
     now.setHours(0, 0, 0, 0);
 
     let checkInDate: Date;
-    if (booking.startDate && booking.startDate.toDate) {
+    if (booking.startDate && typeof booking.startDate.toDate === "function") {
       checkInDate = booking.startDate.toDate();
-    } else if (booking.checkInDate && booking.checkInDate.toDate) {
+      console.log("✅ calculate-refund: Using startDate:", checkInDate);
+    } else if (booking.checkInDate && typeof booking.checkInDate.toDate === "function") {
       checkInDate = booking.checkInDate.toDate();
+      console.log("✅ calculate-refund: Using checkInDate:", checkInDate);
     } else {
+      console.error("❌ calculate-refund: No valid check-in date found:", {
+        startDate: booking.startDate,
+        startDateType: typeof booking.startDate,
+        checkInDate: booking.checkInDate,
+        checkInDateType: typeof booking.checkInDate,
+      });
       throw createError({
         statusCode: 400,
         message: "チェックイン日が設定されていません",
@@ -137,7 +170,11 @@ export default defineEventHandler(async (event) => {
       },
     };
   } catch (error: unknown) {
-    console.error("❌ Refund calculation error:", error);
+    console.error("❌ Refund calculation error:", {
+      error,
+      message: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     // 4xxエラー（createErrorで意図的に作成）はそのまま再スロー
     if (error && typeof error === "object" && "statusCode" in error) {
       throw error;
