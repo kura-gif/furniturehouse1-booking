@@ -540,7 +540,7 @@ function formatDate(
 
 // プロモーションリンクをコピー
 async function copyPromoLink(code: string) {
-  const baseUrl = "https://booking.furniturehouse1.com";
+  const baseUrl = window.location.origin;
   const promoUrl = `${baseUrl}/booking?promo=${code}`;
 
   try {
