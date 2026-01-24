@@ -283,11 +283,45 @@ export default defineEventHandler(async (event) => {
       };
     });
 
-    // 10. 管理者に新規予約通知メールを送信
-    try {
-      const checkIn = new Date(validatedData.checkInDate);
-      const checkOut = new Date(validatedData.checkOutDate);
+    // 10. メール送信
+    const checkIn = new Date(validatedData.checkInDate);
+    const checkOut = new Date(validatedData.checkOutDate);
+    const formattedCheckIn = `${checkIn.getFullYear()}年${checkIn.getMonth() + 1}月${checkIn.getDate()}日`;
+    const formattedCheckOut = `${checkOut.getFullYear()}年${checkOut.getMonth() + 1}月${checkOut.getDate()}日`;
 
+    // 10-1. ゲストに予約受付確認メールを送信
+    try {
+      // bookingTokenを取得
+      const bookingDoc = await firestoreDb
+        .collection("bookings")
+        .doc(result.bookingId)
+        .get();
+      const bookingToken = bookingDoc.data()?.bookingToken || "";
+
+      await sendEmailWithRetry("/api/emails/send-booking-confirmation", {
+        method: "POST",
+        headers: {
+          "x-internal-secret": config.internalApiSecret,
+        },
+        body: {
+          to: validatedData.guestEmail,
+          bookingId: result.bookingId,
+          bookingReference: result.bookingReference,
+          bookingToken,
+          guestName: validatedData.guestName,
+          checkInDate: formattedCheckIn,
+          checkOutDate: formattedCheckOut,
+          totalAmount: calculatedAmount,
+          isPendingReview: true,
+        },
+      });
+      console.log("✅ ゲストへの予約受付確認メール送信成功");
+    } catch (emailError) {
+      console.error("⚠️ ゲスト確認メール送信失敗（リトライ後）:", emailError);
+    }
+
+    // 10-2. 管理者に新規予約通知メールを送信
+    try {
       await sendEmailWithRetry("/api/emails/send-admin-notification", {
         method: "POST",
         headers: {
@@ -300,8 +334,8 @@ export default defineEventHandler(async (event) => {
           guestName: validatedData.guestName,
           guestEmail: validatedData.guestEmail,
           guestPhone: validatedData.guestPhone || "",
-          checkInDate: `${checkIn.getFullYear()}年${checkIn.getMonth() + 1}月${checkIn.getDate()}日`,
-          checkOutDate: `${checkOut.getFullYear()}年${checkOut.getMonth() + 1}月${checkOut.getDate()}日`,
+          checkInDate: formattedCheckIn,
+          checkOutDate: formattedCheckOut,
           guestCount: validatedData.guestCount,
           totalAmount: calculatedAmount,
           notes: validatedData.notes || "",
