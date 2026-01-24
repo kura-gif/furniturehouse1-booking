@@ -3651,15 +3651,18 @@ async function cancelBooking(bookingId: string) {
   if (
     !(await confirmDialog.confirm({
       title: "予約キャンセル",
-      message: "この予約をキャンセルしますか？",
+      message: "この予約をキャンセルしますか？ゲストにキャンセル通知メールが送信されます。",
       type: "danger",
     }))
   )
     return;
 
   try {
-    await cancelBookingAPI(bookingId);
-    toast.success("予約をキャンセルしました");
+    await $fetch("/api/bookings/admin-cancel", {
+      method: "POST",
+      body: { bookingId },
+    });
+    toast.success("予約をキャンセルしました（ゲストにメール送信済み）");
     selectedBooking.value = null;
     await loadBookings(); // 予約データを再読み込み
   } catch (error) {
