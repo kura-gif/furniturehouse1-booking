@@ -556,26 +556,24 @@ async function loadEnhancedPricingSettingsFromFirestore(): Promise<EnhancedPrici
     const { $db } = useNuxtApp();
     if (!$db) return null;
 
-    const { collection, query, where, getDocs, limit } =
-      await import("firebase/firestore");
+    const { doc, getDoc } = await import("firebase/firestore");
 
-    const q = query(
-      collection($db, "enhancedPricingSettings"),
-      where("isActive", "==", true),
-      limit(1),
-    );
+    // サーバーと同じく "default" ドキュメントを取得
+    const docRef = doc($db, "enhancedPricingSettings", "default");
+    const docSnap = await getDoc(docRef);
 
-    const snapshot = await getDocs(q);
-
-    if (!snapshot.empty) {
-      const doc = snapshot.docs[0];
-      console.log("✅ Loaded pricing settings from Firestore:", doc.id);
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      console.log("✅ Loaded pricing settings from Firestore:", docSnap.id, {
+        cleaningFee: data.cleaningFee,
+        basePrice: data.basePrice,
+      });
       return {
-        id: doc.id,
-        ...doc.data(),
+        id: docSnap.id,
+        ...data,
       } as EnhancedPricingSetting;
     } else {
-      console.warn("⚠️ No active pricing settings found in Firestore");
+      console.warn("⚠️ No pricing settings found in Firestore (default doc)");
     }
   } catch (e) {
     console.error("❌ Firestoreから料金設定の読み込みエラー:", e);
@@ -779,7 +777,7 @@ export const useEnhancedPricing = () => {
         },
         seasonPeriods: pricingSetting.value.seasonPeriods || [],
         holidayCalendar: holidayCalendarData,
-        cleaningFee: 5000,
+        cleaningFee: pricingSetting.value.cleaningFee ?? 5000,
         taxRate: 0.1,
       };
 
