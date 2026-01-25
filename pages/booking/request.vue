@@ -1391,6 +1391,84 @@ onMounted(async () => {
       applyCoupon();
     }, 500);
   }
+
+  // 料金設定ロード完了後、Payment Intentを作成
+  try {
+    const guestCount = adults.value + children.value;
+    console.log("📦 Payment Intent作成開始 - finalTotalAmount:", finalTotalAmount.value);
+
+    const result = await createPaymentIntent(
+      checkInDate.value,
+      checkOutDate.value,
+      guestCount,
+      "",
+      optionsTotalPrice.value,
+      finalTotalAmount.value,
+    );
+
+    console.log("📦 Payment Intent作成結果:", result);
+
+    // 0円予約の場合（100%割引クーポンが最初から適用されている場合など）
+    if (result && result.isZeroAmount) {
+      isZeroAmountBooking.value = true;
+      paymentReady.value = true;
+      console.log("✅ 0円予約: 決済フォームは不要");
+      return;
+    }
+
+    if (!result || !result.clientSecret) {
+      console.error("❌ clientSecretが取得できませんでした:", result);
+      throw new Error("決済の準備に失敗しました");
+    }
+
+    clientSecret.value = result.clientSecret;
+    console.log(
+      "✅ clientSecret取得成功:",
+      result.clientSecret.substring(0, 30) + "...",
+    );
+
+    // Stripe Elementsを初期化
+    const elements = await initializeElements(result.clientSecret);
+
+    // paymentReadyをtrueにしてDOMをレンダリング
+    paymentReady.value = true;
+
+    // DOMの準備を待ってからマウント
+    await nextTick();
+
+    // Card Elementを作成してマウント
+    const cardElementContainer = document.getElementById("card-element");
+    if (!cardElementContainer) {
+      throw new Error("決済フォーム要素が見つかりません");
+    }
+
+    // Card Elementを作成（スタイル付き、郵便番号非表示）
+    cardElement = elements.create("card", {
+      hidePostalCode: true,
+      style: {
+        base: {
+          fontSize: "16px",
+          color: "#30313d",
+          fontFamily: "system-ui, sans-serif",
+          "::placeholder": {
+            color: "#9ca3af",
+          },
+        },
+        invalid: {
+          color: "#df1b41",
+        },
+      },
+    });
+
+    console.log("🎨 Card Element作成完了、マウント開始...");
+    cardElement.mount("#card-element");
+    console.log("✅ Card Elementマウント完了");
+  } catch (error: unknown) {
+    console.error("Stripe初期化エラー:", error);
+    toast.error(
+      "決済フォームの準備に失敗しました。ページを再読み込みしてください。",
+    );
+  }
 });
 
 // 子供の年齢リストを生成（7〜15歳の子供 + 0〜6歳の乳幼児）
@@ -1554,85 +1632,6 @@ const formatShortDate = (dateStr: string): string => {
   return `${date.getMonth() + 1}/${date.getDate()}`;
 };
 
-// 初期化処理
-onMounted(async () => {
-  try {
-    // Payment Intentを作成
-    const guestCount = adults.value + children.value;
-
-    const result = await createPaymentIntent(
-      checkInDate.value,
-      checkOutDate.value,
-      guestCount,
-      "",
-      optionsTotalPrice.value,
-      finalTotalAmount.value,
-    );
-
-    console.log("📦 Payment Intent作成結果:", result);
-
-    // 0円予約の場合（100%割引クーポンが最初から適用されている場合など）
-    if (result && result.isZeroAmount) {
-      isZeroAmountBooking.value = true;
-      paymentReady.value = true; // UIを表示（0円メッセージ）
-      console.log("✅ 0円予約: 決済フォームは不要");
-      return;
-    }
-
-    if (!result || !result.clientSecret) {
-      console.error("❌ clientSecretが取得できませんでした:", result);
-      throw new Error("決済の準備に失敗しました");
-    }
-
-    clientSecret.value = result.clientSecret;
-    console.log(
-      "✅ clientSecret取得成功:",
-      result.clientSecret.substring(0, 30) + "...",
-    );
-
-    // Stripe Elementsを初期化
-    const elements = await initializeElements(result.clientSecret);
-
-    // paymentReadyをtrueにしてDOMをレンダリング
-    paymentReady.value = true;
-
-    // DOMの準備を待ってからマウント
-    await nextTick();
-
-    // Card Elementを作成してマウント
-    const cardElementContainer = document.getElementById("card-element");
-    if (!cardElementContainer) {
-      throw new Error("決済フォーム要素が見つかりません");
-    }
-
-    // Card Elementを作成（スタイル付き、郵便番号非表示）
-    cardElement = elements.create("card", {
-      hidePostalCode: true, // 郵便番号フィールドを非表示
-      style: {
-        base: {
-          fontSize: "16px",
-          color: "#30313d",
-          fontFamily: "system-ui, sans-serif",
-          "::placeholder": {
-            color: "#9ca3af",
-          },
-        },
-        invalid: {
-          color: "#df1b41",
-        },
-      },
-    });
-
-    console.log("🎨 Card Element作成完了、マウント開始...");
-    cardElement.mount("#card-element");
-    console.log("✅ Card Elementマウント完了");
-  } catch (error: unknown) {
-    console.error("Stripe初期化エラー:", error);
-    toast.error(
-      "決済フォームの準備に失敗しました。ページを再読み込みしてください。",
-    );
-  }
-});
 
 // バリデーション
 const isFormValid = computed(() => {
