@@ -19,6 +19,7 @@ export const useStripePayment = () => {
     guestCount: number,
     couponCode?: string,
     optionsTotalPrice?: number,
+    calculatedTotalAmount?: number,
   ) => {
     try {
       const data = await $fetch("/api/stripe/create-payment-intent-secure", {
@@ -29,6 +30,7 @@ export const useStripePayment = () => {
           guestCount,
           couponCode: couponCode || "",
           optionsTotalPrice: optionsTotalPrice || 0,
+          calculatedTotalAmount: calculatedTotalAmount || 0,
         },
       });
 

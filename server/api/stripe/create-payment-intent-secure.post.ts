@@ -132,28 +132,17 @@ export default defineEventHandler(async (event) => {
       );
     }
 
-    // 6. 最終金額を計算（基本金額 + オプション代金 - クーポン割引）
-    const baseCalculatedAmount = calculateBookingAmount(
-      new Date(validatedData.checkInDate),
-      new Date(validatedData.checkOutDate),
-      validatedData.guestCount,
-      pricingRule,
-      couponDiscount,
-    );
-
-    // オプション代金を加算（税込み計算）
+    // 6. クライアント側で計算した金額を使用（useEnhancedPricingの計算結果）
+    // サーバー側での再計算は行わない（複雑な料金体系はクライアント側で計算済み）
+    const calculatedAmount = validatedData.calculatedTotalAmount;
     const optionsTotalPrice = validatedData.optionsTotalPrice || 0;
-    const optionsTax = Math.floor(optionsTotalPrice * 0.1); // オプションの消費税10%
-    const calculatedAmount = baseCalculatedAmount + optionsTotalPrice + optionsTax;
 
-    stripeLogger.debug("Calculated amount", {
-      basePrice: pricingRule.basePrice,
-      weekendSurcharge: pricingRule.weekendSurcharge,
-      guestCount: validatedData.guestCount,
+    stripeLogger.debug("Using client-calculated amount", {
+      clientCalculatedAmount: calculatedAmount,
       optionsTotalPrice,
-      optionsTax,
+      couponCode: validatedData.couponCode || "none",
       couponDiscount,
-      total: calculatedAmount,
+      guestCount: validatedData.guestCount,
     });
 
     // 0円予約の場合（100%割引クーポン適用時など）
@@ -195,8 +184,8 @@ export default defineEventHandler(async (event) => {
           guestCount: validatedData.guestCount.toString(),
           calculatedAmount: calculatedAmount.toString(),
           optionsTotalPrice: optionsTotalPrice.toString(),
-          optionsTax: optionsTax.toString(),
           couponCode: validatedData.couponCode || "",
+          couponDiscount: couponDiscount.toString(),
           couponId,
           timestamp: new Date().toISOString(),
         },
@@ -219,10 +208,7 @@ export default defineEventHandler(async (event) => {
       amount: calculatedAmount,
       isZeroAmount: false,
       breakdown: {
-        baseAmount: baseCalculatedAmount + couponDiscount - pricingRule.cleaningFee,
-        cleaningFee: pricingRule.cleaningFee,
         optionsTotalPrice,
-        optionsTax,
         couponDiscount,
         total: calculatedAmount,
       },

@@ -1173,6 +1173,7 @@ const recreatePaymentIntentWithCoupon = async () => {
       guestCount,
       appliedCoupon.value?.code || "",
       optionsTotalPrice.value,
+      finalTotalAmount.value,
     );
 
     // 0円予約の場合
@@ -1217,6 +1218,7 @@ const removeCoupon = async () => {
       guestCount,
       "",
       optionsTotalPrice.value,
+      finalTotalAmount.value,
     );
 
     if (result && result.clientSecret) {
@@ -1297,6 +1299,7 @@ const toggleOption = async (option: BookingOption) => {
       guestCount,
       appliedCoupon.value?.code || "",
       optionsTotalPrice.value,
+      finalTotalAmount.value,
     );
 
     if (result && result.clientSecret) {
@@ -1563,6 +1566,7 @@ onMounted(async () => {
       guestCount,
       "",
       optionsTotalPrice.value,
+      finalTotalAmount.value,
     );
 
     console.log("📦 Payment Intent作成結果:", result);
