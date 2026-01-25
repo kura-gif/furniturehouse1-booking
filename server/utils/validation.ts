@@ -80,7 +80,8 @@ export const createPaymentIntentSchema = z.object({
   couponCode: z.string().optional().or(z.literal("")),
   optionsTotalPrice: z.number().min(0).optional().default(0),
   // クライアント側で計算した最終金額（useEnhancedPricing使用）
-  calculatedTotalAmount: z.number().min(50, "金額は50円以上である必要があります"),
+  // 0円予約（100%割引クーポン）も許可
+  calculatedTotalAmount: z.number().min(0, "金額は0円以上である必要があります"),
 });
 
 export type CreatePaymentIntentInput = z.infer<
