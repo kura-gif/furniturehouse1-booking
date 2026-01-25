@@ -158,8 +158,7 @@ export default defineEventHandler(async (event) => {
         amount: 0,
         isZeroAmount: true,
         breakdown: {
-          baseAmount: couponDiscount - pricingRule.cleaningFee,
-          cleaningFee: pricingRule.cleaningFee,
+          optionsTotalPrice,
           couponDiscount,
           total: 0,
         },
