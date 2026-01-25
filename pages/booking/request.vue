@@ -1724,13 +1724,36 @@ const proceedToPayment = async () => {
   try {
     let paymentIntentId = "";
 
-    // 0円予約でない場合のみPayment Intentを更新
-    if (!isZeroAmountBooking.value && clientSecret.value) {
-      // Payment Intentのmetadataを更新（最新のゲスト情報を含める）
+    // 0円予約でない場合、正しい金額でPayment Intentを再作成
+    if (!isZeroAmountBooking.value) {
+      console.log("💳 Payment Intent再作成（正しい金額で）- finalTotalAmount:", finalTotalAmount.value);
+
+      // 新しいPayment Intentを作成（正しい金額で）
+      const guestCount = adults.value + children.value;
+      const newPaymentResult = await createPaymentIntent(
+        checkInDate.value,
+        checkOutDate.value,
+        guestCount,
+        appliedCoupon.value?.code || "",
+        optionsTotalPrice.value,
+        finalTotalAmount.value,
+      );
+
+      if (!newPaymentResult || !newPaymentResult.clientSecret) {
+        throw new Error("決済の準備に失敗しました");
+      }
+
+      // 新しいclientSecretを使用
+      clientSecret.value = newPaymentResult.clientSecret;
+      paymentIntentId = newPaymentResult.paymentIntentId;
+
+      console.log("✅ Payment Intent再作成成功 - amount:", newPaymentResult.amount);
+
+      // 新しいPayment Intentのmetadataを更新
       await $fetch("/api/stripe/update-payment-intent", {
         method: "POST",
         body: {
-          paymentIntentId: clientSecret.value.split("_secret_")[0],
+          paymentIntentId,
           metadata: {
             guestName: guestName.value,
             guestEmail: guestEmail.value,
@@ -1749,8 +1772,6 @@ const proceedToPayment = async () => {
           },
         },
       });
-
-      paymentIntentId = clientSecret.value.split("_secret_")[0];
     }
 
     // サーバーサイドAPIで予約を作成（Firebase Admin SDK使用）
