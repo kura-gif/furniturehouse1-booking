@@ -1393,12 +1393,29 @@ onMounted(async () => {
   }
 
   // 料金設定ロード完了後、Payment Intentを作成
-  // Vueのリアクティビティが更新されるのを待つ
-  await nextTick();
+  // 料金計算が完了するまで待機（最大5秒）
+  const maxWaitTime = 5000;
+  const checkInterval = 100;
+  let waited = 0;
+
+  while (waited < maxWaitTime) {
+    await nextTick();
+    // priceCalculationが有効で、subtotalが0より大きい場合は計算完了
+    if (priceCalculation.value?.summary?.subtotalWithTax && priceCalculation.value.summary.subtotalWithTax > 0) {
+      console.log("✅ 料金計算完了:", priceCalculation.value.summary);
+      break;
+    }
+    await new Promise(resolve => setTimeout(resolve, checkInterval));
+    waited += checkInterval;
+  }
+
+  if (waited >= maxWaitTime) {
+    console.warn("⚠️ 料金計算のタイムアウト - デフォルト値を使用する可能性あり");
+  }
 
   try {
     const guestCount = adults.value + children.value;
-    console.log("📦 Payment Intent作成開始 - finalTotalAmount:", finalTotalAmount.value, "priceCalculation:", priceCalculation.value?.summary);
+    console.log("📦 Payment Intent作成開始 - finalTotalAmount:", finalTotalAmount.value, "subtotal:", subtotal.value, "priceCalculation:", priceCalculation.value?.summary);
 
     const result = await createPaymentIntent(
       checkInDate.value,
