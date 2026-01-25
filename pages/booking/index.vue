@@ -215,7 +215,8 @@
               <div class="text-sm text-gray-700">
                 <p class="font-semibold mb-1">料金について</p>
                 <ul class="space-y-1 list-disc list-inside">
-                  <li>表示料金は1泊あたりの金額です</li>
+                  <li>カレンダーに表示される料金は大人2名様までの1泊あたりの基本料金です</li>
+                  <li>3名様以上の場合は追加料金が発生します（右側の合計金額に反映）</li>
                   <li>シーズンや曜日により料金が変動します</li>
                   <li>祝日・週末は追加料金が発生する場合があります</li>
                 </ul>

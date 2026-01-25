@@ -730,8 +730,8 @@
                         </button>
                         <span class="w-6 text-center">{{ adults }}</span>
                         <button
-                          @click="adults < 4 && adults++"
-                          :disabled="totalGuests >= 4"
+                          @click="adults < 6 && adults++"
+                          :disabled="totalGuests >= 6"
                           class="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:border-gray-900 disabled:opacity-30 disabled:cursor-not-allowed"
                           type="button"
                         >
@@ -760,7 +760,7 @@
                         <span class="w-6 text-center">{{ children }}</span>
                         <button
                           @click="children++"
-                          :disabled="totalGuests >= 4"
+                          :disabled="totalGuests >= 6"
                           class="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:border-gray-900 disabled:opacity-30 disabled:cursor-not-allowed"
                           type="button"
                         >
@@ -787,7 +787,7 @@
                         <span class="w-6 text-center">{{ infants }}</span>
                         <button
                           @click="infants++"
-                          :disabled="totalGuests >= 4"
+                          :disabled="totalGuests >= 6"
                           class="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:border-gray-900 disabled:opacity-30 disabled:cursor-not-allowed"
                           type="button"
                         >
@@ -821,19 +821,23 @@
                 class="mt-6 pt-6 border-t border-gray-200 space-y-3 text-sm"
               >
                 <div class="flex justify-between">
-                  <span class="text-gray-600">¥30,000 × {{ nights }}泊</span>
+                  <span class="text-gray-600">宿泊料金（{{ nights }}泊）</span>
                   <span class="text-gray-900"
-                    >¥{{ (30000 * nights).toLocaleString() }}</span
+                    >¥{{ subtotalBeforeTax.toLocaleString() }}</span
                   >
                 </div>
                 <div class="flex justify-between">
                   <span class="text-gray-600">清掃料金</span>
-                  <span class="text-gray-900">¥5,000</span>
+                  <span class="text-gray-900">¥{{ cleaningFeeDisplay.toLocaleString() }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">消費税（10%）</span>
+                  <span class="text-gray-900">¥{{ taxAmount.toLocaleString() }}</span>
                 </div>
                 <div
                   class="flex justify-between pt-3 border-t border-gray-200 font-medium"
                 >
-                  <span>合計</span>
+                  <span>合計（税込）</span>
                   <span>¥{{ totalPrice.toLocaleString() }}</span>
                 </div>
               </div>
@@ -1264,6 +1268,7 @@ onMounted(() => {
   loadBlockedDates();
   loadBookedDates(); // 予約済み日付も読み込み
   loadFacilitySettings();
+  loadPricingSettings(); // 料金設定を読み込み
 });
 
 // 写真ギャラリー管理
@@ -1352,6 +1357,13 @@ const {
   isDateUnavailable,
   isDateRangeUnavailable,
 } = useBlockedDates();
+
+// 料金計算
+const {
+  calculatePrice,
+  loadFromFirestore: loadPricingSettings,
+  pricingSetting,
+} = useEnhancedPricing();
 
 // カレンダー表示用の月
 const currentMonth = ref(new Date());
@@ -1529,13 +1541,43 @@ const nights = computed(() => {
   return diffDays > 0 ? diffDays : 0;
 });
 
-// 料金計算
-const pricePerNight = 30000;
-const cleaningFee = 5000;
+// 料金計算（useEnhancedPricingを使用）
+const priceCalculation = computed(() => {
+  if (!checkInDate.value || !checkOutDate.value || nights.value === 0) {
+    return null;
+  }
+  const checkIn = new Date(checkInDate.value);
+  const checkOut = new Date(checkOutDate.value);
+  return calculatePrice(checkIn, checkOut, adults.value, []);
+});
 
+// 1泊あたりの平均料金（税込）
+const averagePricePerNight = computed(() => {
+  if (!priceCalculation.value) return 0;
+  return priceCalculation.value.summary?.averagePricePerNight || 0;
+});
+
+// 清掃料金（管理画面設定から取得）
+const cleaningFeeDisplay = computed(() => {
+  return pricingSetting.value?.cleaningFee || 5000;
+});
+
+// 消費税
+const taxAmount = computed(() => {
+  if (!priceCalculation.value) return 0;
+  return priceCalculation.value.tax || 0;
+});
+
+// 宿泊料金小計（税抜）
+const subtotalBeforeTax = computed(() => {
+  if (!priceCalculation.value) return 0;
+  return priceCalculation.value.subtotal || 0;
+});
+
+// 合計金額（税込）
 const totalPrice = computed(() => {
-  if (nights.value === 0) return 0;
-  return pricePerNight * nights.value + cleaningFee;
+  if (!priceCalculation.value) return 0;
+  return priceCalculation.value.totalAmount || 0;
 });
 
 // 予約処理

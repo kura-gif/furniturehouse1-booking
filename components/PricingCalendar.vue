@@ -493,7 +493,7 @@ function calculateTotalPrice(): number {
   const checkOut = new Date(checkOutDate.value);
   // childrenAgesは空配列として渡す（子供の年齢情報がない場合）
   const priceCalc = calculatePrice(checkIn, checkOut, props.adults, []);
-  return priceCalc?.totalPrice || 0;
+  return priceCalc?.totalAmount || 0;
 }
 
 function formatDateString(date: Date): string {

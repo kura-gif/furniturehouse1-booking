@@ -253,7 +253,7 @@ const props = withDefaults(
     showTotal?: boolean;
   }>(),
   {
-    maxGuests: 4,
+    maxGuests: 6,
     showTotal: true,
   },
 );
