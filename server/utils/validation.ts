@@ -78,6 +78,7 @@ export const createPaymentIntentSchema = z.object({
   checkOutDate: z.string(),
   guestCount: z.number().min(1).max(10),
   couponCode: z.string().optional().or(z.literal("")),
+  optionsTotalPrice: z.number().min(0).optional().default(0),
 });
 
 export type CreatePaymentIntentInput = z.infer<

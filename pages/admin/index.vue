@@ -2277,10 +2277,18 @@
         </div>
 
         <div class="space-y-4">
-          <!-- 予約ID -->
-          <div>
-            <label class="text-sm text-gray-600">予約ID</label>
-            <p class="font-mono text-sm">{{ selectedBooking.id }}</p>
+          <!-- 予約番号・予約ID -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="text-sm text-gray-600">予約番号</label>
+              <p class="font-mono text-sm font-bold text-purple-600">
+                {{ selectedBooking.bookingReference || '-' }}
+              </p>
+            </div>
+            <div>
+              <label class="text-sm text-gray-600">予約ID</label>
+              <p class="font-mono text-sm text-gray-500">{{ selectedBooking.id }}</p>
+            </div>
           </div>
 
           <!-- ゲスト情報 -->

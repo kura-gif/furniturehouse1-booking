@@ -35,6 +35,7 @@ export default defineEventHandler(async (event) => {
     totalAmount,
     refundAmount,
     errorMessage,
+    rejectionReason,
   } = body;
 
   // メール送信設定（Gmail）
@@ -300,6 +301,43 @@ export default defineEventHandler(async (event) => {
             <span class="value" style="font-weight: bold; color: #3b82f6;">¥${refundAmount?.toLocaleString() || 0}</span>
           </div>
         </div>
+      `;
+      break;
+
+    case "booking_rejected":
+      subject = `【却下完了】${bookingReference} - ${guestName}様`;
+      headerColor = "#ef4444"; // red
+      headerIcon = "❌";
+      headerText = "予約が却下されました";
+      contentHtml = `
+        <div class="info-box" style="border-left-color: #ef4444;">
+          <h3 style="margin-top: 0;">却下情報</h3>
+          <div class="info-row">
+            <span class="label">予約番号</span>
+            <span class="value" style="font-family: monospace; font-weight: bold;">${bookingReference}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">お客様名</span>
+            <span class="value">${guestName}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">メール</span>
+            <span class="value">${guestEmail}</span>
+          </div>
+          ${
+            rejectionReason
+              ? `
+          <div class="info-row">
+            <span class="label">却下理由</span>
+            <span class="value" style="color: #ef4444;">${rejectionReason}</span>
+          </div>
+          `
+              : ""
+          }
+        </div>
+        <p style="background: #fef2f2; padding: 15px; border-radius: 6px; color: #991b1b;">
+          与信が解放されました。お客様に却下通知メールが送信されています。
+        </p>
       `;
       break;
 

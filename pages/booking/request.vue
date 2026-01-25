@@ -1172,6 +1172,7 @@ const recreatePaymentIntentWithCoupon = async () => {
       checkOutDate.value,
       guestCount,
       appliedCoupon.value?.code || "",
+      optionsTotalPrice.value,
     );
 
     // 0円予約の場合
@@ -1214,6 +1215,8 @@ const removeCoupon = async () => {
       checkInDate.value,
       checkOutDate.value,
       guestCount,
+      "",
+      optionsTotalPrice.value,
     );
 
     if (result && result.clientSecret) {
@@ -1270,7 +1273,7 @@ const isOptionSelected = (optionId: string): boolean => {
 };
 
 // オプションの選択/解除
-const toggleOption = (option: BookingOption) => {
+const toggleOption = async (option: BookingOption) => {
   const index = selectedOptions.value.findIndex(
     (opt) => opt.optionId === option.id,
   );
@@ -1283,6 +1286,28 @@ const toggleOption = (option: BookingOption) => {
       price: option.price,
       imageUrl: option.imageUrl,
     });
+  }
+
+  // オプション変更後にPayment Intentを再作成（金額を同期）
+  try {
+    const guestCount = adults.value + children.value;
+    const result = await createPaymentIntent(
+      checkInDate.value,
+      checkOutDate.value,
+      guestCount,
+      appliedCoupon.value?.code || "",
+      optionsTotalPrice.value,
+    );
+
+    if (result && result.clientSecret) {
+      clientSecret.value = result.clientSecret;
+      console.log(
+        "✅ オプション変更後のPayment Intent再作成成功:",
+        `金額: ¥${result.amount}`,
+      );
+    }
+  } catch (error) {
+    console.error("Payment Intent再作成エラー:", error);
   }
 };
 
@@ -1536,6 +1561,8 @@ onMounted(async () => {
       checkInDate.value,
       checkOutDate.value,
       guestCount,
+      "",
+      optionsTotalPrice.value,
     );
 
     console.log("📦 Payment Intent作成結果:", result);
@@ -1771,47 +1798,30 @@ const proceedToPayment = async () => {
     }
 
     // Stripe決済を確定（Card Element用）
-    // ローカル開発環境（HTTP）ではStripe決済が制限されるため、テスト環境では決済をスキップ
-    const isLocalDev = window.location.hostname === "localhost";
+    if (!cardElement) {
+      throw new Error("カード情報が入力されていません");
+    }
+    const paymentIntent = await confirmCardPayment(
+      clientSecret.value,
+      cardElement,
+    );
 
-    if (isLocalDev) {
-      // ローカル開発: 決済スキップして完了ページへ
-      console.log("🔧 ローカル開発環境: 決済をスキップします");
+    // 決済成功後、完了ページにリダイレクト
+    // requires_capture: 与信確保成功（審査待ち）
+    // succeeded: 即時決済成功
+    if (
+      paymentIntent &&
+      (paymentIntent.status === "succeeded" ||
+        paymentIntent.status === "requires_capture")
+    ) {
       router.push({
         path: "/booking/complete",
         query: {
-          payment_intent: paymentIntentId,
+          payment_intent: paymentIntent.id,
           booking_id: bookingId,
           email: guestEmail.value,
         },
       });
-    } else {
-      // 本番環境: 実際に決済を実行
-      if (!cardElement) {
-        throw new Error("カード情報が入力されていません");
-      }
-      const paymentIntent = await confirmCardPayment(
-        clientSecret.value,
-        cardElement,
-      );
-
-      // 決済成功後、完了ページにリダイレクト
-      // requires_capture: 与信確保成功（審査待ち）
-      // succeeded: 即時決済成功
-      if (
-        paymentIntent &&
-        (paymentIntent.status === "succeeded" ||
-          paymentIntent.status === "requires_capture")
-      ) {
-        router.push({
-          path: "/booking/complete",
-          query: {
-            payment_intent: paymentIntent.id,
-            booking_id: bookingId,
-            email: guestEmail.value,
-          },
-        });
-      }
     }
   } catch (error: unknown) {
     console.error("予約・決済エラー:", error);

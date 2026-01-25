@@ -132,8 +132,8 @@ export default defineEventHandler(async (event) => {
       );
     }
 
-    // 6. 最終金額を計算（基本金額 - クーポン割引）
-    const calculatedAmount = calculateBookingAmount(
+    // 6. 最終金額を計算（基本金額 + オプション代金 - クーポン割引）
+    const baseCalculatedAmount = calculateBookingAmount(
       new Date(validatedData.checkInDate),
       new Date(validatedData.checkOutDate),
       validatedData.guestCount,
@@ -141,10 +141,17 @@ export default defineEventHandler(async (event) => {
       couponDiscount,
     );
 
+    // オプション代金を加算（税込み計算）
+    const optionsTotalPrice = validatedData.optionsTotalPrice || 0;
+    const optionsTax = Math.floor(optionsTotalPrice * 0.1); // オプションの消費税10%
+    const calculatedAmount = baseCalculatedAmount + optionsTotalPrice + optionsTax;
+
     stripeLogger.debug("Calculated amount", {
       basePrice: pricingRule.basePrice,
       weekendSurcharge: pricingRule.weekendSurcharge,
       guestCount: validatedData.guestCount,
+      optionsTotalPrice,
+      optionsTax,
       couponDiscount,
       total: calculatedAmount,
     });
@@ -187,6 +194,8 @@ export default defineEventHandler(async (event) => {
           checkOutDate: validatedData.checkOutDate,
           guestCount: validatedData.guestCount.toString(),
           calculatedAmount: calculatedAmount.toString(),
+          optionsTotalPrice: optionsTotalPrice.toString(),
+          optionsTax: optionsTax.toString(),
           couponCode: validatedData.couponCode || "",
           couponId,
           timestamp: new Date().toISOString(),
@@ -210,8 +219,10 @@ export default defineEventHandler(async (event) => {
       amount: calculatedAmount,
       isZeroAmount: false,
       breakdown: {
-        baseAmount: calculatedAmount + couponDiscount - pricingRule.cleaningFee,
+        baseAmount: baseCalculatedAmount + couponDiscount - pricingRule.cleaningFee,
         cleaningFee: pricingRule.cleaningFee,
+        optionsTotalPrice,
+        optionsTax,
         couponDiscount,
         total: calculatedAmount,
       },
