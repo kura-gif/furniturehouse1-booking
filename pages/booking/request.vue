@@ -1400,9 +1400,9 @@ onMounted(async () => {
 
   while (waited < maxWaitTime) {
     await nextTick();
-    // priceCalculationが有効で、subtotalが0より大きい場合は計算完了
-    if (priceCalculation.value?.summary?.subtotalWithTax && priceCalculation.value.summary.subtotalWithTax > 0) {
-      console.log("✅ 料金計算完了:", priceCalculation.value.summary);
+    // priceCalculationが有効で、totalAmountが0より大きい場合は計算完了
+    if (priceCalculation.value?.totalAmount && priceCalculation.value.totalAmount > 0) {
+      console.log("✅ 料金計算完了:", priceCalculation.value.totalAmount);
       break;
     }
     await new Promise(resolve => setTimeout(resolve, checkInterval));
