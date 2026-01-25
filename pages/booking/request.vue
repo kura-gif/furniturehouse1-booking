@@ -1393,9 +1393,12 @@ onMounted(async () => {
   }
 
   // 料金設定ロード完了後、Payment Intentを作成
+  // Vueのリアクティビティが更新されるのを待つ
+  await nextTick();
+
   try {
     const guestCount = adults.value + children.value;
-    console.log("📦 Payment Intent作成開始 - finalTotalAmount:", finalTotalAmount.value);
+    console.log("📦 Payment Intent作成開始 - finalTotalAmount:", finalTotalAmount.value, "priceCalculation:", priceCalculation.value?.summary);
 
     const result = await createPaymentIntent(
       checkInDate.value,
