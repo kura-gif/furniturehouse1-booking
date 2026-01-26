@@ -626,21 +626,24 @@
 
               <!-- 郵便番号・住所 -->
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <!-- 郵便番号（外国籍の場合は任意） -->
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-2">
-                    郵便番号 <span class="text-red-500">*</span>
+                    {{ isForeignNational ? '郵便番号（任意）' : '郵便番号' }}
+                    <span v-if="!isForeignNational" class="text-red-500">*</span>
                   </label>
                   <div class="flex gap-2">
                     <input
                       v-model="guestPostalCode"
                       type="text"
-                      placeholder="123-4567"
-                      maxlength="8"
-                      required
+                      :placeholder="isForeignNational ? '任意 / Optional' : '123-4567'"
+                      maxlength="20"
+                      :required="!isForeignNational"
                       class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                       @input="onPostalCodeInput"
                     />
                     <button
+                      v-if="!isForeignNational"
                       type="button"
                       @click="searchAddress"
                       :disabled="isSearchingAddress"
@@ -650,17 +653,22 @@
                     </button>
                   </div>
                 </div>
+                <!-- 住所 -->
                 <div class="sm:col-span-2">
                   <label class="block text-sm font-medium text-gray-700 mb-2">
-                    住所 <span class="text-red-500">*</span>
+                    {{ isForeignNational ? '住所（現住所または本国の住所）' : '住所' }}
+                    <span class="text-red-500">*</span>
                   </label>
                   <input
                     v-model="guestAddress"
                     type="text"
-                    placeholder="東京都渋谷区..."
+                    :placeholder="isForeignNational ? '123 Main St, City, Country' : '東京都渋谷区...'"
                     required
                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   />
+                  <p v-if="isForeignNational" class="mt-1 text-xs text-gray-500">
+                    日本国内または本国の住所をご記入ください
+                  </p>
                 </div>
               </div>
 
@@ -1739,14 +1747,22 @@ const isFormValid = computed(() => {
   }
 
   // 住所関連のチェック
-  if (
-    !guestPostalCode.value.trim() ||
-    guestPostalCode.value.replace("-", "").length !== 7
-  ) {
-    return false;
-  }
-  if (!guestAddress.value.trim()) {
-    return false;
+  if (isForeignNational.value) {
+    // 外国籍: 郵便番号は任意、住所は必須
+    if (!guestAddress.value.trim()) {
+      return false;
+    }
+  } else {
+    // 日本国籍: 郵便番号（7桁）と住所が必須
+    if (
+      !guestPostalCode.value.trim() ||
+      guestPostalCode.value.replace("-", "").length !== 7
+    ) {
+      return false;
+    }
+    if (!guestAddress.value.trim()) {
+      return false;
+    }
   }
   if (!guestOccupation.value) {
     return false;
