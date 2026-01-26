@@ -304,7 +304,7 @@
                   </select>
                 </div>
                 <button
-                  @click="showEditForm = false"
+                  @click="confirmDateChange"
                   class="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
                 >
                   確定
@@ -1095,6 +1095,7 @@ const { calculatePrice, pricingSetting, loadFromFirestore } =
   useEnhancedPricing();
 const { getActivePolicy, generatePolicyDescription } = useCancellationPolicy();
 const { validateCoupon, incrementCouponUsage } = useCoupon();
+const { isDateRangeBooked, isDateRangeBlocked, loadBookedDates } = useBlockedDates();
 const toast = useToast();
 
 // 施設設定
@@ -1368,6 +1369,7 @@ const loadFacilitySettings = async () => {
 onMounted(async () => {
   await loadFromFirestore();
   await loadFacilitySettings();
+  await loadBookedDates();
 
   // オプションを読み込み
   await loadOptionsAndAvailability();
@@ -1628,6 +1630,26 @@ const isSubmitting = ref(false);
 const showConfirmation = ref(false);
 const isProcessing = ref(false);
 const showEditForm = ref(false);
+
+// 日付変更の確定（バリデーション付き）
+const confirmDateChange = () => {
+  // チェックアウト日がチェックイン日より後かチェック
+  if (checkOutDate.value <= checkInDate.value) {
+    toast.error("チェックアウト日はチェックイン日より後の日付を選択してください。");
+    return;
+  }
+
+  // 予約済み日程との重複チェック
+  const checkIn = new Date(checkInDate.value);
+  const checkOut = new Date(checkOutDate.value);
+
+  if (isDateRangeBooked(checkIn, checkOut) || isDateRangeBlocked(checkIn, checkOut)) {
+    toast.error("選択した期間には予約済みの日程が含まれています。別の日程をお選びください。");
+    return;
+  }
+
+  showEditForm.value = false;
+};
 
 // キャンセルポリシー
 const cancellationPolicyDescription = ref("");
