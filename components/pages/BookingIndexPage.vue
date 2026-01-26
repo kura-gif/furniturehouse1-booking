@@ -1440,8 +1440,10 @@ const generateMonthDates = (year: number, month: number) => {
 
     // disabled判定：チェックアウト日選択時は予約開始日を選択可能にする
     let isDisabled = isPast || blocked;
+    let showUnavailable = blocked || isBooked;
     if (isSelectingCheckout && isAfterCheckIn) {
       isDisabled = isDisabled || bookedForCheckout;
+      showUnavailable = blocked || bookedForCheckout;
     } else {
       isDisabled = isDisabled || isBooked;
     }
@@ -1453,7 +1455,7 @@ const generateMonthDates = (year: number, month: number) => {
       isSelected,
       isInRange,
       isEmpty: false,
-      isUnavailable: isBooked,
+      isUnavailable: showUnavailable,
       key: dateStr,
     });
   }
