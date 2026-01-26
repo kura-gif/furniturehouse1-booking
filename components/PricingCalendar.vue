@@ -320,6 +320,10 @@ const calendarDays = computed(() => {
   const year = currentMonth.value.getFullYear();
   const month = currentMonth.value.getMonth();
 
+  // checkInDate/checkOutDateの変更を追跡するために参照
+  const _checkIn = checkInDate.value;
+  const _checkOut = checkOutDate.value;
+
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
   const prevLastDay = new Date(year, month, 0);

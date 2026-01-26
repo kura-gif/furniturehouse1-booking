@@ -1464,12 +1464,18 @@ const generateMonthDates = (year: number, month: number) => {
 const currentMonthDates = computed(() => {
   const year = currentMonth.value.getFullYear();
   const month = currentMonth.value.getMonth();
+  // checkInDate/checkOutDateの変更を追跡するために参照
+  const _checkIn = checkInDate.value;
+  const _checkOut = checkOutDate.value;
   return generateMonthDates(year, month);
 });
 
 const nextMonthDates = computed(() => {
   const year = currentMonth.value.getFullYear();
   const month = currentMonth.value.getMonth() + 1;
+  // checkInDate/checkOutDateの変更を追跡するために参照
+  const _checkIn = checkInDate.value;
+  const _checkOut = checkOutDate.value;
   return generateMonthDates(year, month);
 });
 
