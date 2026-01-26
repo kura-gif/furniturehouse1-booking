@@ -409,40 +409,6 @@
             </NuxtLink>
           </section>
 
-          <!-- 注意事項 -->
-          <section class="pb-8">
-            <h2
-              class="text-xl font-medium mb-6"
-              style="color: #231815; font-weight: 500"
-            >
-              ご利用上の注意
-            </h2>
-            <ul class="space-y-3 text-sm text-gray-700">
-              <li class="flex items-start gap-3">
-                <span class="text-gray-400 mt-1">•</span>
-                <span
-                  >チェックイン: {{ facilitySettings.checkInTime }}〜 /
-                  チェックアウト: 〜{{ facilitySettings.checkOutTime }}</span
-                >
-              </li>
-              <li class="flex items-start gap-3">
-                <span class="text-gray-400 mt-1">•</span>
-                <span>建築物保護のため、土足厳禁・禁煙です</span>
-              </li>
-              <li class="flex items-start gap-3">
-                <span class="text-gray-400 mt-1">•</span>
-                <span>ペット同伴不可</span>
-              </li>
-              <li class="flex items-start gap-3">
-                <span class="text-gray-400 mt-1">•</span>
-                <span>イベント・パーティー利用不可</span>
-              </li>
-              <li class="flex items-start gap-3">
-                <span class="text-gray-400 mt-1">•</span>
-                <span>送迎サービスはございません</span>
-              </li>
-            </ul>
-          </section>
         </div>
 
         <!-- 右側: 予約カード（スティッキー） -->
