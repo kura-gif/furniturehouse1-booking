@@ -95,20 +95,30 @@ export default defineEventHandler(async (event) => {
     const checkOutDate = Timestamp.fromDate(new Date(body.checkOutDate));
 
     // 5. 既存予約との重複チェック
-    // pending, pending_review, confirmed のステータスの予約と日程が重複していないか確認
-    const conflictingBookingsRef = db
+    // Firestoreは異なるフィールドへの複数範囲クエリをサポートしないため、
+    // まずステータスでフィルタし、JavaScript側で日程重複をチェック
+    const activeBookingsRef = db
       .collection("bookings")
-      .where("status", "in", ["pending", "pending_review", "confirmed"])
-      .where("checkInDate", "<", checkOutDate)
-      .where("checkOutDate", ">", checkInDate);
+      .where("status", "in", ["pending", "pending_review", "confirmed"]);
 
-    const conflictingBookings = await conflictingBookingsRef.get();
+    const activeBookings = await activeBookingsRef.get();
 
-    if (!conflictingBookings.empty) {
+    // 日程の重複をチェック（既存のcheckIn < 新規のcheckOut かつ 既存のcheckOut > 新規のcheckIn）
+    const hasConflict = activeBookings.docs.some((doc) => {
+      const booking = doc.data();
+      const existingCheckIn = booking.checkInDate?.toDate?.() || new Date(booking.checkInDate);
+      const existingCheckOut = booking.checkOutDate?.toDate?.() || new Date(booking.checkOutDate);
+      const newCheckIn = new Date(body.checkInDate);
+      const newCheckOut = new Date(body.checkOutDate);
+
+      // 期間が重複する条件: 既存のチェックイン < 新規のチェックアウト AND 既存のチェックアウト > 新規のチェックイン
+      return existingCheckIn < newCheckOut && existingCheckOut > newCheckIn;
+    });
+
+    if (hasConflict) {
       console.log("❌ 予約重複エラー:", {
         requestedCheckIn: body.checkInDate,
         requestedCheckOut: body.checkOutDate,
-        conflictingCount: conflictingBookings.size,
       });
       throw createError({
         statusCode: 409,
