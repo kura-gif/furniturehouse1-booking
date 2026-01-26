@@ -304,13 +304,15 @@ import type {
 } from "~/types";
 import type { CancelPolicyTexts } from "~/composables/useCancellationPolicy";
 
+const { user } = useAuth();
+
 const {
   defaultPolicy,
   getActivePolicy,
   generatePolicyDescription,
   generateDisplayTexts,
   getPolicyTexts,
-  savePolicyWithTexts,
+  savePolicy,
   calculateRefundSync,
 } = useCancellationPolicy();
 
@@ -390,6 +392,11 @@ const removeRule = (index: number) => {
 
 // 保存
 const handleSave = async () => {
+  if (!user.value) {
+    alert("ログインが必要です");
+    return;
+  }
+
   isSaving.value = true;
   try {
     // ルールを日数の降順でソート
@@ -398,12 +405,30 @@ const handleSave = async () => {
     );
     editPolicy.value.isActive = true;
 
-    // 返金ルールと表示テキストを同時に保存
-    await savePolicyWithTexts(editPolicy.value, {
+    // 1. 返金ルールを保存（cancellationPoliciesコレクション）
+    await savePolicy(editPolicy.value);
+
+    // 2. 表示テキストをAPI経由で保存（settings/facilityドキュメント）
+    const idToken = await user.value.getIdToken();
+    const textsToSave = {
+      ...generatedTexts.value,
       cancelPolicyProcedure: policyTexts.value.cancelPolicyProcedure,
       cancelPolicyExceptions: policyTexts.value.cancelPolicyExceptions,
       cancelPolicyNotes: policyTexts.value.cancelPolicyNotes,
+    };
+
+    const response = await fetch("/api/admin/settings", {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${idToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(textsToSave),
     });
+
+    if (!response.ok) {
+      throw new Error("表示テキストの保存に失敗しました");
+    }
 
     currentPolicy.value = { ...editPolicy.value };
     alert("キャンセルポリシーを保存しました。\n返金ルールと表示テキストが連動して更新されました。");
