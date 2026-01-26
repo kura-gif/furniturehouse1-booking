@@ -94,7 +94,29 @@ export default defineEventHandler(async (event) => {
     const checkInDate = Timestamp.fromDate(new Date(body.checkInDate));
     const checkOutDate = Timestamp.fromDate(new Date(body.checkOutDate));
 
-    // 5. 予約データを作成
+    // 5. 既存予約との重複チェック
+    // pending, pending_review, confirmed のステータスの予約と日程が重複していないか確認
+    const conflictingBookingsRef = db
+      .collection("bookings")
+      .where("status", "in", ["pending", "pending_review", "confirmed"])
+      .where("checkInDate", "<", checkOutDate)
+      .where("checkOutDate", ">", checkInDate);
+
+    const conflictingBookings = await conflictingBookingsRef.get();
+
+    if (!conflictingBookings.empty) {
+      console.log("❌ 予約重複エラー:", {
+        requestedCheckIn: body.checkInDate,
+        requestedCheckOut: body.checkOutDate,
+        conflictingCount: conflictingBookings.size,
+      });
+      throw createError({
+        statusCode: 409,
+        message: "この期間は既に予約されています。別の日程をお選びください。",
+      });
+    }
+
+    // 6. 予約データを作成
     const bookingReference = generateBookingReference();
     const bookingToken = generateBookingToken();
 
@@ -152,7 +174,7 @@ export default defineEventHandler(async (event) => {
       updatedAt: FieldValue.serverTimestamp(),
     };
 
-    // 6. Firestoreに保存
+    // 7. Firestoreに保存
     const docRef = await db.collection("bookings").add(bookingData);
     const bookingId = docRef.id;
 
@@ -162,7 +184,7 @@ export default defineEventHandler(async (event) => {
       guestEmail: body.guestEmail,
     });
 
-    // 7. 成功レスポンス
+    // 8. 成功レスポンス
     return {
       success: true,
       bookingId,
