@@ -237,13 +237,27 @@ export function useBlockedDates() {
 
   /**
    * 特定の日付が予約済みかチェック（pending_review, confirmedステータス）
+   * チェックイン日として選択不可かどうかを判定
    */
   const isDateBooked = (date: Date): boolean => {
     const dateString = formatDateString(date);
     return bookedDates.value.some((booked) => {
-      // チェックイン日は予約可能（前の予約のチェックアウト日と重なるため）
-      // endDateは含まない（チェックアウト日は次の予約のチェックイン可能）
+      // startDate（チェックイン日）は含む、endDate（チェックアウト日）は含まない
       return dateString >= booked.startDate && dateString < booked.endDate;
+    });
+  };
+
+  /**
+   * 特定の日付がチェックアウト日として選択不可かチェック
+   * 予約期間の「中」にある日は不可だが、予約の開始日（他の予約のチェックイン日）は
+   * チェックアウト日として選択可能（朝チェックアウト→午後チェックイン）
+   */
+  const isDateBookedForCheckout = (date: Date): boolean => {
+    const dateString = formatDateString(date);
+    return bookedDates.value.some((booked) => {
+      // startDateは含まない（チェックアウト日として選択可能）
+      // startDateより後で、endDateより前なら不可（予約期間の中）
+      return dateString > booked.startDate && dateString < booked.endDate;
     });
   };
 
@@ -277,6 +291,7 @@ export function useBlockedDates() {
     isDateRangeUnavailable,
     isDateBlocked,
     isDateBooked,
+    isDateBookedForCheckout,
     isDateUnavailable,
     getBlockedReason,
   };

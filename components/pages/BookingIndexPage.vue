@@ -1355,6 +1355,8 @@ const {
   loadBlockedDates,
   loadBookedDates,
   isDateUnavailable,
+  isDateBookedForCheckout,
+  isDateBlocked,
   isDateRangeUnavailable,
 } = useBlockedDates();
 
@@ -1418,7 +1420,9 @@ const generateMonthDates = (year: number, month: number) => {
     const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
     const isPast = date < today;
+    const blocked = isDateBlocked(date);
     const isBooked = isDateUnavailable(date);
+    const bookedForCheckout = isDateBookedForCheckout(date);
     const isSelected =
       dateStr === checkInDate.value || dateStr === checkOutDate.value;
 
@@ -1430,10 +1434,22 @@ const generateMonthDates = (year: number, month: number) => {
       isInRange = date > checkIn && date < checkOut;
     }
 
+    // チェックアウト日選択モードかどうか
+    const isSelectingCheckout = !!(checkInDate.value && !checkOutDate.value);
+    const isAfterCheckIn = checkInDate.value && dateStr > checkInDate.value;
+
+    // disabled判定：チェックアウト日選択時は予約開始日を選択可能にする
+    let isDisabled = isPast || blocked;
+    if (isSelectingCheckout && isAfterCheckIn) {
+      isDisabled = isDisabled || bookedForCheckout;
+    } else {
+      isDisabled = isDisabled || isBooked;
+    }
+
     dates.push({
       day,
       date: dateStr,
-      disabled: isPast || isBooked,
+      disabled: isDisabled,
       isSelected,
       isInRange,
       isEmpty: false,

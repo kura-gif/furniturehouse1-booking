@@ -257,6 +257,7 @@ const {
   loadBookedDates,
   isDateBlocked,
   isDateBooked,
+  isDateBookedForCheckout,
 } = useBlockedDates();
 const { calculatePrice, loadFromFirestore } = useEnhancedPricing();
 
@@ -358,6 +359,7 @@ function createCalendarDate(date: Date, isCurrentMonth: boolean): CalendarDate {
   const isPast = date < today;
   const blocked = isDateBlocked(date);
   const booked = isDateBooked(date);
+  const bookedForCheckout = isDateBookedForCheckout(date);
 
   // Check if date is selected or in range
   const isSelected =
@@ -368,6 +370,23 @@ function createCalendarDate(date: Date, isCurrentMonth: boolean): CalendarDate {
     dateString > checkInDate.value &&
     dateString < checkOutDate.value
   );
+
+  // チェックアウト日選択モードかどうか（チェックイン日が選択済みで、チェックアウト日が未選択）
+  const isSelectingCheckout = !!(checkInDate.value && !checkOutDate.value);
+  // チェックアウト日として選択可能な日付かどうか
+  const isAfterCheckIn = checkInDate.value && dateString > checkInDate.value;
+
+  // disabled判定：
+  // - チェックアウト日選択モードで、チェックイン日より後の日付は、bookedForCheckoutで判定
+  // - それ以外はbookedで判定（チェックイン日としての判定）
+  let isDisabled = isPast || blocked;
+  if (isSelectingCheckout && isAfterCheckIn) {
+    // チェックアウト日として選択可能か判定
+    isDisabled = isDisabled || bookedForCheckout;
+  } else {
+    // チェックイン日として選択可能か判定
+    isDisabled = isDisabled || booked;
+  }
 
   // Calculate price for this date
   let price: number | null = null;
@@ -394,7 +413,7 @@ function createCalendarDate(date: Date, isCurrentMonth: boolean): CalendarDate {
     isToday,
     isSelected,
     isInRange,
-    disabled: isPast || blocked || booked,
+    disabled: isDisabled,
     isBlocked: blocked || booked,
     isSunday: isSunday(date),
     isSaturday: isSaturday(date),
