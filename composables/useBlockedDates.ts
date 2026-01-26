@@ -288,6 +288,7 @@ export function useBlockedDates() {
     loadBlockedDates,
     loadBookedDates,
     isDateRangeBlocked,
+    isDateRangeBooked,
     isDateRangeUnavailable,
     isDateBlocked,
     isDateBooked,
