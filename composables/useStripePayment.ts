@@ -11,6 +11,14 @@ export const useStripePayment = () => {
   let cardElement: StripeCardElement | null = null;
 
   /**
+   * 選択されたオプションの型
+   */
+  interface SelectedOption {
+    optionId: string;
+    quantity: number;
+  }
+
+  /**
    * Payment Intentを作成
    */
   const createPaymentIntent = async (
@@ -20,6 +28,7 @@ export const useStripePayment = () => {
     couponCode?: string,
     optionsTotalPrice?: number,
     calculatedTotalAmount?: number,
+    selectedOptions?: SelectedOption[],
   ) => {
     try {
       const data = await $fetch("/api/stripe/create-payment-intent-secure", {
@@ -29,6 +38,7 @@ export const useStripePayment = () => {
           checkOutDate,
           guestCount,
           couponCode: couponCode || "",
+          selectedOptions: selectedOptions || [],
           optionsTotalPrice: optionsTotalPrice || 0,
           calculatedTotalAmount: calculatedTotalAmount || 0,
         },

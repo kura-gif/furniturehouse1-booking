@@ -1189,6 +1189,7 @@ const recreatePaymentIntentWithCoupon = async () => {
       appliedCoupon.value?.code || "",
       optionsTotalPrice.value,
       finalTotalAmount.value,
+      selectedOptionsForApi.value,
     );
 
     // 0円予約の場合
@@ -1234,6 +1235,7 @@ const removeCoupon = async () => {
       "",
       optionsTotalPrice.value,
       finalTotalAmount.value,
+      selectedOptionsForApi.value,
     );
 
     if (result && result.clientSecret) {
@@ -1284,6 +1286,14 @@ const optionsTotalPrice = computed(() => {
   return selectedOptions.value.reduce((sum, opt) => sum + opt.price, 0);
 });
 
+// API送信用のオプション形式（optionIdとquantityのみ）
+const selectedOptionsForApi = computed(() => {
+  return selectedOptions.value.map((opt) => ({
+    optionId: opt.optionId,
+    quantity: 1, // 現在は1固定
+  }));
+});
+
 // オプションが選択されているか確認
 const isOptionSelected = (optionId: string): boolean => {
   return selectedOptions.value.some((opt) => opt.optionId === optionId);
@@ -1315,6 +1325,7 @@ const toggleOption = async (option: BookingOption) => {
       appliedCoupon.value?.code || "",
       optionsTotalPrice.value,
       finalTotalAmount.value,
+      selectedOptionsForApi.value,
     );
 
     if (result && result.clientSecret) {
@@ -1440,6 +1451,7 @@ onMounted(async () => {
       "",
       optionsTotalPrice.value,
       finalTotalAmount.value,
+      selectedOptionsForApi.value,
     );
 
     console.log("📦 Payment Intent作成結果:", result);
@@ -1826,6 +1838,7 @@ const proceedToPayment = async () => {
         appliedCoupon.value?.code || "",
         optionsTotalPrice.value,
         finalTotalAmount.value,
+        selectedOptionsForApi.value,
       );
 
       if (!newPaymentResult || !newPaymentResult.clientSecret) {

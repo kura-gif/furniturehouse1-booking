@@ -99,3 +99,68 @@ export const validateAmount = (
   const diff = Math.abs(calculatedAmount - clientAmount);
   return diff <= tolerance;
 };
+
+/**
+ * 選択されたオプション
+ */
+export interface SelectedOption {
+  optionId: string;
+  quantity: number;
+}
+
+/**
+ * オプション料金マスタ
+ */
+export interface OptionPriceInfo {
+  id: string;
+  price: number;
+  isActive: boolean;
+}
+
+/**
+ * オプション料金を計算
+ * @param selectedOptions 選択されたオプション配列
+ * @param optionPrices オプション料金マスタ（Firestoreから取得）
+ * @returns オプション合計金額
+ */
+export const calculateOptionsTotalPrice = (
+  selectedOptions: SelectedOption[],
+  optionPrices: Map<string, OptionPriceInfo>,
+): number => {
+  if (!selectedOptions || selectedOptions.length === 0) {
+    return 0;
+  }
+
+  let total = 0;
+  for (const selected of selectedOptions) {
+    const optionInfo = optionPrices.get(selected.optionId);
+    if (!optionInfo) {
+      throw new Error(`無効なオプションID: ${selected.optionId}`);
+    }
+    if (!optionInfo.isActive) {
+      throw new Error(`オプションは現在利用できません: ${selected.optionId}`);
+    }
+    if (selected.quantity < 1) {
+      throw new Error(`オプション数量は1以上である必要があります`);
+    }
+    total += optionInfo.price * selected.quantity;
+  }
+
+  return total;
+};
+
+/**
+ * 予約合計金額を計算（オプション込み）
+ * @param baseAmount 基本料金（宿泊料金）
+ * @param couponDiscount クーポン割引額
+ * @param optionsTotalPrice オプション合計金額
+ * @returns 最終合計金額
+ */
+export const calculateTotalAmount = (
+  baseAmount: number,
+  couponDiscount: number,
+  optionsTotalPrice: number,
+): number => {
+  const total = baseAmount - couponDiscount + optionsTotalPrice;
+  return Math.max(total, 0);
+};

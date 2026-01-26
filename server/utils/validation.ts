@@ -71,6 +71,14 @@ export const createBookingSchema = z
 export type CreateBookingInput = z.infer<typeof createBookingSchema>;
 
 /**
+ * 選択されたオプションのスキーマ
+ */
+export const selectedOptionSchema = z.object({
+  optionId: z.string().min(1, "オプションIDは必須です"),
+  quantity: z.number().min(1, "数量は1以上である必要があります").max(10, "数量は10以下である必要があります"),
+});
+
+/**
  * Payment Intent作成データのスキーマ
  */
 export const createPaymentIntentSchema = z.object({
@@ -78,6 +86,9 @@ export const createPaymentIntentSchema = z.object({
   checkOutDate: z.string(),
   guestCount: z.number().min(1).max(10),
   couponCode: z.string().optional().or(z.literal("")),
+  // 選択されたオプション（サーバー側で料金を再計算するため必要）
+  selectedOptions: z.array(selectedOptionSchema).optional().default([]),
+  // クライアント側で計算したオプション合計（検証用）
   optionsTotalPrice: z.number().min(0).optional().default(0),
   // クライアント側で計算した最終金額（useEnhancedPricing使用）
   // 0円予約（100%割引クーポン）も許可

@@ -8,6 +8,17 @@
 
 import Stripe from "stripe";
 import { stripeLogger } from "../../utils/logger";
+import { getFirestoreAdmin } from "../../utils/firebase-admin";
+import {
+  validateInput,
+  createPaymentIntentSchema,
+  type CreatePaymentIntentInput,
+} from "../../utils/validation";
+import {
+  calculateEnhancedPriceServer,
+  convertFirestoreSettingToEnhanced,
+  type EnhancedPricingSettingServer,
+} from "../../utils/enhanced-pricing";
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
@@ -17,133 +28,195 @@ export default defineEventHandler(async (event) => {
     // 1. リクエストボディを取得・検証
     const rawBody = await readBody(event);
     stripeLogger.debug("Request body received", rawBody);
-    const validatedData = validateInput(createPaymentIntentSchema, rawBody);
+    const validatedData: CreatePaymentIntentInput = validateInput(createPaymentIntentSchema, rawBody);
 
-    // 2. 料金設定を取得（Firebase Admin SDKを使用しない）
-    let pricingRule = DEFAULT_PRICING;
-    let couponDiscount = 0;
+    // 2. Firebase Admin SDKを取得
+    const db = getFirestoreAdmin();
+
+    // 3. 料金設定を取得（拡張版）
+    let pricingSetting: EnhancedPricingSettingServer = {
+      basePrice: 35000,
+      cleaningFee: 5000,
+      taxRate: 0.1,
+    };
+    let couponDiscountRate = 0;
     let couponId = "";
 
-    // 開発環境ではデフォルト料金設定を使用
-    // 本番環境では必要に応じてFirebase Admin SDKを使用
-    try {
-      const db = getFirestoreAdmin();
-
-      // 3. 料金設定を取得（enhancedPricingSettingsから読み込み）
-      const enhancedPricingDoc = await db
-        .collection("enhancedPricingSettings")
-        .doc("default")
-        .get();
-      if (enhancedPricingDoc.exists) {
-        const enhancedSettings = enhancedPricingDoc.data();
-        // 拡張設定から必要な値をマッピング
-        pricingRule = {
-          ...DEFAULT_PRICING,
-          basePrice: enhancedSettings?.basePrice ?? DEFAULT_PRICING.basePrice,
-          cleaningFee:
-            enhancedSettings?.cleaningFee ?? DEFAULT_PRICING.cleaningFee,
-          // 週末料金は倍率から計算（weekendMultiplier - 1）× basePrice
-          weekendSurcharge: enhancedSettings?.dayTypePricing?.weekendMultiplier
-            ? Math.round(
-                (enhancedSettings.dayTypePricing.weekendMultiplier - 1) *
-                  (enhancedSettings?.basePrice ?? DEFAULT_PRICING.basePrice),
-              )
-            : DEFAULT_PRICING.weekendSurcharge,
-        };
+    // 料金設定を取得（enhancedPricingSettingsから読み込み）
+    const enhancedPricingDoc = await db
+      .collection("enhancedPricingSettings")
+      .doc("default")
+      .get();
+    if (enhancedPricingDoc.exists) {
+      const firestoreData = enhancedPricingDoc.data();
+      if (firestoreData) {
+        pricingSetting = convertFirestoreSettingToEnhanced(firestoreData);
       }
-
-      // 4. 基本金額を先に計算（割引なし）
-      const baseAmount = calculateBookingAmount(
-        new Date(validatedData.checkInDate),
-        new Date(validatedData.checkOutDate),
-        validatedData.guestCount,
-        pricingRule,
-        0, // 割引なしで計算
-      );
-
-      // 5. クーポン割引を計算
-      if (validatedData.couponCode) {
-        const couponSnapshot = await db
-          .collection("coupons")
-          .where("code", "==", validatedData.couponCode)
-          .where("isActive", "==", true)
-          .limit(1)
-          .get();
-
-        if (!couponSnapshot.empty) {
-          const coupon = couponSnapshot.docs[0].data();
-          couponId = couponSnapshot.docs[0].id;
-
-          // クーポン有効期限チェック（validUntilまたはexpiresAtをサポート）
-          const expiryDate = coupon.validUntil || coupon.expiresAt;
-          if (expiryDate && expiryDate.toDate() < new Date()) {
-            throw createError({
-              statusCode: 400,
-              message: "クーポンの有効期限が切れています",
-            });
-          }
-
-          // 使用回数制限チェック（usageLimitまたはmaxUsesをサポート）
-          const maxUses = coupon.usageLimit || coupon.maxUses;
-          const usedCount = coupon.usageCount || coupon.usedCount || 0;
-          if (maxUses && usedCount >= maxUses) {
-            throw createError({
-              statusCode: 400,
-              message: "クーポンの使用回数が上限に達しています",
-            });
-          }
-
-          // 割引額を計算（discountTypeに基づく）
-          if (coupon.discountType === "percentage") {
-            // パーセンテージ割引
-            const discountRate = (coupon.discountValue || 0) / 100;
-            couponDiscount = Math.floor(baseAmount * discountRate);
-
-            // 最大割引額の制限
-            if (coupon.maxDiscount && couponDiscount > coupon.maxDiscount) {
-              couponDiscount = coupon.maxDiscount;
-            }
-          } else {
-            // 固定額割引（discountType === 'fixed' または未指定）
-            couponDiscount = Math.min(
-              coupon.discountValue || coupon.discountAmount || 0,
-              baseAmount,
-            );
-          }
-
-          stripeLogger.debug("Coupon applied", {
-            code: validatedData.couponCode,
-            discountType: coupon.discountType,
-            discountValue: coupon.discountValue,
-            calculatedDiscount: couponDiscount,
-          });
-        } else {
-          stripeLogger.warn("Invalid coupon code", {
-            code: validatedData.couponCode,
-          });
-          // クーポンが無効な場合でも続行（割引なし）
-        }
-      }
-    } catch (error: unknown) {
-      // Firebase Admin SDKが使用できない場合はデフォルト設定を使用
-      stripeLogger.warn(
-        "Using default pricing (Firebase Admin not available)",
-        error,
-      );
     }
 
-    // 6. クライアント側で計算した金額を使用（useEnhancedPricingの計算結果）
-    // サーバー側での再計算は行わない（複雑な料金体系はクライアント側で計算済み）
-    const calculatedAmount = validatedData.calculatedTotalAmount;
-    const optionsTotalPrice = validatedData.optionsTotalPrice || 0;
+    // 4. クーポン検証と割引率の取得
+    if (validatedData.couponCode) {
+      const couponSnapshot = await db
+        .collection("coupons")
+        .where("code", "==", validatedData.couponCode)
+        .where("isActive", "==", true)
+        .limit(1)
+        .get();
 
-    stripeLogger.debug("Using client-calculated amount", {
-      clientCalculatedAmount: calculatedAmount,
-      optionsTotalPrice,
-      couponCode: validatedData.couponCode || "none",
-      couponDiscount,
+      if (!couponSnapshot.empty) {
+        const coupon = couponSnapshot.docs[0].data();
+        couponId = couponSnapshot.docs[0].id;
+
+        // クーポン有効期限チェック
+        const expiryDate = coupon.validUntil || coupon.expiresAt;
+        if (expiryDate && expiryDate.toDate() < new Date()) {
+          throw createError({
+            statusCode: 400,
+            message: "クーポンの有効期限が切れています",
+          });
+        }
+
+        // 使用回数制限チェック
+        const maxUses = coupon.usageLimit || coupon.maxUses;
+        const usedCount = coupon.usageCount || coupon.usedCount || 0;
+        if (maxUses && usedCount >= maxUses) {
+          throw createError({
+            statusCode: 400,
+            message: "クーポンの使用回数が上限に達しています",
+          });
+        }
+
+        // パーセンテージ割引の場合、割引率を設定
+        if (coupon.discountType === "percentage") {
+          couponDiscountRate = (coupon.discountValue || 0) / 100;
+        }
+
+        stripeLogger.debug("Coupon validated", {
+          code: validatedData.couponCode,
+          discountType: coupon.discountType,
+          discountValue: coupon.discountValue,
+        });
+      } else {
+        stripeLogger.warn("Invalid coupon code", {
+          code: validatedData.couponCode,
+        });
+      }
+    }
+
+    // 5. 拡張版料金計算（クライアントと同じロジック）
+    const priceResult = calculateEnhancedPriceServer(
+      new Date(validatedData.checkInDate),
+      new Date(validatedData.checkOutDate),
+      validatedData.guestCount, // 全員大人として計算（子供情報がない場合）
+      [], // 子供の年齢配列（現在のスキーマでは未対応）
+      pricingSetting,
+      couponDiscountRate,
+    );
+
+    // 6. 固定額クーポンの場合は別途計算
+    let couponDiscount = priceResult.couponDiscount;
+    let serverTotalAmount = priceResult.totalAmount;
+
+    if (validatedData.couponCode && couponDiscountRate === 0) {
+      // 固定額割引の場合
+      const couponSnapshot = await db
+        .collection("coupons")
+        .where("code", "==", validatedData.couponCode)
+        .where("isActive", "==", true)
+        .limit(1)
+        .get();
+
+      if (!couponSnapshot.empty) {
+        const coupon = couponSnapshot.docs[0].data();
+        if (coupon.discountType === "fixed" || !coupon.discountType) {
+          const fixedDiscount = Math.min(
+            coupon.discountValue || coupon.discountAmount || 0,
+            serverTotalAmount,
+          );
+          couponDiscount = fixedDiscount;
+          serverTotalAmount = Math.max(serverTotalAmount - fixedDiscount, 0);
+        }
+      }
+    }
+
+    // 7. オプション料金をサーバー側で計算
+    let serverOptionsTotalPrice = 0;
+    const selectedOptions = validatedData.selectedOptions || [];
+
+    if (selectedOptions.length > 0) {
+      const optionsSnapshot = await db.collection("bookingOptions").get();
+      const optionPrices = new Map<string, { id: string; price: number; isActive: boolean }>();
+
+      optionsSnapshot.docs.forEach((doc) => {
+        const data = doc.data();
+        optionPrices.set(doc.id, {
+          id: doc.id,
+          price: data.price || 0,
+          isActive: data.isActive === true,
+        });
+      });
+
+      for (const selected of selectedOptions) {
+        const optionInfo = optionPrices.get(selected.optionId);
+        if (!optionInfo) {
+          throw createError({
+            statusCode: 400,
+            message: `無効なオプションが選択されています`,
+          });
+        }
+        if (!optionInfo.isActive) {
+          throw createError({
+            statusCode: 400,
+            message: `選択されたオプションは現在利用できません`,
+          });
+        }
+        serverOptionsTotalPrice += optionInfo.price * selected.quantity;
+      }
+
+      // オプション料金を加算
+      serverTotalAmount += serverOptionsTotalPrice;
+    }
+
+    // 8. クライアント計算金額との照合（許容誤差: 100円 - 丸め誤差を考慮）
+    const clientCalculatedAmount = validatedData.calculatedTotalAmount;
+    const amountDifference = Math.abs(serverTotalAmount - clientCalculatedAmount);
+
+    // 金額に大きな差異がある場合はエラー（改ざん検知）
+    if (amountDifference > 100) {
+      stripeLogger.warn("Amount mismatch detected - possible tampering", {
+        serverTotalAmount,
+        clientCalculatedAmount,
+        difference: amountDifference,
+        priceResult,
+        serverOptionsTotalPrice,
+      });
+
+      throw createError({
+        statusCode: 400,
+        message: "金額の計算に問題があります。ページを更新して再度お試しください",
+      });
+    }
+
+    // 差異がある場合は警告ログのみ（サーバー計算を使用）
+    if (amountDifference > 1) {
+      stripeLogger.warn("Minor amount difference detected (using server amount)", {
+        serverTotalAmount,
+        clientCalculatedAmount,
+        difference: amountDifference,
+      });
+    }
+
+    stripeLogger.debug("Server-side amount calculation completed", {
+      serverTotalAmount,
+      clientCalculatedAmount,
+      priceResult,
+      serverOptionsTotalPrice,
       guestCount: validatedData.guestCount,
     });
+
+    // サーバー計算の金額を使用
+    const calculatedAmount = serverTotalAmount;
+    const optionsTotalPrice = serverOptionsTotalPrice;
 
     // 0円予約の場合（100%割引クーポン適用時など）
     if (calculatedAmount <= 0) {
