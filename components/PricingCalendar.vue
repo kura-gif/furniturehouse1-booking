@@ -324,6 +324,8 @@ const calendarDays = computed(() => {
   const _checkIn = checkInDate.value;
   const _checkOut = checkOutDate.value;
 
+  console.log("🟡 calendarDays computed running, checkInDate:", _checkIn, "checkOutDate:", _checkOut);
+
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
   const prevLastDay = new Date(year, month, 0);
@@ -392,6 +394,20 @@ function createCalendarDate(date: Date, isCurrentMonth: boolean): CalendarDate {
     isDisabled = isDisabled || booked;
   }
 
+  // デバッグ: 4月2日の判定を確認
+  if (dateString === "2026-04-02") {
+    console.log("🔴 4/2判定:", {
+      checkInDate: checkInDate.value,
+      checkOutDate: checkOutDate.value,
+      isSelectingCheckout,
+      isAfterCheckIn,
+      blocked,
+      booked,
+      bookedForCheckout,
+      isDisabled,
+    });
+  }
+
   // Calculate price for this date
   let price: number | null = null;
   if (isCurrentMonth && !blocked && !booked && !isPast) {
@@ -436,12 +452,14 @@ function createCalendarDate(date: Date, isCurrentMonth: boolean): CalendarDate {
 }
 
 function handleDateClick(dateObj: CalendarDate) {
+  console.log("🔵 handleDateClick:", dateObj.dateString, "disabled:", dateObj.disabled);
   if (dateObj.disabled || !dateObj.isCurrentMonth) return;
 
   if (!checkInDate.value || (checkInDate.value && checkOutDate.value)) {
     // Set check-in date
     checkInDate.value = dateObj.dateString;
     checkOutDate.value = "";
+    console.log("🟢 Set checkInDate:", checkInDate.value);
     emit("update:modelCheckIn", dateObj.dateString);
     emit("update:modelCheckOut", "");
   } else {
