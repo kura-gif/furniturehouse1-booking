@@ -103,12 +103,6 @@ export default defineEventHandler(async (event) => {
 
     const activeBookings = await activeBookingsRef.get();
 
-    console.log("🔍 重複チェック開始:", {
-      requestedCheckIn: body.checkInDate,
-      requestedCheckOut: body.checkOutDate,
-      activeBookingsCount: activeBookings.size,
-    });
-
     // 日程の重複をチェック（既存のcheckIn < 新規のcheckOut かつ 既存のcheckOut > 新規のcheckIn）
     const newCheckIn = new Date(body.checkInDate);
     const newCheckOut = new Date(body.checkOutDate);
@@ -121,26 +115,10 @@ export default defineEventHandler(async (event) => {
       const existingCheckIn = existingCheckInRaw?.toDate?.() || new Date(existingCheckInRaw);
       const existingCheckOut = existingCheckOutRaw?.toDate?.() || new Date(existingCheckOutRaw);
 
-      const isConflict = existingCheckIn < newCheckOut && existingCheckOut > newCheckIn;
-
-      console.log("📅 予約チェック:", {
-        docId: doc.id,
-        status: booking.status,
-        existingCheckIn: existingCheckIn.toISOString(),
-        existingCheckOut: existingCheckOut.toISOString(),
-        newCheckIn: newCheckIn.toISOString(),
-        newCheckOut: newCheckOut.toISOString(),
-        isConflict,
-      });
-
-      return isConflict;
+      return existingCheckIn < newCheckOut && existingCheckOut > newCheckIn;
     });
 
     if (hasConflict) {
-      console.log("❌ 予約重複エラー:", {
-        requestedCheckIn: body.checkInDate,
-        requestedCheckOut: body.checkOutDate,
-      });
       throw createError({
         statusCode: 409,
         message: "この期間は既に予約されています。別の日程をお選びください。",
