@@ -1574,15 +1574,32 @@ const guestPhone = ref(""); // 電話番号はアカウントに無い可能性�
 // 電話番号バリデーションエラー
 const phoneValidationError = computed(() => {
   if (!guestPhone.value) return "";
-  const phoneDigits = guestPhone.value.replace(/[-\s]/g, "");
-  if (phoneDigits.length < 10) {
-    return "電話番号は10桁以上で入力してください";
-  }
-  if (phoneDigits.length > 11) {
-    return "電話番号は11桁以内で入力してください";
-  }
-  if (!/^\d+$/.test(phoneDigits)) {
-    return "電話番号は数字のみで入力してください";
+  // +と数字とハイフン・スペースのみ許可
+  const cleaned = guestPhone.value.replace(/[-\s]/g, "");
+
+  if (isForeignNational.value) {
+    // 外国籍: 国際電話番号形式（+含む7-15桁）
+    const phoneDigits = cleaned.replace(/^\+/, "");
+    if (phoneDigits.length < 7) {
+      return "電話番号は7桁以上で入力してください";
+    }
+    if (phoneDigits.length > 15) {
+      return "電話番号は15桁以内で入力してください";
+    }
+    if (!/^\+?\d+$/.test(cleaned)) {
+      return "電話番号は数字のみで入力してください（国番号の+は可）";
+    }
+  } else {
+    // 日本国籍: 国内電話番号形式（10-11桁）
+    if (cleaned.length < 10) {
+      return "電話番号は10桁以上で入力してください";
+    }
+    if (cleaned.length > 11) {
+      return "電話番号は11桁以内で入力してください";
+    }
+    if (!/^\d+$/.test(cleaned)) {
+      return "電話番号は数字のみで入力してください";
+    }
   }
   return "";
 });
@@ -1704,10 +1721,21 @@ const isFormValid = computed(() => {
     return false;
   }
 
-  // 電話番号のチェック（10-11桁の数字）
-  const phoneDigits = guestPhone.value.replace(/[-\s]/g, "");
-  if (!phoneDigits || phoneDigits.length < 10 || phoneDigits.length > 11) {
-    return false;
+  // 電話番号のチェック
+  const phoneCleaned = guestPhone.value.replace(/[-\s]/g, "");
+  if (!phoneCleaned) return false;
+
+  if (isForeignNational.value) {
+    // 外国籍: 国際電話番号形式（+含む7-15桁）
+    const phoneDigits = phoneCleaned.replace(/^\+/, "");
+    if (phoneDigits.length < 7 || phoneDigits.length > 15) {
+      return false;
+    }
+  } else {
+    // 日本国籍: 国内電話番号形式（10-11桁）
+    if (phoneCleaned.length < 10 || phoneCleaned.length > 11) {
+      return false;
+    }
   }
 
   // 住所関連のチェック
