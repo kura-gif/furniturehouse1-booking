@@ -103,16 +103,37 @@ export default defineEventHandler(async (event) => {
 
     const activeBookings = await activeBookingsRef.get();
 
+    console.log("🔍 重複チェック開始:", {
+      requestedCheckIn: body.checkInDate,
+      requestedCheckOut: body.checkOutDate,
+      activeBookingsCount: activeBookings.size,
+    });
+
     // 日程の重複をチェック（既存のcheckIn < 新規のcheckOut かつ 既存のcheckOut > 新規のcheckIn）
+    const newCheckIn = new Date(body.checkInDate);
+    const newCheckOut = new Date(body.checkOutDate);
+
     const hasConflict = activeBookings.docs.some((doc) => {
       const booking = doc.data();
-      const existingCheckIn = booking.checkInDate?.toDate?.() || new Date(booking.checkInDate);
-      const existingCheckOut = booking.checkOutDate?.toDate?.() || new Date(booking.checkOutDate);
-      const newCheckIn = new Date(body.checkInDate);
-      const newCheckOut = new Date(body.checkOutDate);
+      // startDate/endDate または checkInDate/checkOutDate を使用
+      const existingCheckInRaw = booking.startDate || booking.checkInDate;
+      const existingCheckOutRaw = booking.endDate || booking.checkOutDate;
+      const existingCheckIn = existingCheckInRaw?.toDate?.() || new Date(existingCheckInRaw);
+      const existingCheckOut = existingCheckOutRaw?.toDate?.() || new Date(existingCheckOutRaw);
 
-      // 期間が重複する条件: 既存のチェックイン < 新規のチェックアウト AND 既存のチェックアウト > 新規のチェックイン
-      return existingCheckIn < newCheckOut && existingCheckOut > newCheckIn;
+      const isConflict = existingCheckIn < newCheckOut && existingCheckOut > newCheckIn;
+
+      console.log("📅 予約チェック:", {
+        docId: doc.id,
+        status: booking.status,
+        existingCheckIn: existingCheckIn.toISOString(),
+        existingCheckOut: existingCheckOut.toISOString(),
+        newCheckIn: newCheckIn.toISOString(),
+        newCheckOut: newCheckOut.toISOString(),
+        isConflict,
+      });
+
+      return isConflict;
     });
 
     if (hasConflict) {
