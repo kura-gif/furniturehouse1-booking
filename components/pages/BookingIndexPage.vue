@@ -1484,12 +1484,26 @@ const selectDate = (dateObj: CalendarDateObject) => {
   if (dateObj.disabled || dateObj.isEmpty || !dateObj.date) return;
 
   const dateStr = dateObj.date;
+  const selectedDate = new Date(dateStr);
+
+  // チェックアウト日選択モードかどうか判定
+  const isSelectingCheckout = !!(checkInDate.value && !checkOutDate.value);
+  const isAfterCheckIn = checkInDate.value && dateStr > checkInDate.value;
 
   // ブロックまたは予約済みの日付かチェック
-  const selectedDate = new Date(dateStr);
-  if (isDateUnavailable(selectedDate)) {
-    toast.warning("この日付は予約できません");
-    return;
+  // チェックアウト日選択時は予約開始日を許可
+  if (isSelectingCheckout && isAfterCheckIn) {
+    // チェックアウト日として選択可能か判定（予約期間の「中」にあるかだけチェック）
+    if (isDateBlocked(selectedDate) || isDateBookedForCheckout(selectedDate)) {
+      toast.warning("この日付は予約できません");
+      return;
+    }
+  } else {
+    // チェックイン日として選択可能か判定
+    if (isDateUnavailable(selectedDate)) {
+      toast.warning("この日付は予約できません");
+      return;
+    }
   }
 
   if (!checkInDate.value || (checkInDate.value && checkOutDate.value)) {
