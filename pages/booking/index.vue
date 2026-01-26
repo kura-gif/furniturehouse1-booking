@@ -192,6 +192,7 @@
               v-model:modelCheckOut="checkOutDate"
               :adults="adults"
               :children="children"
+              :hideSummary="true"
               @datesSelected="handleDatesSelected"
             />
           </div>

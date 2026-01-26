@@ -160,7 +160,7 @@
 
       <!-- 選択中の期間表示 -->
       <div
-        v-if="checkInDate || checkOutDate"
+        v-if="!props.hideSummary && (checkInDate || checkOutDate)"
         class="mt-6 p-4 bg-gray-50 rounded-lg"
       >
         <div class="grid grid-cols-2 gap-4">
@@ -233,11 +233,13 @@ interface Props {
   modelCheckOut?: string;
   adults?: number;
   children?: number;
+  hideSummary?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   adults: 1,
   children: 0,
+  hideSummary: false,
 });
 
 const emit = defineEmits<{
