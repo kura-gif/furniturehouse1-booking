@@ -1823,129 +1823,22 @@
             </div>
           </div>
 
-          <!-- キャンセルポリシー詳細設定 -->
-          <div class="card">
-            <h2 class="text-2xl font-semibold mb-6">
-              キャンセルポリシー詳細ページ設定
+          <!-- キャンセルポリシー設定（統合済み） -->
+          <div class="card bg-purple-50 border-purple-200">
+            <h2 class="text-2xl font-semibold mb-4 text-purple-900">
+              キャンセルポリシー設定
             </h2>
-            <p class="text-sm text-gray-500 mb-4">
-              「キャンセルポリシー」詳細ページに表示される内容を編集できます
+            <p class="text-gray-700 mb-4">
+              キャンセルポリシーの設定は「キャンセルポリシー」タブに統合されました。
+              返金ルールと詳細ページの表示内容を一括で管理できます。
             </p>
-            <div class="space-y-4">
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">
-                    無料キャンセル期間
-                  </label>
-                  <input
-                    v-model="facilitySettings.cancelPolicyFree"
-                    type="text"
-                    placeholder="利用日の3日前まで"
-                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-                  />
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">
-                    無料キャンセル - キャンセル料
-                  </label>
-                  <input
-                    v-model="facilitySettings.cancelPolicyFreeDesc"
-                    type="text"
-                    placeholder="無料"
-                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-                  />
-                </div>
-              </div>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">
-                    有料キャンセル期間
-                  </label>
-                  <input
-                    v-model="facilitySettings.cancelPolicyPartial"
-                    type="text"
-                    placeholder="利用日の2日前〜当日"
-                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-                  />
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">
-                    有料キャンセル - キャンセル料
-                  </label>
-                  <input
-                    v-model="facilitySettings.cancelPolicyPartialDesc"
-                    type="text"
-                    placeholder="利用料金の100%"
-                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-                  />
-                </div>
-              </div>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">
-                    無断キャンセル
-                  </label>
-                  <input
-                    v-model="facilitySettings.cancelPolicyNoShow"
-                    type="text"
-                    placeholder="無断キャンセル（不泊）"
-                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-                  />
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">
-                    無断キャンセル - キャンセル料
-                  </label>
-                  <input
-                    v-model="facilitySettings.cancelPolicyNoShowDesc"
-                    type="text"
-                    placeholder="利用料金の100%"
-                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-                  />
-                </div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                  キャンセル手続き方法
-                </label>
-                <textarea
-                  v-model="facilitySettings.cancelPolicyProcedure"
-                  rows="3"
-                  placeholder="キャンセル手続きの方法を記載"
-                  class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-                ></textarea>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                  例外事項（各行が1項目）
-                </label>
-                <textarea
-                  v-model="facilitySettings.cancelPolicyExceptions"
-                  rows="4"
-                  placeholder="- 自然災害の場合&#10;- 施設都合の場合"
-                  class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-                ></textarea>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                  注意事項（各行が1項目）
-                </label>
-                <textarea
-                  v-model="facilitySettings.cancelPolicyNotes"
-                  rows="4"
-                  placeholder="- キャンセル料の計算基準&#10;- 返金処理について"
-                  class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-                ></textarea>
-              </div>
-              <button
-                type="button"
-                @click="saveFacilitySettings"
-                :disabled="isSavingSettings"
-                class="btn-primary"
-              >
-                {{ isSavingSettings ? "保存中..." : "保存" }}
-              </button>
-            </div>
+            <button
+              type="button"
+              @click="currentTab = 'cancellation'"
+              class="btn-primary"
+            >
+              キャンセルポリシータブを開く
+            </button>
           </div>
         </template>
       </div>
