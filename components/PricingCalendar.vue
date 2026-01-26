@@ -409,6 +409,14 @@ function createCalendarDate(date: Date, isCurrentMonth: boolean): CalendarDate {
     }
   }
 
+  // isBlockedもdisabledと同じロジックで判定（チェックアウト日選択時は予約開始日を選択可能に）
+  let showAsBlocked = blocked;
+  if (isSelectingCheckout && isAfterCheckIn) {
+    showAsBlocked = showAsBlocked || bookedForCheckout;
+  } else {
+    showAsBlocked = showAsBlocked || booked;
+  }
+
   return {
     date,
     dateString,
@@ -418,7 +426,7 @@ function createCalendarDate(date: Date, isCurrentMonth: boolean): CalendarDate {
     isSelected,
     isInRange,
     disabled: isDisabled,
-    isBlocked: blocked || booked,
+    isBlocked: showAsBlocked,
     isSunday: isSunday(date),
     isSaturday: isSaturday(date),
     isHoliday: isHoliday(date),
