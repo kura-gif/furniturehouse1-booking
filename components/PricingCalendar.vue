@@ -260,7 +260,10 @@ const {
   isDateBlocked,
   isDateBooked,
   isDateBookedForCheckout,
+  isDateRangeBooked,
+  isDateRangeBlocked,
 } = useBlockedDates();
+const toast = useToast();
 const { calculatePrice, loadFromFirestore } = useEnhancedPricing();
 
 const isLoading = ref(true);
@@ -467,6 +470,15 @@ function handleDateClick(dateObj: CalendarDate) {
   } else {
     // Set check-out date
     if (dateObj.dateString > checkInDate.value) {
+      // チェックイン〜チェックアウト間に予約済み日があるかチェック
+      const checkIn = new Date(checkInDate.value);
+      const checkOut = new Date(dateObj.dateString);
+
+      if (isDateRangeBooked(checkIn, checkOut) || isDateRangeBlocked(checkIn, checkOut)) {
+        toast.error("選択した期間には予約済みの日程が含まれています。別の日程をお選びください。");
+        return;
+      }
+
       checkOutDate.value = dateObj.dateString;
       emit("update:modelCheckOut", dateObj.dateString);
 
@@ -482,6 +494,15 @@ function handleDateClick(dateObj: CalendarDate) {
       );
     } else {
       // Swap dates if check-out is before check-in
+      // スワップ時も重複チェック
+      const checkIn = new Date(dateObj.dateString);
+      const checkOut = new Date(checkInDate.value);
+
+      if (isDateRangeBooked(checkIn, checkOut) || isDateRangeBlocked(checkIn, checkOut)) {
+        toast.error("選択した期間には予約済みの日程が含まれています。別の日程をお選びください。");
+        return;
+      }
+
       checkOutDate.value = checkInDate.value;
       checkInDate.value = dateObj.dateString;
       emit("update:modelCheckIn", dateObj.dateString);
