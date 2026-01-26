@@ -611,9 +611,15 @@
                   type="tel"
                   placeholder="090-1234-5678"
                   required
-                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  :class="[
+                    'w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent',
+                    phoneValidationError ? 'border-red-500' : 'border-gray-300'
+                  ]"
                 />
-                <p class="mt-1 text-xs text-gray-500">
+                <p v-if="phoneValidationError" class="mt-1 text-xs text-red-500">
+                  {{ phoneValidationError }}
+                </p>
+                <p v-else class="mt-1 text-xs text-gray-500">
                   緊急連絡先として使用します
                 </p>
               </div>
@@ -1564,6 +1570,22 @@ const pricePerNight = computed(() => {
 const guestName = computed(() => appUser.value?.displayName || "");
 const guestEmail = computed(() => appUser.value?.email || "");
 const guestPhone = ref(""); // 電話番号はアカウントに無い可能性があるため入力式
+
+// 電話番号バリデーションエラー
+const phoneValidationError = computed(() => {
+  if (!guestPhone.value) return "";
+  const phoneDigits = guestPhone.value.replace(/[-\s]/g, "");
+  if (phoneDigits.length < 10) {
+    return "電話番号は10桁以上で入力してください";
+  }
+  if (phoneDigits.length > 11) {
+    return "電話番号は11桁以内で入力してください";
+  }
+  if (!/^\d+$/.test(phoneDigits)) {
+    return "電話番号は数字のみで入力してください";
+  }
+  return "";
+});
 const guestPostalCode = ref("");
 const guestAddress = ref("");
 const guestOccupation = ref("");
@@ -1682,8 +1704,9 @@ const isFormValid = computed(() => {
     return false;
   }
 
-  // 電話番号のチェック
-  if (!guestPhone.value.trim()) {
+  // 電話番号のチェック（10-11桁の数字）
+  const phoneDigits = guestPhone.value.replace(/[-\s]/g, "");
+  if (!phoneDigits || phoneDigits.length < 10 || phoneDigits.length > 11) {
     return false;
   }
 
