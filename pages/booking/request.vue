@@ -1869,8 +1869,12 @@ const proceedToPayment = async () => {
     }
   } catch (error: unknown) {
     console.error("予約・決済エラー:", error);
-    const message =
-      error instanceof Error ? error.message : "予約・決済の処理に失敗しました";
+    // $fetchのエラーはdataプロパティにサーバーからのエラーメッセージが入る
+    let message = "予約・決済の処理に失敗しました";
+    if (error && typeof error === "object") {
+      const fetchError = error as { data?: { message?: string }; message?: string };
+      message = fetchError.data?.message || fetchError.message || message;
+    }
     toast.error(message);
     isProcessing.value = false;
     isSubmitting.value = false;
