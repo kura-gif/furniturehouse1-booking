@@ -85,6 +85,10 @@ export const createPaymentIntentSchema = z.object({
   checkInDate: z.string(),
   checkOutDate: z.string(),
   guestCount: z.number().min(1).max(10),
+  // 大人の人数（子供料金計算用）- guestCountから子供を引いた数
+  adults: z.number().min(1).max(10).optional(),
+  // 子供の年齢配列（子供料金計算用）
+  childrenAges: z.array(z.number().min(0).max(17)).optional().default([]),
   couponCode: z.string().optional().or(z.literal("")),
   // 選択されたオプション（サーバー側で料金を再計算するため必要）
   selectedOptions: z.array(selectedOptionSchema).optional().default([]),

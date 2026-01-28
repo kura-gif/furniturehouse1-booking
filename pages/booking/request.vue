@@ -1190,6 +1190,8 @@ const recreatePaymentIntentWithCoupon = async () => {
       optionsTotalPrice.value,
       finalTotalAmount.value,
       selectedOptionsForApi.value,
+      adults.value,
+      childrenAges.value,
     );
 
     // 0円予約の場合
@@ -1236,6 +1238,8 @@ const removeCoupon = async () => {
       optionsTotalPrice.value,
       finalTotalAmount.value,
       selectedOptionsForApi.value,
+      adults.value,
+      childrenAges.value,
     );
 
     if (result && result.clientSecret) {
@@ -1326,6 +1330,8 @@ const toggleOption = async (option: BookingOption) => {
       optionsTotalPrice.value,
       finalTotalAmount.value,
       selectedOptionsForApi.value,
+      adults.value,
+      childrenAges.value,
     );
 
     if (result && result.clientSecret) {
@@ -1452,6 +1458,8 @@ onMounted(async () => {
       optionsTotalPrice.value,
       finalTotalAmount.value,
       selectedOptionsForApi.value,
+      adults.value,
+      childrenAges.value,
     );
 
     console.log("📦 Payment Intent作成結果:", result);
@@ -1839,6 +1847,8 @@ const proceedToPayment = async () => {
         optionsTotalPrice.value,
         finalTotalAmount.value,
         selectedOptionsForApi.value,
+        adults.value,
+        childrenAges.value,
       );
 
       if (!newPaymentResult || !newPaymentResult.clientSecret) {

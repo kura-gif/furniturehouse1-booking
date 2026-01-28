@@ -13,7 +13,7 @@ import {
 export default defineEventHandler(async (event) => {
   try {
     const body = await readBody(event);
-    const { checkInDate, checkOutDate, guestCount, couponCode } = body;
+    const { checkInDate, checkOutDate, guestCount, couponCode, adults, childrenAges } = body;
 
     if (!checkInDate || !checkOutDate || !guestCount) {
       throw createError({
@@ -21,6 +21,10 @@ export default defineEventHandler(async (event) => {
         message: "checkInDate, checkOutDate, guestCount are required",
       });
     }
+
+    // adultsが指定されていればそれを使用、なければguestCountを大人数として扱う
+    const adultCount = adults ?? guestCount;
+    const childAges: number[] = childrenAges ?? [];
 
     const db = getFirestoreAdmin();
 
@@ -68,8 +72,8 @@ export default defineEventHandler(async (event) => {
     const priceResult = calculateEnhancedPriceServer(
       new Date(checkInDate),
       new Date(checkOutDate),
-      guestCount,
-      [],
+      adultCount,
+      childAges,
       pricingSetting,
       couponDiscountRate,
     );

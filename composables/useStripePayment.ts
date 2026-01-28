@@ -29,6 +29,8 @@ export const useStripePayment = () => {
     optionsTotalPrice?: number,
     calculatedTotalAmount?: number,
     selectedOptions?: SelectedOption[],
+    adults?: number,
+    childrenAges?: number[],
   ) => {
     try {
       const data = await $fetch("/api/stripe/create-payment-intent-secure", {
@@ -37,6 +39,8 @@ export const useStripePayment = () => {
           checkInDate,
           checkOutDate,
           guestCount,
+          adults: adults ?? guestCount, // adultsが指定されていなければguestCountを使用
+          childrenAges: childrenAges ?? [],
           couponCode: couponCode || "",
           selectedOptions: selectedOptions || [],
           optionsTotalPrice: optionsTotalPrice || 0,

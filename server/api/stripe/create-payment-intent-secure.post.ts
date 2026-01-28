@@ -104,11 +104,21 @@ export default defineEventHandler(async (event) => {
     }
 
     // 5. 拡張版料金計算（クライアントと同じロジック）
+    // adultsが指定されていればそれを使用、なければguestCountを大人数として扱う
+    const adultCount = validatedData.adults ?? validatedData.guestCount;
+    const childrenAges = validatedData.childrenAges ?? [];
+
+    stripeLogger.debug("Price calculation params", {
+      adultCount,
+      childrenAges,
+      guestCount: validatedData.guestCount,
+    });
+
     const priceResult = calculateEnhancedPriceServer(
       new Date(validatedData.checkInDate),
       new Date(validatedData.checkOutDate),
-      validatedData.guestCount, // 全員大人として計算（子供情報がない場合）
-      [], // 子供の年齢配列（現在のスキーマでは未対応）
+      adultCount,
+      childrenAges,
       pricingSetting,
       couponDiscountRate,
     );
