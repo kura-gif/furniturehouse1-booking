@@ -123,33 +123,7 @@ export default defineEventHandler(async (event) => {
       couponDiscountRate,
     );
 
-    // 6. 固定額クーポンの場合は別途計算
-    let couponDiscount = priceResult.couponDiscount;
-    let serverTotalAmount = priceResult.totalAmount;
-
-    if (validatedData.couponCode && couponDiscountRate === 0) {
-      // 固定額割引の場合
-      const couponSnapshot = await db
-        .collection("coupons")
-        .where("code", "==", validatedData.couponCode)
-        .where("isActive", "==", true)
-        .limit(1)
-        .get();
-
-      if (!couponSnapshot.empty) {
-        const coupon = couponSnapshot.docs[0].data();
-        if (coupon.discountType === "fixed" || !coupon.discountType) {
-          const fixedDiscount = Math.min(
-            coupon.discountValue || coupon.discountAmount || 0,
-            serverTotalAmount,
-          );
-          couponDiscount = fixedDiscount;
-          serverTotalAmount = Math.max(serverTotalAmount - fixedDiscount, 0);
-        }
-      }
-    }
-
-    // 7. オプション料金をサーバー側で計算
+    // 6. オプション料金をサーバー側で計算（クーポン適用前に計算）
     let serverOptionsTotalPrice = 0;
     const selectedOptions = validatedData.selectedOptions || [];
 
@@ -182,9 +156,40 @@ export default defineEventHandler(async (event) => {
         }
         serverOptionsTotalPrice += optionInfo.price * selected.quantity;
       }
+    }
 
-      // オプション料金を加算
-      serverTotalAmount += serverOptionsTotalPrice;
+    // 7. オプション込みの合計金額を計算
+    // クライアントの計算: (subtotal + options) * (1 + taxRate) - couponDiscount
+    // priceResultにはすでに税金が含まれているので、オプションにも税金を適用
+    const taxRate = pricingSetting.taxRate ?? 0.1;
+    const optionsTax = Math.floor(serverOptionsTotalPrice * taxRate);
+    const optionsTotalWithTax = serverOptionsTotalPrice + optionsTax;
+
+    // 基本料金（税込）+ オプション（税込）
+    let serverTotalAmount = priceResult.totalAmount + optionsTotalWithTax;
+    let couponDiscount = priceResult.couponDiscount;
+
+    // 8. 固定額クーポンの場合は別途計算（オプション込みの金額に適用）
+    if (validatedData.couponCode && couponDiscountRate === 0) {
+      // 固定額割引の場合
+      const couponSnapshot = await db
+        .collection("coupons")
+        .where("code", "==", validatedData.couponCode)
+        .where("isActive", "==", true)
+        .limit(1)
+        .get();
+
+      if (!couponSnapshot.empty) {
+        const coupon = couponSnapshot.docs[0].data();
+        if (coupon.discountType === "fixed" || !coupon.discountType) {
+          const fixedDiscount = Math.min(
+            coupon.discountValue || coupon.discountAmount || 0,
+            serverTotalAmount,
+          );
+          couponDiscount = fixedDiscount;
+          serverTotalAmount = Math.max(serverTotalAmount - fixedDiscount, 0);
+        }
+      }
     }
 
     // 8. クライアント計算金額との照合（許容誤差: 100円 - 丸め誤差を考慮）
