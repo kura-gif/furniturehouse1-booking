@@ -927,9 +927,9 @@
               キャンセルポリシー
             </h3>
             <div class="space-y-3 text-sm text-gray-700">
-              <p>利用日の<strong>3日前まで</strong>：無料キャンセル</p>
-              <p>利用日の<strong>2日前〜当日</strong>：100%</p>
-              <p><strong>無断キャンセル</strong>：100%</p>
+              <p><strong>{{ facilitySettings.cancelPolicyFree || '利用日の3日前まで' }}</strong>：{{ facilitySettings.cancelPolicyFreeDesc || '無料キャンセル' }}</p>
+              <p><strong>{{ facilitySettings.cancelPolicyPartial || '利用日の2日前〜当日' }}</strong>：{{ facilitySettings.cancelPolicyPartialDesc || '100%' }}</p>
+              <p><strong>{{ facilitySettings.cancelPolicyNoShow || '無断キャンセル' }}</strong>：{{ facilitySettings.cancelPolicyNoShowDesc || '100%' }}</p>
               <NuxtLink
                 to="/cancellation-policy"
                 class="text-sm font-medium underline hover:text-gray-600 mt-4 transition-colors inline-block"
@@ -1104,6 +1104,13 @@ const facilitySettings = ref({
   checkOutTime: "11:00",
   houseRules: "",
   maxGuests: 6,
+  // キャンセルポリシー
+  cancelPolicyFree: "利用日の3日前まで",
+  cancelPolicyFreeDesc: "無料",
+  cancelPolicyPartial: "利用日の2日前〜当日",
+  cancelPolicyPartialDesc: "100%",
+  cancelPolicyNoShow: "無断キャンセル（不泊）",
+  cancelPolicyNoShowDesc: "100%",
 });
 
 // 施設設定を読み込み
