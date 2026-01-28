@@ -212,16 +212,30 @@ export default defineEventHandler(async (event) => {
       );
 
       // 9-1. 同じ期間の予約を検索
-      const conflictingBookingsRef = db
+      // Note: Firestoreは複数フィールドへの不等号フィルタに制限があるため、
+      // checkInDate のみでフィルタし、残りはコードでフィルタする
+      // 日付重複条件: existing.checkIn < new.checkOut AND existing.checkOut > new.checkIn
+      // 終了ステータス（cancelled, rejected, refunded）の予約は除外
+      const potentialConflictsRef = db
         .collection("bookings")
-        .where("status", "in", ["pending", "confirmed"])
-        .where("checkInDate", "<", checkOutDate)
-        .where("checkOutDate", ">", checkInDate);
+        .where("checkInDate", "<", checkOutDate);
 
-      const conflictingBookings = await transaction.get(conflictingBookingsRef);
+      const potentialConflicts = await transaction.get(potentialConflictsRef);
+
+      // コードで残りの条件をフィルタ
+      // 1. existing.checkOut > new.checkIn（日付重複チェック）
+      // 2. status が終了ステータスでない
+      const terminalStatuses = ["cancelled", "rejected", "refunded"];
+      const conflictingBookings = potentialConflicts.docs.filter((doc) => {
+        const data = doc.data();
+        const existingCheckOut = data.checkOutDate.toDate();
+        const isDateOverlap = existingCheckOut > checkInDate.toDate();
+        const isActiveBooking = !terminalStatuses.includes(data.status);
+        return isDateOverlap && isActiveBooking;
+      });
 
       // 9-2. 重複があればエラー
-      if (!conflictingBookings.empty) {
+      if (conflictingBookings.length > 0) {
         throw new Error(
           "この期間は既に予約されています。別の日程をお選びください。",
         );
