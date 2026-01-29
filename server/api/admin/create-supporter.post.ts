@@ -69,15 +69,12 @@ export default defineEventHandler(async (event) => {
     console.log("✅ ユーザー情報をFirestoreに保存:", userRecord.uid);
 
     // 3. supportersコレクションにサポーター固有情報を保存
+    // 注: 基本情報（email, name, phone, isActive）はusersコレクションで管理
+    // supportersコレクションにはサポーター固有の情報のみを保存し、uidで参照する
     const supporterDoc = await db.collection("supporters").add({
       uid: userRecord.uid,
-      userId: userRecord.uid,
-      email,
-      name: displayName,
-      phone: phone || "",
       hourlyRate: hourlyRate || 1500,
       transportationFee: transportationFee || 500,
-      isActive: isActive !== false,
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now(),
     });
@@ -119,9 +116,7 @@ export default defineEventHandler(async (event) => {
 
     throw createError({
       statusCode: 500,
-      statusMessage:
-        "サポーターの作成に失敗しました: " +
-        (error instanceof Error ? error.message : "Unknown error"),
+      statusMessage: "サポーターの作成に失敗しました",
     });
   }
 });
