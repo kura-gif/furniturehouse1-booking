@@ -106,7 +106,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, useId, watch } from "vue";
+import { computed, ref, watch } from "vue";
 
 const props = withDefaults(
   defineProps<{
@@ -146,7 +146,7 @@ const emit = defineEmits<{
 }>();
 
 const inputRef = ref<HTMLInputElement | null>(null);
-const uniqueId = useId();
+const uniqueId = Math.random().toString(36).substring(2, 9);
 const inputId = computed(() => `input-${uniqueId}`);
 const errorId = computed(() => `error-${uniqueId}`);
 const hintId = computed(() => `hint-${uniqueId}`);
