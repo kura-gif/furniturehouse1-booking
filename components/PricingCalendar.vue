@@ -67,7 +67,7 @@
       </div>
 
       <!-- 曜日ヘッダー -->
-      <div class="grid grid-cols-7 gap-1 mb-2">
+      <div class="grid grid-cols-7 gap-px sm:gap-1 mb-2">
         <div
           v-for="(day, index) in weekDays"
           :key="day"
@@ -85,13 +85,13 @@
       </div>
 
       <!-- カレンダーグリッド -->
-      <div class="grid grid-cols-7 gap-1">
+      <div class="grid grid-cols-7 gap-px sm:gap-1">
         <div
           v-for="date in calendarDays"
           :key="date.dateString"
           @click="handleDateClick(date)"
           :class="[
-            'min-h-[70px] p-2 rounded-lg cursor-pointer transition-all border-2',
+            'min-h-[70px] px-1 py-2 sm:p-2 rounded-lg cursor-pointer transition-all border-2',
             {
               'border-transparent bg-white hover:border-gray-300':
                 !date.isSelected && !date.isInRange && !date.disabled,
@@ -135,7 +135,7 @@
           <!-- 料金表示 -->
           <div
             v-if="date.isCurrentMonth && !date.isBlocked && date.price"
-            class="text-xs font-semibold text-gray-900"
+            class="text-[10px] sm:text-xs font-semibold text-gray-900 leading-tight"
           >
             {{ formatPrice(date.price) }}
           </div>
