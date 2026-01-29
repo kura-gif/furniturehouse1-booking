@@ -3,7 +3,12 @@
  * GET /api/admin/options
  */
 
+import { requireAdmin } from "~/server/utils/auth";
+
 export default defineEventHandler(async (event) => {
+  // 管理者認証チェック
+  await requireAdmin(event);
+
   try {
     const db = getFirestoreAdmin();
 

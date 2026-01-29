@@ -4,8 +4,12 @@
  */
 
 import { FieldValue } from "firebase-admin/firestore";
+import { requireAdmin } from "~/server/utils/auth";
 
 export default defineEventHandler(async (event) => {
+  // 管理者認証チェック
+  await requireAdmin(event);
+
   try {
     const body = await readBody(event);
     const { name, description, price, imageUrl, dailyLimit, isActive, order } =
