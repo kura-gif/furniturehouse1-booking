@@ -19,6 +19,15 @@
           </p>
         </div>
 
+        <!-- フォームエラーサマリー -->
+        <AlertMessage
+          v-if="formErrorSummary"
+          type="error"
+          :message="formErrorSummary"
+          class="mb-6"
+          @dismiss="formErrorSummary = ''"
+        />
+
         <!-- Google ログインボタン -->
         <div class="mb-6">
           <button
@@ -59,57 +68,80 @@
           </div>
         </div>
 
-        <form @submit.prevent="handleSignup" class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              メールアドレス <span class="text-red-500">*</span>
-            </label>
-            <input
-              v-model="email"
-              type="email"
-              required
-              :readonly="!!prefilledEmail"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              :class="{ 'bg-gray-50': !!prefilledEmail }"
-            />
-          </div>
+        <form @submit.prevent="handleSignup" class="space-y-4" novalidate>
+          <!-- メールアドレス -->
+          <FormInput
+            v-model="emailField.value.value"
+            label="メールアドレス"
+            type="email"
+            :required="true"
+            :readonly="!!prefilledEmail"
+            :error="emailField.error.value"
+            :touched="emailField.touched.value"
+            autocomplete="email"
+            @touch="emailField.touch()"
+          />
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              パスワード <span class="text-red-500">*</span>
-            </label>
-            <input
-              v-model="password"
-              type="password"
-              required
-              minlength="6"
-              placeholder="6文字以上"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-            />
-          </div>
+          <!-- パスワード -->
+          <FormInput
+            v-model="passwordField.value.value"
+            label="パスワード"
+            type="password"
+            placeholder="6文字以上"
+            :required="true"
+            :error="passwordField.error.value"
+            :touched="passwordField.touched.value"
+            :minlength="6"
+            hint="6文字以上で入力してください"
+            autocomplete="new-password"
+            @touch="passwordField.touch()"
+          />
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              お名前 <span class="text-red-500">*</span>
-            </label>
-            <input
-              v-model="displayName"
-              type="text"
-              required
-              placeholder="山田 太郎"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-            />
-          </div>
+          <!-- お名前 -->
+          <FormInput
+            v-model="displayNameField.value.value"
+            label="お名前"
+            type="text"
+            placeholder="山田 太郎"
+            :required="true"
+            :error="displayNameField.error.value"
+            :touched="displayNameField.touched.value"
+            autocomplete="name"
+            @touch="displayNameField.touch()"
+          />
 
           <button
             type="submit"
-            :disabled="isLoading"
-            class="w-full px-6 py-3 text-white font-medium rounded-lg transition-all hover:opacity-90 disabled:opacity-50"
+            :disabled="isLoading || !isFormValid"
+            class="w-full px-6 py-3 text-white font-medium rounded-lg transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
             style="
               background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             "
           >
-            {{ isLoading ? "アカウント作成中..." : "アカウントを作成" }}
+            <span v-if="isLoading" class="flex items-center justify-center gap-2">
+              <svg
+                class="animate-spin h-5 w-5"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                />
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+              </svg>
+              アカウント作成中...
+            </span>
+            <span v-else>アカウントを作成</span>
           </button>
         </form>
 
@@ -128,6 +160,11 @@
 
 <script setup lang="ts">
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import {
+  useFieldValidation,
+  useFormValidation,
+  validationRules,
+} from "~/composables/useFormValidation";
 
 definePageMeta({
   layout: false,
@@ -144,19 +181,42 @@ const prefilledEmail = ref((route.query.email as string) || "");
 const bookingId = ref((route.query.booking_id as string) || "");
 const redirectPath = ref((route.query.redirect as string) || "/");
 
-// フォームデータ
-const email = ref(prefilledEmail.value);
-const password = ref("");
-const displayName = ref("");
+// フォームエラーサマリー（API エラー用）
+const formErrorSummary = ref("");
+
+// バリデーション付きフィールド
+const emailField = useFieldValidation(prefilledEmail.value, [
+  validationRules.required("メールアドレスを入力してください"),
+  validationRules.email("有効なメールアドレスを入力してください"),
+]);
+
+const passwordField = useFieldValidation("", [
+  validationRules.required("パスワードを入力してください"),
+  validationRules.minLength(6, "パスワードは6文字以上で入力してください"),
+]);
+
+const displayNameField = useFieldValidation("", [
+  validationRules.required("お名前を入力してください"),
+  validationRules.minLength(1, "お名前を入力してください"),
+]);
+
+// フォーム全体のバリデーション
+const { isFormValid, validateAll } = useFormValidation({
+  email: emailField,
+  password: passwordField,
+  displayName: displayNameField,
+});
+
 const isLoading = ref(false);
 
 const handleGoogleSignup = async () => {
   if (!$auth) {
-    toast.error("認証サービスが初期化されていません");
+    formErrorSummary.value = "認証サービスが初期化されていません";
     return;
   }
 
   isLoading.value = true;
+  formErrorSummary.value = "";
 
   try {
     const user = await loginWithGoogle();
@@ -173,40 +233,46 @@ const handleGoogleSignup = async () => {
     router.push(redirectPath.value);
   } catch (error: unknown) {
     console.error("Googleログインエラー:", error);
-    toast.error(
-      error instanceof Error ? error.message : "Googleログインに失敗しました",
-    );
+    formErrorSummary.value =
+      error instanceof Error ? error.message : "Googleログインに失敗しました";
     isLoading.value = false;
   }
 };
 
 const handleSignup = async () => {
+  // すべてのフィールドをバリデーション
+  if (!validateAll()) {
+    formErrorSummary.value = "入力内容に問題があります。エラーを確認してください。";
+    return;
+  }
+
   if (!$auth || !$db) {
-    toast.error("認証サービスが初期化されていません");
+    formErrorSummary.value = "認証サービスが初期化されていません";
     return;
   }
 
   isLoading.value = true;
+  formErrorSummary.value = "";
 
   try {
     // Firebase Authenticationでユーザー作成
     const userCredential = await createUserWithEmailAndPassword(
       $auth,
-      email.value,
-      password.value,
+      emailField.value.value,
+      passwordField.value.value
     );
     const user = userCredential.user;
 
     // プロフィール更新
     await updateProfile(user, {
-      displayName: displayName.value,
+      displayName: displayNameField.value.value,
     });
 
     // Firestoreにユーザー情報を保存
     const { doc, setDoc, Timestamp } = await import("firebase/firestore");
     await setDoc(doc($db, "users", user.uid), {
-      email: email.value,
-      displayName: displayName.value,
+      email: emailField.value.value,
+      displayName: displayNameField.value.value,
       role: "user",
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now(),
@@ -221,20 +287,31 @@ const handleSignup = async () => {
       });
     }
 
+    toast.success("アカウントを作成しました");
+
     // リダイレクト
     router.push(redirectPath.value);
   } catch (error: unknown) {
     console.error("アカウント作成エラー:", error);
     const firebaseError = error as { code?: string; message?: string };
+
+    // Firebase エラーコードに応じたエラーメッセージ
     if (firebaseError.code === "auth/email-already-in-use") {
-      toast.error("このメールアドレスは既に使用されています");
+      emailField.error.value = "このメールアドレスは既に使用されています";
+      emailField.touched.value = true;
+      formErrorSummary.value = "このメールアドレスは既に登録されています。ログインするか、別のメールアドレスをお使いください。";
     } else if (firebaseError.code === "auth/weak-password") {
-      toast.error("パスワードは6文字以上にしてください");
+      passwordField.error.value = "パスワードが弱すぎます。より強力なパスワードを設定してください";
+      passwordField.touched.value = true;
+      formErrorSummary.value = "パスワードをより強力なものに変更してください。";
+    } else if (firebaseError.code === "auth/invalid-email") {
+      emailField.error.value = "メールアドレスの形式が正しくありません";
+      emailField.touched.value = true;
+      formErrorSummary.value = "有効なメールアドレスを入力してください。";
     } else {
-      toast.error(
+      formErrorSummary.value =
         "アカウント作成に失敗しました: " +
-          (firebaseError.message || "不明なエラー"),
-      );
+        (firebaseError.message || "不明なエラー");
     }
     isLoading.value = false;
   }

@@ -23,11 +23,11 @@
 
       <!-- エラーメッセージ（WCAG対応: role="alert", aria-live） -->
       <AlertMessage
-        v-if="error"
+        v-if="formErrorSummary"
         type="error"
-        :message="error"
+        :message="formErrorSummary"
         class="mb-4"
-        @dismiss="error = ''"
+        @dismiss="formErrorSummary = ''"
       />
 
       <!-- 成功メッセージ（WCAG対応） -->
@@ -48,23 +48,18 @@
           <p class="text-sm text-gray-600 mb-6">
             登録したメールアドレスを入力してください。パスワードリセット用のメールを送信します。
           </p>
-          <form @submit.prevent="handleResetPassword" class="space-y-6">
-            <div>
-              <label
-                for="resetEmail"
-                class="block text-sm font-medium text-gray-700 mb-2"
-              >
-                メールアドレス
-              </label>
-              <input
-                id="resetEmail"
-                v-model="form.email"
-                type="email"
-                required
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                placeholder="example@email.com"
-              />
-            </div>
+          <form @submit.prevent="handleResetPassword" class="space-y-6" novalidate>
+            <FormInput
+              v-model="resetEmailField.value.value"
+              label="メールアドレス"
+              type="email"
+              :required="true"
+              placeholder="example@email.com"
+              :error="resetEmailField.error.value"
+              :touched="resetEmailField.touched.value"
+              autocomplete="email"
+              @touch="resetEmailField.touch()"
+            />
             <button
               type="submit"
               :disabled="isLoading"
@@ -94,7 +89,7 @@
           </h2>
           <p class="text-sm text-gray-600 mb-6">
             {{
-              form.email
+              resetEmailField.value.value
             }}
             にパスワードリセット用のメールを送信しました。<br />
             メールに記載されたリンクからパスワードを再設定してください。
@@ -189,69 +184,79 @@
           </div>
         </div>
 
-        <form @submit.prevent="handleSubmit" class="space-y-6">
+        <form @submit.prevent="handleSubmit" class="space-y-6" novalidate>
           <!-- 名前（サインアップ時のみ） -->
-          <div v-if="isSignup">
-            <label
-              for="displayName"
-              class="block text-sm font-medium text-gray-700 mb-2"
-            >
-              お名前
-            </label>
-            <input
-              id="displayName"
-              v-model="form.displayName"
-              type="text"
-              required
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              placeholder="山田太郎"
-            />
-          </div>
+          <FormInput
+            v-if="isSignup"
+            v-model="displayNameField.value.value"
+            label="お名前"
+            type="text"
+            :required="true"
+            placeholder="山田太郎"
+            :error="displayNameField.error.value"
+            :touched="displayNameField.touched.value"
+            autocomplete="name"
+            @touch="displayNameField.touch()"
+          />
 
           <!-- メールアドレス -->
-          <div>
-            <label
-              for="email"
-              class="block text-sm font-medium text-gray-700 mb-2"
-            >
-              メールアドレス
-            </label>
-            <input
-              id="email"
-              v-model="form.email"
-              type="email"
-              required
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              placeholder="example@email.com"
-            />
-          </div>
+          <FormInput
+            v-model="emailField.value.value"
+            label="メールアドレス"
+            type="email"
+            :required="true"
+            placeholder="example@email.com"
+            :error="emailField.error.value"
+            :touched="emailField.touched.value"
+            autocomplete="email"
+            @touch="emailField.touch()"
+          />
 
           <!-- パスワード -->
-          <div>
-            <label
-              for="password"
-              class="block text-sm font-medium text-gray-700 mb-2"
-            >
-              パスワード
-            </label>
-            <input
-              id="password"
-              v-model="form.password"
-              type="password"
-              required
-              minlength="6"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              placeholder="6文字以上"
-            />
-          </div>
+          <FormInput
+            v-model="passwordField.value.value"
+            label="パスワード"
+            type="password"
+            :required="true"
+            :minlength="6"
+            placeholder="6文字以上"
+            :hint="isSignup ? '6文字以上で入力してください' : ''"
+            :error="passwordField.error.value"
+            :touched="passwordField.touched.value"
+            :autocomplete="isSignup ? 'new-password' : 'current-password'"
+            @touch="passwordField.touch()"
+          />
 
           <!-- 送信ボタン -->
           <div class="mt-2">
             <button
               type="submit"
-              class="w-full px-4 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200"
+              :disabled="isLoading || !isCurrentFormValid"
+              class="w-full px-4 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center"
             >
-              ログイン
+              <svg
+                v-if="isLoading"
+                class="animate-spin -ml-1 mr-2 h-5 w-5"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                />
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+              </svg>
+              {{ isLoading ? "処理中..." : isSignup ? "アカウント作成" : "ログイン" }}
             </button>
           </div>
         </form>
@@ -303,6 +308,12 @@
 </template>
 
 <script setup lang="ts">
+import {
+  useFieldValidation,
+  useFormValidation,
+  validationRules,
+} from "~/composables/useFormValidation";
+
 const { $auth } = useNuxtApp();
 const { login, loginWithGoogle, signup, resetPassword } = useAuth();
 const router = useRouter();
@@ -316,7 +327,7 @@ const isSignup = ref(false);
 const isLoading = ref(false);
 const showResetPassword = ref(false);
 const resetEmailSent = ref(false);
-const error = ref("");
+const formErrorSummary = ref("");
 const successMessage = ref("");
 
 // 予約フローからのリダイレクトかどうか
@@ -325,54 +336,98 @@ const isBookingRedirect = computed(() => {
   return redirect?.startsWith("/booking/");
 });
 
-const form = reactive({
-  email: "",
-  password: "",
-  displayName: "",
+// バリデーション付きフィールド（ログイン/サインアップ用）
+const emailField = useFieldValidation("", [
+  validationRules.required("メールアドレスを入力してください"),
+  validationRules.email("有効なメールアドレスを入力してください"),
+]);
+
+const passwordField = useFieldValidation("", [
+  validationRules.required("パスワードを入力してください"),
+  validationRules.minLength(6, "パスワードは6文字以上で入力してください"),
+]);
+
+const displayNameField = useFieldValidation("", [
+  validationRules.required("お名前を入力してください"),
+]);
+
+// パスワードリセット用
+const resetEmailField = useFieldValidation("", [
+  validationRules.required("メールアドレスを入力してください"),
+  validationRules.email("有効なメールアドレスを入力してください"),
+]);
+
+// ログインフォームのバリデーション
+const { isFormValid: isLoginFormValid, validateAll: validateLoginForm } = useFormValidation({
+  email: emailField,
+  password: passwordField,
+});
+
+// サインアップフォームのバリデーション
+const { isFormValid: isSignupFormValid, validateAll: validateSignupForm } = useFormValidation({
+  email: emailField,
+  password: passwordField,
+  displayName: displayNameField,
+});
+
+// 現在のフォームのバリデーション状態
+const isCurrentFormValid = computed(() => {
+  return isSignup.value ? isSignupFormValid.value : isLoginFormValid.value;
 });
 
 const toggleMode = () => {
   isSignup.value = !isSignup.value;
   showResetPassword.value = false;
-  error.value = "";
+  formErrorSummary.value = "";
   successMessage.value = "";
+  // フィールドをリセット
+  emailField.reset();
+  passwordField.reset();
+  displayNameField.reset();
 };
 
 const showResetForm = () => {
   showResetPassword.value = true;
   resetEmailSent.value = false;
-  error.value = "";
+  formErrorSummary.value = "";
   successMessage.value = "";
+  resetEmailField.reset();
 };
 
 const backToLogin = () => {
   showResetPassword.value = false;
   resetEmailSent.value = false;
-  error.value = "";
+  formErrorSummary.value = "";
   successMessage.value = "";
 };
 
 const handleResetPassword = async () => {
   if (!$auth) {
-    error.value = "Firebaseが設定されていません";
+    formErrorSummary.value = "Firebaseが設定されていません";
     return;
   }
 
-  if (!form.email) {
-    error.value = "メールアドレスを入力してください";
+  resetEmailField.touch();
+  if (!resetEmailField.validate()) {
     return;
   }
 
   isLoading.value = true;
-  error.value = "";
+  formErrorSummary.value = "";
 
   try {
-    await resetPassword(form.email);
+    await resetPassword(resetEmailField.value.value);
     resetEmailSent.value = true;
     successMessage.value =
       "パスワードリセットメールを送信しました。メールをご確認ください。";
   } catch (e: unknown) {
-    error.value = e instanceof Error ? e.message : "エラーが発生しました";
+    const firebaseError = e as { code?: string; message?: string };
+    if (firebaseError.code === "auth/user-not-found") {
+      resetEmailField.error.value = "このメールアドレスは登録されていません";
+      formErrorSummary.value = "登録されていないメールアドレスです。新規登録してください。";
+    } else {
+      formErrorSummary.value = e instanceof Error ? e.message : "エラーが発生しました";
+    }
   } finally {
     isLoading.value = false;
   }
@@ -380,12 +435,12 @@ const handleResetPassword = async () => {
 
 const handleGoogleLogin = async () => {
   if (!$auth) {
-    error.value = "Firebaseが設定されていません";
+    formErrorSummary.value = "Firebaseが設定されていません";
     return;
   }
 
   isLoading.value = true;
-  error.value = "";
+  formErrorSummary.value = "";
 
   try {
     console.log("[Login] Starting Google login...");
@@ -401,7 +456,7 @@ const handleGoogleLogin = async () => {
       firebaseError.code ||
       firebaseError.message ||
       (typeof e === "object" ? JSON.stringify(e) : String(e));
-    error.value =
+    formErrorSummary.value =
       firebaseError.message || `エラーが発生しました: ${errorDetail}`;
   } finally {
     isLoading.value = false;
@@ -410,25 +465,57 @@ const handleGoogleLogin = async () => {
 
 const handleSubmit = async () => {
   if (!$auth) {
-    error.value = "Firebaseが設定されていません";
+    formErrorSummary.value = "Firebaseが設定されていません";
+    return;
+  }
+
+  // バリデーション実行
+  const isValid = isSignup.value ? validateSignupForm() : validateLoginForm();
+  if (!isValid) {
+    formErrorSummary.value = "入力内容に問題があります。エラーを確認してください。";
     return;
   }
 
   isLoading.value = true;
-  error.value = "";
+  formErrorSummary.value = "";
 
   try {
     if (isSignup.value) {
-      await signup(form.email, form.password, form.displayName);
+      await signup(emailField.value.value, passwordField.value.value, displayNameField.value.value);
     } else {
-      await login(form.email, form.password);
+      await login(emailField.value.value, passwordField.value.value);
     }
 
     // ログイン成功後、リダイレクトURLまたはトップページへ
     const redirectUrl = (route.query.redirect as string) || "/";
     router.push(redirectUrl);
   } catch (e: unknown) {
-    error.value = e instanceof Error ? e.message : "エラーが発生しました";
+    const firebaseError = e as { code?: string; message?: string };
+
+    // Firebase エラーコードに応じたエラーメッセージ
+    if (firebaseError.code === "auth/user-not-found") {
+      emailField.error.value = "このメールアドレスは登録されていません";
+      emailField.touched.value = true;
+      formErrorSummary.value = "このメールアドレスは登録されていません。新規登録してください。";
+    } else if (firebaseError.code === "auth/wrong-password") {
+      passwordField.error.value = "パスワードが正しくありません";
+      passwordField.touched.value = true;
+      formErrorSummary.value = "パスワードが正しくありません。";
+    } else if (firebaseError.code === "auth/invalid-credential") {
+      formErrorSummary.value = "メールアドレスまたはパスワードが正しくありません。";
+    } else if (firebaseError.code === "auth/email-already-in-use") {
+      emailField.error.value = "このメールアドレスは既に使用されています";
+      emailField.touched.value = true;
+      formErrorSummary.value = "このメールアドレスは既に登録されています。ログインしてください。";
+    } else if (firebaseError.code === "auth/weak-password") {
+      passwordField.error.value = "パスワードが弱すぎます";
+      passwordField.touched.value = true;
+      formErrorSummary.value = "より強力なパスワードを設定してください。";
+    } else if (firebaseError.code === "auth/too-many-requests") {
+      formErrorSummary.value = "ログイン試行回数が多すぎます。しばらく待ってから再試行してください。";
+    } else {
+      formErrorSummary.value = e instanceof Error ? e.message : "エラーが発生しました";
+    }
   } finally {
     isLoading.value = false;
   }
