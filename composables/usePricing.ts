@@ -1,4 +1,5 @@
 import { Timestamp } from "firebase/firestore";
+import { z } from "zod";
 import type {
   DetailedPricingSetting,
   PriceCalculation,
@@ -7,6 +8,33 @@ import type {
   NightCategory,
   PriceRate,
 } from "~/types";
+
+/**
+ * LocalStorageから読み込んだ料金設定を検証するスキーマ
+ * 不正なデータによる料金計算エラーを防ぐ
+ */
+const seasonPeriodSchema = z.object({
+  seasonType: z.enum(["regular", "high", "off"]),
+  startDate: z.string().regex(/^\d{2}-\d{2}$/),
+  endDate: z.string().regex(/^\d{2}-\d{2}$/),
+  description: z.string().optional(),
+  multiplier: z.number().optional(),
+});
+
+const priceRateSchema = z.object({
+  seasonType: z.enum(["regular", "high", "off"]),
+  nightCategory: z.enum(["1night", "2nights", "3nights_plus"]),
+  dayType: z.enum(["weekday", "weekend"]),
+  guestCount: z.number().int().min(1).max(10),
+  pricePerNight: z.number().min(0).max(1000000),
+});
+
+const pricingSettingSchema = z.object({
+  id: z.string(),
+  type: z.string(),
+  seasonPeriods: z.array(seasonPeriodSchema).min(1),
+  priceRates: z.array(priceRateSchema).min(1),
+});
 
 /**
  * 日付から曜日タイプを判定（金曜・土曜・祝前日 = weekend）
@@ -276,15 +304,39 @@ export function createDemoPricingSetting(): DetailedPricingSetting {
 
 /**
  * ローカルストレージから料金設定を読み込む
+ * 型検証を行い、不正なデータの場合はデモ設定にフォールバック
  */
 function loadPricingSettings(): DetailedPricingSetting {
   try {
     const stored = localStorage.getItem("pricingSettings");
     if (stored) {
-      return JSON.parse(stored);
+      const parsed = JSON.parse(stored);
+
+      // zodで型検証（不正データによる料金計算エラーを防ぐ）
+      const result = pricingSettingSchema.safeParse(parsed);
+      if (!result.success) {
+        console.error(
+          "料金設定の検証エラー（デフォルト設定を使用）:",
+          result.error.issues,
+        );
+        // 破損したデータを削除
+        localStorage.removeItem("pricingSettings");
+        return createDemoPricingSetting();
+      }
+
+      // Timestampフィールドを復元（JSONシリアライズで失われるため）
+      return {
+        ...result.data,
+        createdAt: parsed.createdAt || Timestamp.now(),
+        updatedAt: parsed.updatedAt || Timestamp.now(),
+      } as DetailedPricingSetting;
     }
   } catch (e) {
     console.error("料金設定の読み込みエラー:", e);
+    // 破損したデータを削除
+    try {
+      localStorage.removeItem("pricingSettings");
+    } catch {}
   }
   return createDemoPricingSetting();
 }
