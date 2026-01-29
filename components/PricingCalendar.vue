@@ -137,7 +137,7 @@
             v-if="date.isCurrentMonth && !date.isBlocked && date.price"
             class="text-xs font-semibold text-gray-900"
           >
-            ¥{{ formatPrice(date.price) }}
+            {{ formatPrice(date.price) }}
           </div>
 
           <!-- ブロック表示 -->
