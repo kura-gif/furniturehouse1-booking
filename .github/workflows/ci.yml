@@ -1,3 +1,4 @@
+# CI/CD Pipeline for Furniture House No.1
 name: CI
 
 on:
