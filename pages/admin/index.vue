@@ -207,9 +207,32 @@
 
       <!-- 予約管理タブ -->
       <div v-if="currentTab === 'bookings'" class="card">
-        <div class="flex items-center justify-between mb-6">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <h2 class="text-2xl font-semibold">予約一覧</h2>
-          <div class="flex gap-2">
+          <div class="flex flex-col sm:flex-row gap-2">
+            <!-- 検索バー -->
+            <div class="relative">
+              <input
+                v-model="bookingSearch"
+                type="text"
+                placeholder="名前・メール・IDで検索..."
+                class="w-full sm:w-64 pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+              />
+              <svg
+                class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </div>
+            <!-- ステータスフィルター -->
             <select
               v-model="bookingFilter"
               class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
@@ -226,8 +249,8 @@
           </div>
         </div>
 
-        <!-- 予約リスト -->
-        <div class="overflow-x-auto">
+        <!-- 予約リスト（デスクトップ） -->
+        <div class="hidden md:block overflow-x-auto">
           <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
               <tr>
@@ -247,19 +270,55 @@
                   タイプ
                 </th>
                 <th
-                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                  @click="toggleBookingSort('date')"
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 select-none"
                 >
-                  日程
+                  <div class="flex items-center gap-1">
+                    日程
+                    <span class="text-purple-500">
+                      <svg v-if="bookingSortKey === 'date'" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path v-if="bookingSortOrder === 'desc'" fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        <path v-else fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" />
+                      </svg>
+                      <svg v-else class="w-4 h-4 opacity-30" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L10 5.414 7.707 7.707a1 1 0 01-1.414-1.414l3-3A1 1 0 0110 3zm-3.707 9.293a1 1 0 011.414 0L10 14.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                      </svg>
+                    </span>
+                  </div>
                 </th>
                 <th
-                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                  @click="toggleBookingSort('amount')"
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 select-none"
                 >
-                  金額
+                  <div class="flex items-center gap-1">
+                    金額
+                    <span class="text-purple-500">
+                      <svg v-if="bookingSortKey === 'amount'" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path v-if="bookingSortOrder === 'desc'" fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        <path v-else fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" />
+                      </svg>
+                      <svg v-else class="w-4 h-4 opacity-30" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L10 5.414 7.707 7.707a1 1 0 01-1.414-1.414l3-3A1 1 0 0110 3zm-3.707 9.293a1 1 0 011.414 0L10 14.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                      </svg>
+                    </span>
+                  </div>
                 </th>
                 <th
-                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                  @click="toggleBookingSort('status')"
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100 select-none"
                 >
-                  ステータス
+                  <div class="flex items-center gap-1">
+                    ステータス
+                    <span class="text-purple-500">
+                      <svg v-if="bookingSortKey === 'status'" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path v-if="bookingSortOrder === 'desc'" fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        <path v-else fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" />
+                      </svg>
+                      <svg v-else class="w-4 h-4 opacity-30" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L10 5.414 7.707 7.707a1 1 0 01-1.414-1.414l3-3A1 1 0 0110 3zm-3.707 9.293a1 1 0 011.414 0L10 14.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                      </svg>
+                    </span>
+                  </div>
                 </th>
                 <th
                   class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
@@ -313,8 +372,107 @@
                   </button>
                 </td>
               </tr>
+              <tr v-if="filteredBookings.length === 0">
+                <td colspan="7" class="px-6 py-8 text-center text-gray-500">
+                  予約が見つかりませんでした
+                </td>
+              </tr>
             </tbody>
           </table>
+        </div>
+
+        <!-- 予約リスト（モバイル） -->
+        <div class="md:hidden space-y-3">
+          <div
+            v-for="booking in filteredBookings"
+            :key="'mobile-' + booking.id"
+            class="bg-white border rounded-lg p-4 shadow-sm"
+          >
+            <div class="flex items-start justify-between mb-3">
+              <div>
+                <p class="font-semibold text-gray-900">{{ booking.guestName }}</p>
+                <p class="text-xs text-gray-500 font-mono">ID: {{ booking.id.substring(0, 8) }}...</p>
+              </div>
+              <span
+                :class="[
+                  'px-2 py-1 rounded-full text-xs',
+                  getStatusColor(booking.status),
+                ]"
+              >
+                {{ getStatusLabel(booking.status) }}
+              </span>
+            </div>
+            <div class="grid grid-cols-2 gap-2 text-sm mb-3">
+              <div>
+                <p class="text-gray-500">タイプ</p>
+                <span
+                  :class="[
+                    'px-2 py-1 rounded-full text-xs',
+                    booking.type === 'stay'
+                      ? 'bg-blue-100 text-blue-800'
+                      : 'bg-green-100 text-green-800',
+                  ]"
+                >
+                  {{ booking.type === "stay" ? "宿泊" : "ワークショップ" }}
+                </span>
+              </div>
+              <div>
+                <p class="text-gray-500">日程</p>
+                <p class="font-medium">{{ formatDate(booking.startDate) }}</p>
+              </div>
+              <div>
+                <p class="text-gray-500">金額</p>
+                <p class="font-semibold text-purple-600">¥{{ (booking.totalAmount || 0).toLocaleString() }}</p>
+              </div>
+            </div>
+            <button
+              @click="viewBooking(booking)"
+              class="w-full py-2 text-center text-purple-600 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors text-sm font-medium"
+            >
+              詳細を見る
+            </button>
+          </div>
+          <div v-if="filteredBookings.length === 0" class="text-center py-8 text-gray-500">
+            予約が見つかりませんでした
+          </div>
+        </div>
+
+        <!-- ページネーション -->
+        <div v-if="processedBookings.length > 0" class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div class="text-sm text-gray-600">
+            全{{ processedBookings.length }}件中 {{ (bookingPage - 1) * bookingPerPage + 1 }}〜{{ Math.min(bookingPage * bookingPerPage, processedBookings.length) }}件を表示
+          </div>
+          <div class="flex items-center gap-2">
+            <button
+              @click="bookingPage = bookingPage - 1"
+              :disabled="bookingPage <= 1"
+              class="px-3 py-2 border rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              前へ
+            </button>
+            <div class="flex items-center gap-1">
+              <button
+                v-for="page in bookingTotalPages"
+                :key="page"
+                @click="bookingPage = page"
+                :class="[
+                  'w-10 h-10 rounded-lg text-sm',
+                  bookingPage === page
+                    ? 'bg-purple-600 text-white'
+                    : 'border hover:bg-gray-50'
+                ]"
+              >
+                {{ page }}
+              </button>
+            </div>
+            <button
+              @click="bookingPage = bookingPage + 1"
+              :disabled="bookingPage >= bookingTotalPages"
+              class="px-3 py-2 border rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              次へ
+            </button>
+          </div>
         </div>
       </div>
 
@@ -3160,12 +3318,81 @@ const tabs = [
 const currentTab = ref("bookings");
 const bookingFilter = ref("all");
 
-const filteredBookings = computed(() => {
-  if (bookingFilter.value === "all") {
-    return allBookings.value;
+// 検索・ソート・ページネーション用の状態
+const bookingSearch = ref("");
+const bookingSortKey = ref<"date" | "amount" | "status">("date");
+const bookingSortOrder = ref<"asc" | "desc">("desc");
+const bookingPage = ref(1);
+const bookingPerPage = ref(10);
+
+// ソート関数
+const sortBookings = (bookings: typeof allBookings.value) => {
+  return [...bookings].sort((a, b) => {
+    let comparison = 0;
+
+    if (bookingSortKey.value === "date") {
+      const dateA = a.startDate?.toDate?.() || new Date(0);
+      const dateB = b.startDate?.toDate?.() || new Date(0);
+      comparison = dateA.getTime() - dateB.getTime();
+    } else if (bookingSortKey.value === "amount") {
+      comparison = (a.totalAmount || 0) - (b.totalAmount || 0);
+    } else if (bookingSortKey.value === "status") {
+      comparison = (a.status || "").localeCompare(b.status || "");
+    }
+
+    return bookingSortOrder.value === "asc" ? comparison : -comparison;
+  });
+};
+
+// フィルタリング＋検索＋ソート済みの予約リスト
+const processedBookings = computed(() => {
+  let result = allBookings.value;
+
+  // ステータスフィルター
+  if (bookingFilter.value !== "all") {
+    result = result.filter((b) => b.status === bookingFilter.value);
   }
-  return allBookings.value.filter((b) => b.status === bookingFilter.value);
+
+  // 検索フィルター
+  if (bookingSearch.value.trim()) {
+    const searchLower = bookingSearch.value.toLowerCase().trim();
+    result = result.filter((b) =>
+      b.guestName?.toLowerCase().includes(searchLower) ||
+      b.guestEmail?.toLowerCase().includes(searchLower) ||
+      b.id?.toLowerCase().includes(searchLower)
+    );
+  }
+
+  // ソート
+  return sortBookings(result);
 });
+
+// ページネーション適用済みの予約リスト
+const filteredBookings = computed(() => {
+  const start = (bookingPage.value - 1) * bookingPerPage.value;
+  const end = start + bookingPerPage.value;
+  return processedBookings.value.slice(start, end);
+});
+
+// 総ページ数
+const bookingTotalPages = computed(() =>
+  Math.ceil(processedBookings.value.length / bookingPerPage.value)
+);
+
+// ページ変更時にリセット
+watch([bookingFilter, bookingSearch], () => {
+  bookingPage.value = 1;
+});
+
+// ソート切り替え
+const toggleBookingSort = (key: "date" | "amount" | "status") => {
+  if (bookingSortKey.value === key) {
+    bookingSortOrder.value = bookingSortOrder.value === "asc" ? "desc" : "asc";
+  } else {
+    bookingSortKey.value = key;
+    bookingSortOrder.value = "desc";
+  }
+};
 
 // 本日のチェックイン/チェックアウト
 const todayCheckIns = computed(() => {
