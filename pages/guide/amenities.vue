@@ -42,7 +42,7 @@
           "
           style="border-radius: 0 !important"
         >
-          <span v-html="cat.iconSvg" class="w-4 h-4"></span>
+          <span v-html="sanitizeSvg(cat.iconSvg)" class="w-4 h-4"></span>
           {{ $t(cat.labelKey) }}
         </button>
       </div>
@@ -162,7 +162,7 @@
             >
               <div
                 class="w-6 h-6 text-organic-accent mb-2"
-                v-html="item.iconSvg"
+                v-html="sanitizeSvg(item.iconSvg)"
               ></div>
               <p class="text-sm font-medium text-organic-text">
                 {{ $t(item.key) }}
@@ -226,7 +226,7 @@
             >
               <div
                 class="w-6 h-6 text-organic-accent mb-2"
-                v-html="item.iconSvg"
+                v-html="sanitizeSvg(item.iconSvg)"
               ></div>
               <p class="text-sm font-medium text-organic-text">
                 {{ $t(item.key) }}
@@ -266,7 +266,7 @@
             >
               <div
                 class="w-6 h-6 text-organic-accent mb-2"
-                v-html="item.iconSvg"
+                v-html="sanitizeSvg(item.iconSvg)"
               ></div>
               <p class="text-sm font-medium text-organic-text">
                 {{ $t(item.key) }}
@@ -306,7 +306,7 @@
             >
               <div
                 class="w-6 h-6 text-organic-accent mb-2"
-                v-html="item.iconSvg"
+                v-html="sanitizeSvg(item.iconSvg)"
               ></div>
               <p class="text-sm font-medium text-organic-text">
                 {{ $t(item.key) }}
@@ -325,6 +325,7 @@ definePageMeta({
 });
 
 const { t } = useI18n();
+const { sanitizeSvg } = useSanitize();
 const activeCategory = ref("all");
 
 const categories = [

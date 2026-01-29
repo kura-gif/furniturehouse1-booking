@@ -45,7 +45,7 @@
           "
           style="border-radius: 0 !important"
         >
-          <span v-html="cat.iconSvg" class="w-4 h-4"></span>
+          <span v-html="sanitizeSvg(cat.iconSvg)" class="w-4 h-4"></span>
           {{ $t(cat.labelKey) }}
         </button>
       </div>
@@ -101,7 +101,7 @@
                     {{ spot.travelTime }}{{ $t("guestGuide.area.minutes") }}
                   </span>
                   <span class="flex items-center gap-1">
-                    <span v-html="spot.categoryIconSvg" class="w-3 h-3"></span>
+                    <span v-html="sanitizeSvg(spot.categoryIconSvg)" class="w-3 h-3"></span>
                     {{ $t(spot.categoryKey) }}
                   </span>
                 </div>
@@ -189,6 +189,7 @@ definePageMeta({
 });
 
 const { t } = useI18n();
+const { sanitizeSvg } = useSanitize();
 const activeCategory = ref("all");
 
 const categories = [

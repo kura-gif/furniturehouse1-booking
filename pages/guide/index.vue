@@ -151,7 +151,7 @@
             class="menu-item"
             :class="{ 'border-b-0': index === sections.length - 1 }"
           >
-            <div class="menu-icon" v-html="section.iconSvg"></div>
+            <div class="menu-icon" v-html="sanitizeSvg(section.iconSvg)"></div>
             <div class="flex-1 min-w-0">
               <p class="menu-title">{{ $t(section.titleKey) }}</p>
               <p class="menu-desc">{{ $t(section.descKey) }}</p>
@@ -183,6 +183,7 @@ definePageMeta({
 });
 
 const { t } = useI18n();
+const { sanitizeSvg } = useSanitize();
 const guideState = useGuideState();
 const route = useRoute();
 
