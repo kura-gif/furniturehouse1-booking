@@ -1,3 +1,34 @@
+type EmailResult = {
+  success: boolean;
+  error?: string;
+};
+
+/**
+ * メール送信失敗をログに記録
+ * 管理画面で確認できるようFirestoreに保存
+ */
+const logEmailFailure = async (
+  emailType: string,
+  recipient: string | null,
+  error: unknown,
+  metadata?: Record<string, unknown>,
+) => {
+  try {
+    await $fetch("/api/emails/log-failure", {
+      method: "POST",
+      body: {
+        emailType,
+        recipient,
+        errorMessage: error instanceof Error ? error.message : String(error),
+        metadata,
+      },
+    });
+  } catch (logError) {
+    // ログ記録失敗は無視（無限ループ防止）
+    console.error("メール失敗ログ記録エラー:", logError);
+  }
+};
+
 export const useEmail = () => {
   /**
    * 予約確定メールを送信
@@ -13,17 +44,24 @@ export const useEmail = () => {
       checkOutDate: string;
       totalAmount: number;
     },
-  ) => {
+  ): Promise<EmailResult> => {
     try {
-      const response = await $fetch("/api/emails/send-booking-confirmation", {
+      await $fetch("/api/emails/send-booking-confirmation", {
         method: "POST",
         body: bookingData,
       });
 
-      return response;
+      return { success: true };
     } catch (error) {
       console.error("予約確定メール送信エラー:", error);
-      throw error;
+      await logEmailFailure("booking_confirmation", to, error, {
+        bookingId: bookingData.bookingId,
+        bookingReference: bookingData.bookingReference,
+      });
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "送信に失敗しました",
+      };
     }
   };
 
@@ -38,9 +76,9 @@ export const useEmail = () => {
       checkInDate: string;
       checkOutDate: string;
     },
-  ) => {
+  ): Promise<EmailResult> => {
     try {
-      const response = await $fetch("/api/emails/send-booking-cancellation", {
+      await $fetch("/api/emails/send-booking-cancellation", {
         method: "POST",
         body: {
           to,
@@ -48,11 +86,16 @@ export const useEmail = () => {
         },
       });
 
-      return response;
+      return { success: true };
     } catch (error) {
       console.error("キャンセルメール送信エラー:", error);
-      // メール送信に失敗しても続行（ログだけ取る）
-      return null;
+      await logEmailFailure("booking_cancellation", to, error, {
+        bookingId: bookingData.bookingId,
+      });
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "送信に失敗しました",
+      };
     }
   };
 
@@ -68,9 +111,9 @@ export const useEmail = () => {
       checkInTime: string;
       address: string;
     },
-  ) => {
+  ): Promise<EmailResult> => {
     try {
-      const response = await $fetch("/api/emails/send-checkin-reminder", {
+      await $fetch("/api/emails/send-checkin-reminder", {
         method: "POST",
         body: {
           to,
@@ -78,10 +121,16 @@ export const useEmail = () => {
         },
       });
 
-      return response;
+      return { success: true };
     } catch (error) {
       console.error("リマインダーメール送信エラー:", error);
-      return null;
+      await logEmailFailure("checkin_reminder", to, error, {
+        bookingId: bookingData.bookingId,
+      });
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "送信に失敗しました",
+      };
     }
   };
 
@@ -97,9 +146,9 @@ export const useEmail = () => {
       bookingReference: string;
       estimatedDuration: number;
     },
-  ) => {
+  ): Promise<EmailResult> => {
     try {
-      const response = await $fetch("/api/emails/send-task-assignment", {
+      await $fetch("/api/emails/send-task-assignment", {
         method: "POST",
         body: {
           to,
@@ -107,10 +156,17 @@ export const useEmail = () => {
         },
       });
 
-      return response;
+      return { success: true };
     } catch (error) {
       console.error("タスク割り当てメール送信エラー:", error);
-      return null;
+      await logEmailFailure("task_assignment", to, error, {
+        bookingReference: taskData.bookingReference,
+        taskType: taskData.taskType,
+      });
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "送信に失敗しました",
+      };
     }
   };
 
@@ -126,9 +182,9 @@ export const useEmail = () => {
       scheduledTime?: string;
       bookingReference: string;
     },
-  ) => {
+  ): Promise<EmailResult> => {
     try {
-      const response = await $fetch("/api/emails/send-task-reminder", {
+      await $fetch("/api/emails/send-task-reminder", {
         method: "POST",
         body: {
           to,
@@ -136,10 +192,17 @@ export const useEmail = () => {
         },
       });
 
-      return response;
+      return { success: true };
     } catch (error) {
       console.error("タスクリマインダーメール送信エラー:", error);
-      return null;
+      await logEmailFailure("task_reminder", to, error, {
+        bookingReference: taskData.bookingReference,
+        taskType: taskData.taskType,
+      });
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "送信に失敗しました",
+      };
     }
   };
 
@@ -153,17 +216,24 @@ export const useEmail = () => {
     completedAt: string;
     actualDuration: number;
     bookingReference: string;
-  }) => {
+  }): Promise<EmailResult> => {
     try {
-      const response = await $fetch("/api/emails/send-cleaning-completed", {
+      await $fetch("/api/emails/send-cleaning-completed", {
         method: "POST",
         body: taskData,
       });
 
-      return response;
+      return { success: true };
     } catch (error) {
       console.error("清掃完了通知メール送信エラー:", error);
-      return null;
+      await logEmailFailure("cleaning_completed", null, error, {
+        bookingReference: taskData.bookingReference,
+        supporterName: taskData.supporterName,
+      });
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "送信に失敗しました",
+      };
     }
   };
 
@@ -177,9 +247,9 @@ export const useEmail = () => {
       guestName: string;
       refundAmount: number;
     },
-  ) => {
+  ): Promise<EmailResult> => {
     try {
-      const response = await $fetch("/api/emails/send-refund-confirmation", {
+      await $fetch("/api/emails/send-refund-confirmation", {
         method: "POST",
         body: {
           to,
@@ -187,10 +257,17 @@ export const useEmail = () => {
         },
       });
 
-      return response;
+      return { success: true };
     } catch (error) {
       console.error("返金確認メール送信エラー:", error);
-      return null;
+      await logEmailFailure("refund_confirmation", to, error, {
+        bookingReference: refundData.bookingReference,
+        refundAmount: refundData.refundAmount,
+      });
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "送信に失敗しました",
+      };
     }
   };
 
@@ -214,17 +291,25 @@ export const useEmail = () => {
     totalAmount?: number;
     refundAmount?: number;
     errorMessage?: string;
-  }) => {
+  }): Promise<EmailResult> => {
     try {
-      const response = await $fetch("/api/emails/send-admin-notification", {
+      await $fetch("/api/emails/send-admin-notification", {
         method: "POST",
         body: notificationData,
       });
 
-      return response;
+      return { success: true };
     } catch (error) {
       console.error("管理者通知メール送信エラー:", error);
-      return null;
+      await logEmailFailure("admin_notification", null, error, {
+        type: notificationData.type,
+        bookingId: notificationData.bookingId,
+        bookingReference: notificationData.bookingReference,
+      });
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "送信に失敗しました",
+      };
     }
   };
 
