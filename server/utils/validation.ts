@@ -37,9 +37,10 @@ export const createBookingSchema = z
 
     guestPhone: z
       .string()
-      .regex(
-        /^0\d{1,4}-?\d{1,4}-?\d{4}$/,
-        "有効な電話番号を入力してください（例: 090-1234-5678）",
+      .transform((val) => val.replace(/[\s\-－ー]/g, "")) // スペースとハイフン（半角・全角）を除去
+      .refine(
+        (val) => /^0\d{9,10}$/.test(val),
+        "有効な電話番号を入力してください（例: 090-1234-5678 または 09012345678）",
       ),
 
     notes: z
